@@ -151,9 +151,9 @@ func _process(_delta: float) -> void:
 	for widget in [hint,carrier_label,crosshair,stamina,ball_indicator]: widget.visible = on_field
 	for child in root.get_children():
 		if child is Button: child.visible = m.phase==m.Phase.MENU
-	score_label.text = "%d  :  %d" % [m.scores[0],m.scores[1]]
+	_set_text(score_label,"%d  :  %d" % [m.scores[0],m.scores[1]])
 	var seconds := int(ceil(m.time_left))
-	clock_label.text = "%s · %02d:%02d" % ["上半场" if m.services.rules.half==1 else "下半场",seconds/60,seconds%60]
+	_set_text(clock_label,"%s · %02d:%02d" % ["上半场" if m.services.rules.half==1 else "下半场",seconds/60,seconds%60])
 	stamina.value = m.player.stamina
 	stamina.modulate = Color("ffb087") if m.player.sprint_locked else Color.WHITE
 	var preview: Dictionary = m.input_bridge.charge_preview if is_instance_valid(m.input_bridge) else {}
@@ -161,22 +161,29 @@ func _process(_delta: float) -> void:
 	charge_caption.visible = charge.visible
 	if charge.visible:
 		charge.value = float(preview.power)*100
-		charge_caption.text = "%s %d%%  ·  高度 %d°" % ["传球" if String(preview.action).begins_with("pass_") else "射门",int(round(float(preview.power)*100)),int(preview.elevation_deg)]
+		_set_text(charge_caption,"%s %d%%  ·  高度 %d°" % ["传球" if String(preview.action).begins_with("pass_") else "射门",int(round(float(preview.power)*100)),int(preview.elevation_deg)])
 	if help.visible and is_instance_valid(m.input_bridge): help_body.text = m.input_bridge.help_text()
 	banner.visible = on_field and m.phase in [m.Phase.COUNTDOWN,m.Phase.RESTART,m.Phase.GOAL]
-	banner.text = m.restart_message if m.phase==m.Phase.GOAL else m.restart_hint()
+	_set_text(banner,m.restart_message if m.phase==m.Phase.GOAL else m.restart_hint())
 	if m.phase==m.Phase.FINISHED:
 		result_title.text = "蓝队获胜" if m.scores[0]>m.scores[1] else "比赛平局" if m.scores[0]==m.scores[1] else "红队获胜"
 		result_score.text = "%d  :  %d" % [m.scores[0],m.scores[1]]
 		result_stats.text = "你的传球 %d  ·  射门 %d  ·  抢球 %d" % [m.stats.passes,m.stats.shots,m.stats.tackles]
 	var carrier: Node3D = m.ball.carrier
-	carrier_label.text = m.Selection.caption(m)
-	if carrier==m.player: carrier_label.text = "你在控球 · Ctrl 短带 / Space 脚底停球"
-	elif is_instance_valid(carrier): carrier_label.text = ("蓝队" if carrier.team==0 else "红队")+" #%d 控球" % carrier.jersey
-	hint.text = m.input_bridge.hint_text() if is_instance_valid(m.input_bridge) else ""
-	if m.status_timer>0: hint.text += "\n"+m.status_message
-	if m.services.rules.state in [m.Rules.State.RESTART_SETUP,m.Rules.State.RESTART_READY] and m.constrained_human_intent(Vector3.ZERO).length()>.1: hint.text += "\n裁判要求让出规定距离，仍可自由转头。"
+	# R006: build each string once and assign only on change; re-assigning a Label's text
+	# twice per frame forced CJK text reshaping (font fallback) every frame (~100 ms headless).
+	var carrier_text:String = m.Selection.caption(m)
+	if carrier==m.player: carrier_text = "你在控球 · Ctrl 短带 / Space 脚底停球"
+	elif is_instance_valid(carrier): carrier_text = ("蓝队" if carrier.team==0 else "红队")+" #%d 控球" % carrier.jersey
+	_set_text(carrier_label,carrier_text)
+	var hint_text:String = m.input_bridge.hint_text() if is_instance_valid(m.input_bridge) else ""
+	if m.status_timer>0: hint_text += "\n"+m.status_message
+	if m.services.rules.state in [m.Rules.State.RESTART_SETUP,m.Rules.State.RESTART_READY] and m.constrained_human_intent(Vector3.ZERO).length()>.1: hint_text += "\n裁判要求让出规定距离，仍可自由转头。"
+	_set_text(hint,hint_text)
 	_update_markers(on_field)
+
+static func _set_text(node:Control,value:String)->void:
+	if node.text!=value:node.text=value
 
 func _update_markers(on_field: bool) -> void:
 	var m := match_controller
@@ -188,18 +195,20 @@ func _update_markers(on_field: bool) -> void:
 			var screen := camera.unproject_position(target.position+Vector3.UP*1.3)
 			if screen.x>100 and screen.x<1160 and screen.y>110 and screen.y<580:
 				pass_marker.position = screen-Vector2(105,20)
-				pass_marker.text = "Q  传给 #%d" % target.jersey
+				_set_text(pass_marker,"Q  传给 #%d" % target.jersey)
 				pass_marker.show()
-	ball_indicator.text = ""
 	if not on_field:
+		_set_text(ball_indicator,"")
 		_update_ball_arrow(false,camera,m.ball.position,false)
 		return
+	var indicator := ""
 	var screen := camera.unproject_position(m.ball.position)
 	var view_size:=get_viewport().get_visible_rect().size
 	if camera.is_position_behind(m.ball.position) or screen.x<80 or screen.x>view_size.x-80 or screen.y>view_size.y-55 or screen.y<100:
 		var relative: Vector3 = m.player.global_basis.inverse()*(m.ball.position-m.player.position)
-		ball_indicator.text = "%s  足球 %.1f m" % ["←" if relative.x<-.3 else "→" if relative.x>.3 else "↓" if relative.z>0 else "↑",m.flat_distance(m.player.position,m.ball.position)]
-	_update_ball_arrow(on_field,camera,m.ball.position,ball_indicator.text!="")
+		indicator = "%s  足球 %.1f m" % ["←" if relative.x<-.3 else "→" if relative.x>.3 else "↓" if relative.z>0 else "↑",m.flat_distance(m.player.position,m.ball.position)]
+	_set_text(ball_indicator,indicator)
+	_update_ball_arrow(on_field,camera,m.ball.position,indicator!="")
 
 ## R004 off-screen ball edge arrow (points from screen centre toward the ball).
 const BALL_ARROW_MARGIN := 48.0
