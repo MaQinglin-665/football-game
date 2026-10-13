@@ -69,3 +69,12 @@ Mixamo（需用户自己登录 Adobe 账号下载）
 - 许可：Mixamo 动作可用于商业项目但不可单独再分发原始动作文件；在 ART_LICENSES.txt 记录下载日期与动作名。
 测试：render_r004.gd 在 xvfb+lavapipe(Vulkan Forward+) 与 Mesa GL(Compatibility 回退) 下均可启动并编译着色器；不代表 RTX 5060 帧率。
 无窗口 CPU 基准（1200 tick）：战术 P99 7.1ms、>8ms 7 次（第一批后为 7.7ms/11 次）；本批未改 CPU 路径，差异属正常波动。
+== 第七批：战术导演分帧执行 ==
+- tactical_director.tick 拆为 tick_begin（时钟/控球/接应/越位/角色/防守任务）→ tick_team(0) → tick_team(1)（各队进攻计划）→ tick_finish（平滑/跑位/边界/分离）；tick() 仍按原顺序调用，单次路径行为不变。
+- integration_tactics：快照后的连续物理帧依次执行 begin → 队0 → 队1 → finish+下发意图。可调开关：
+  DIRECTOR_STAGING_ENABLED（false=原单次 tick）、CONTACT_STAGING_ENABLED（false=触球刷新恢复同步，响应快约 33ms 但单帧约 8ms）。
+- 触球刷新/外部 refresh_now 到来时先同步补完进行中的阶段，保证导演时钟与状态每次只推进一次；离开比赛/死球时补完但丢弃意图。
+- 代价：意图下发比原管线晚约 3 帧（120Hz 下 25ms），触球后晚约 4 帧（33ms）；需试玩确认 AI 反应手感。
+- 等价性：tests/director_split_r004.gd 用拆分前导演副本（tests/reference/）在 60 个实时快照上比对，单次与分阶段结果逐项一致。
+- 基准（1200 tick，无窗口）：战术 P99 7.11→3.95ms，最大 12.03→5.37ms，>8ms 7→0 次。
+- 回归：与 main 一致（integration_checks 22/8，main 21/9）；ai/first_touch/controls/director_split R004 测试均通过。
