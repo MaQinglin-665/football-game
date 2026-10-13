@@ -1,0 +1,73 @@
+FC Visual Lab — 素材来源与许可 / 2026-10-08
+
+1. 人物原骨架、动作、球鞋几何；原版人物外形；原足球面片算法；批次几何工具
+来源：用户本机 dribble039_motion_clarity/source，保留快照 reference_original。
+原项目 rig_manifest.json 记录：All geometry, rig, weights and clips created for this task；third_party_assets_used=false。
+作者：用户现有项目；不是 EA / Konami 游戏资产。没有从商业游戏提取内容。
+本次使用现有32骨骼及原 Idle / Run 动作；骨骼名、层级、rest transform、触球 socket 不变。
+原项目 THIRD_PARTY.md 与 licenses 保留在 reference_original，主游戏依赖没有进入新的样板运行代码。
+
+2. Cotton Jersey
+作者：colormass（摄影），Rico Cilliers（处理）。
+来源：https://polyhaven.com/a/cotton_jersey
+许可：https://polyhaven.com/license — CC0 1.0。
+可商用、修改、再分发；无需署名。本文件自愿署名。
+从旧样板中复制独立文件，来源元数据在 evidence/cotton_jersey_info.json。
+实际使用 cotton_jersey_normal.png，低强度法线，按距离减弱，重新启用 mipmaps。
+没有把棉织物漫反射照搬为球衣；球衣颜色、印花、条纹与粗糙度重新制作。
+cotton_jersey_rough.jpg 保留为来源文件，当前材质未采样该图，不将其算作质量提升。
+
+3. Kloofendal 48d Partly Cloudy (Pure Sky)
+作者：Greg Zaal（原作），Jarod Guest（天空处理）。
+来源：https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky
+许可：https://polyhaven.com/license — CC0 1.0；可商用修改再分发，无需署名。
+本机旧样板 sky.hdr 的独立复制，元数据在 evidence/kloofendal_48d_partly_cloudy_puresky_info.json。
+实际分辨率以导入资源审计为准；尝试下载2K版本遭网络超时，未把失败下载当作成功。
+白天检测HDR最高亮点并对应太阳方向；夜间程序化压暗并重新配环境色与灯光。
+夜晚不是独立拍摄的夜空 HDR，也不是 GI 烘焙。
+
+4. Concrete 034
+作者：Lennart Demes / ambientCG。
+来源：https://ambientcg.com/view?id=Concrete034
+许可：https://docs.ambientcg.com/license/ — CC0 1.0；允许商用修改再分发，无需署名。
+实际使用 1K Color / NormalGL；颜色纹理按色彩贴图使用，NormalGL 为线性数据法线。
+原资源标定约1.1 × 0.55米，本次三向映射按该尺寸设置，避免整面看台拉伸一张纹理。
+Roughness.jpg 留作原始资源；当前用固定混凝土粗糙度，不声称已接入此通道。
+
+5. 本次新制作内容
+人物肩胸/衣服/手掌手指/膝踝网格、球衣厚边、座椅曲面、栏杆屋架、球门与网、运动短草纹理和草叶、原创 ATHLETIC 标识及场景脚本。
+由本任务生成，可在用户项目中使用、修改、商用；没有新引入第三方付费许可。
+草皮由 tools/generate_textures.py 原创生成；未用普通公园草皮或家具皮革冒充竞技场草坪/足球。
+足球使用原有截角二十面体基础，改窄接缝并加深浅槽，面片表面程序微粒，不使用皮革照片。
+
+6. Godot Engine 4.6.3.stable.official.7d41c59c4
+来源：本机已安装的官方 Godot 引擎；独立复制运行文件到 runtime/Godot.exe。
+来源网址：https://godotengine.org/download/archive/4.6.3-stable/
+许可：MIT；引擎和内置第三方通知见 licenses/Godot-and-components.txt。
+没有安装插件、购买资产，或从 GitHub 执行外部安装脚本。
+
+许可官方页面于本次工作中核对。资产尺寸、哈希和实际依赖见 evidence/asset_audit.json。
+
+11v11接入补充：本目录完整游戏基线为 dribble039_body_inertia/source；新增美术来自独立 fc_visual_lab。此处沿用原完整球场球门、网与架构，不将这些算成11v11本次重制。旧说明evidence路径对应本目录 sample_asset_audit.json 及复制的info元数据。
+
+V2新增：MakeHuman base mesh（仅使用重拟合后的手臂/手掌/膝部，不使用其头部与身体私密部位）。
+作者：MakeHuman Team / MakeHuman Community。来源：https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/3dobjs/base.obj
+资产许可CC0，允许商用和修改，无署名要求；与其软件AGPL许可分开。核实：https://static.makehumancommunity.org/about/license.html
+原始资产与许可在research_makehuman；自编拟合过程tools/fit_anatomy.py，未复制MakeHuman软件代码。
+连续球衣网格tools/sculpt_jersey.py为本任务原创生成，未使用受保护游戏资产。
+
+V3 伯纳乌夜场视觉研究：闭顶、桁架、环屏、灯具、背景观众及近景草叶均为本任务原创程序几何；环屏为原创静态图形，无官方队徽或赞助商素材。沿用V2的CC0来源清单。
+参考而未打包的官方摄影/文字：
+https://bernabeu.realmadrid.com/en-US/corporate-events/terreno-de-juego
+https://www.realmadrid.com/en-US/news/club/latest-news/el-santiago-bernabeu-estrena-su-espectacular-videomarcador-360-21-04-2024
+摄影版权属于原权利人，仅作为结构参考；没有将其作为可分发游戏贴图。该样板不是官方授权产品或测绘级复刻。
+
+草坪/看台重做修订：Grass 005，ambientCG / Lennart Demes，https://ambientcg.com/a/Grass005，CC0 1.0，可商用修改分发，无强制署名；记录见 licenses/Grass005_source.json。下载的四张2K贴图原样保留，比赛草皮的色调、尺度、草向和混合在着色器中适配。它不是伯纳乌实地扫描，不称为体育场扫描素材。
+新观众模型与材质为原创，四种坐姿，无外部人物照片。
+
+2026-10-09 near-crowd revision: eight original clothed seated poses, replacement rail/fascia geometry and crowd shader authored for this project. No new third-party visual assets.
+
+2026-10-09 glass-night revision: original procedural moon/cloud sky, glass-roof shader and turf material adjustments. Grass005 source and CC0 license unchanged. Artistic glass-roof concept; not a surveyed Bernabeu construction model.
+
+
+2026-10-13 / 11v11 R7 更新：Concrete034 Roughness现已使用（此前“未采样”记录为历史状态）。从本机原CC0文件制作颜色、法线及粗糙度mipmap缓存；粗糙度重映射约0.72—0.95以适配场馆混凝土。来源、作者、许可不变。新增远景观众简模为本工程程序生成，没有新的第三方资产。

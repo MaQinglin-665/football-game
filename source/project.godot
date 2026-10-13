@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/version="0.6.39-contact-flow"
+config/version="integration-r001"
 
-config/name="Latest Gameplay + Art + Motion (Independent)"
+config/name="Football Integration R001"
 run/main_scene="res://scenes/match.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
