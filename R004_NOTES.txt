@@ -46,3 +46,26 @@ R004 第三批（AI 与抢断；常量集中在 scripts/tactics/ai_awareness.gd�
    - AI 传球执行误差原已按压迫缩放（player_abilities.pass_intent），未改。
 10. AI 盘带：现有实现已含按速度触球、避让/变向(ai_cut)、护球、通道关闭即放弃，本轮未改（风险/收益不划算）。
 测试：tests/ai_r004.gd（全部通过）。
+
+R004 第四批（渲染/素材/帧率）
+11. 渲染：project.godot 改 Forward+；mobile 与回退用 GL Compatibility（rendering_device/fallback_to_opengl3=true；也可 --rendering-method gl_compatibility 启动）。
+   - scripts/forward_plus_fx.gd：AgX（曝光1.10、white 12）、glow（强度0.35、HDR阈值1.2、柔光）、SSAO、软阴影滤波；按 stadium_quality.gd 档位：
+     low：无SSAO、glow、MSAA2x、阴影软滤波LOW；balanced：SSAO r0.8、MSAA2x、MEDIUM；high：SSAO r1.0、TAA、HIGH。设置里选FSR2时关TAA/MSAA（原逻辑）。
+   - 原 art/integration.gd 已有 Forward+ 分支（ACES、glow、SSAO、SSIL）：ACES 改 AgX，结尾由 ForwardPlusFx 统一；昼夜切换后也重套。
+   - 修剪条纹：原本就有，带宽 7.5m → 5.25m（105m 场 20 条；material_patch.gd MOWING_BANDS、art FULL_STRIPE_M）。
+   - 脚下/球的接触阴影：原 play_lighting.gd 已有 GroundContactShading（每人两脚+球），未重复添加。
+12. 素材：天空 HDR 换为同一 Poly Haven CC0 资产的 2K 版（+3.8MB），详见 ART_LICENSES.txt 第7条；太阳峰值采样步长随宽度放大，启动采样量不变。
+   草皮/混凝土保持原创纹理与 ambientCG Concrete034，未替换。
+13. 第一人称腿脚：本轮未改代码（需要真实画面调校）。Mixamo 建议见下。
+14. 帧率：看台座椅/观众已是 MultiMesh（73个批次）并有座椅/球网 LOD 距离；远处球员姿态已有 distant_pose_queue 限频。
+   tactical_director.tick 内部状态在一次调用中多处互相依赖（持球/接球/攻防计划/防守任务），没有安全的跨帧切分点，本轮不拆。
+   无窗口退出无 ObjectDB 泄漏；R003 记录的泄漏发生在窗口版纹理释放，需要真机日志定位。物理 120Hz 仅限球/脚的拆分风险高，未做。
+
+Mixamo（需用户自己登录 Adobe 账号下载）
+- 角色：在 Mixamo 上传 art/assets/footballer.glb 先导出为 FBX（或用 Mixamo 自带 Y Bot 仅取动作），不要用其人物网格替换原模型。
+- 建议动作（Format FBX Binary，Skin: Without Skin，30 fps，Keyframe Reduction: none；跑步类勾选 In Place）：
+  Soccer Idle、Jog Forward、Running（Fast Run）、Sprint、Strafe Left/Right、Running Turn 180、Soccer Pass、Soccer Penalty Kick（射门）、Chip（挑球）、Soccer Trap（停球）、Soccer Tackle、Goalkeeper Idle / Diving Save、Header。
+- 导入：放到 art/mixamo/，Godot 导入面板 Animation→Import 勾选，使用 Retarget→Bone Map 选 SkeletonProfileHumanoid，映射到项目32骨骼（rig_manifest.json 骨骼名），Loop 勾选跑步类；保存为 .res 动画库后在 football_motion_avatar 的 AnimationPlayer 里替换/新增。
+- 许可：Mixamo 动作可用于商业项目但不可单独再分发原始动作文件；在 ART_LICENSES.txt 记录下载日期与动作名。
+测试：render_r004.gd 在 xvfb+lavapipe(Vulkan Forward+) 与 Mesa GL(Compatibility 回退) 下均可启动并编译着色器；不代表 RTX 5060 帧率。
+无窗口 CPU 基准（1200 tick）：战术 P99 7.1ms、>8ms 7 次（第一批后为 7.7ms/11 次）；本批未改 CPU 路径，差异属正常波动。
