@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/version="integration-r004-first-touch"
+config/version="integration-r006-render-review"
 
-config/name="Football Integration R004"
+config/name="Football Integration R006"
 run/main_scene="res://scenes/match.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
