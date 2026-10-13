@@ -776,7 +776,7 @@ func _try_contact(delta: float) -> void:
 					var lead_scale:=1.0
 					if actor.is_human and actor.get("first_touch_timing")!=null:
 						# R004: graded by how early the direction was committed.
-						var ft:Dictionary=actor.first_touch_timing.grade(Time.get_ticks_msec()/1000.0 if actor.first_touch_clock_override<0 else actor.first_touch_clock_override)
+						var ft:Dictionary=actor.first_touch_timing.grade(actor.first_touch_clock if actor.first_touch_clock_override<0 else actor.first_touch_clock_override)
 						lead_scale=float(ft.lead_scale)
 						var lateral:float=(ball.position-actor.position).dot(actor.facing.cross(Vector3.UP))
 						receive_direction=FirstTouchTiming.apply_aim_error(receive_direction.normalized(),float(ft.aim_error_deg),lateral)

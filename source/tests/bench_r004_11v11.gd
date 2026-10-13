@@ -5,17 +5,20 @@ extends SceneTree
 const SpikeWatch:=preload("res://scripts/frame_spike_watch.gd")
 var game:Node
 var n_ticks:=2400
+var pipeline_off:=false
 var output:=""
 var tick_us:Array[int]=[]
 var tactics_us:Array[int]=[]
 var pose_us:Array[int]=[]
 func _initialize()->void:
 	for a in OS.get_cmdline_user_args():
+		if a=="--pipeline-off":pipeline_off=true
 		if a.begins_with("--ticks="):n_ticks=int(a.trim_prefix("--ticks="))
 		if a.begins_with("--output="):output=a.trim_prefix("--output=")
 	seed(4004);call_deferred("run")
 func run()->void:
 	game=load("res://scenes/match.tscn").instantiate();game.test_mode=true;root.add_child(game);current_scene=game
+	game.tactics_bridge.pipeline_enabled=not pipeline_off
 	for i in 8:await process_frame
 	game.hud.menu.get_node("StartMatch").pressed.emit()
 	for i in 8:await physics_frame
@@ -25,6 +28,7 @@ func run()->void:
 	SpikeWatch.enabled=true
 	SpikeWatch.seg_snapshot_us=0;SpikeWatch.seg_director_us=0
 	for i in 60:await physics_frame
+	SpikeWatch.seg_snapshot_us=0;SpikeWatch.seg_director_us=0
 	var last:=Time.get_ticks_usec()
 	for i in n_ticks:
 		await physics_frame
@@ -35,7 +39,7 @@ func run()->void:
 			tactics_us.append(SpikeWatch.tactics_us);pose_us.append(SpikeWatch.pose_us)
 		SpikeWatch.tactics_us=0;SpikeWatch.pose_us=0
 	var seg:={"snapshot_ms_total":SpikeWatch.seg_snapshot_us/1000.0,"director_ms_total":SpikeWatch.seg_director_us/1000.0}
-	var r:={"segments":seg,"ticks":n_ticks,"frame":_stats(tick_us),"tactics":_stats(tactics_us),"pose":_stats(pose_us),"refreshes":game.tactics_bridge.refresh_count,"players":game.players.size()}
+	var r:={"pipeline_enabled":not pipeline_off,"scope":"Headless artificial LIVE fixture; interval includes engine and scheduling, no GPU or actual FPS conclusion", "segments":seg,"ticks":n_ticks,"frame":_stats(tick_us),"tactics":_stats(tactics_us),"pose":_stats(pose_us),"refreshes":game.tactics_bridge.refresh_count,"players":game.players.size()}
 	print("BENCH ",JSON.stringify(r))
 	if output!="":FileAccess.open(output,FileAccess.WRITE).store_string(JSON.stringify(r,"  "))
 	quit()

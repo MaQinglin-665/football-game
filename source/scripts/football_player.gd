@@ -60,7 +60,8 @@ var _fp_cut_previous:=-1.0
 var _view_head_bone := -1
 var _view_comfort045=ViewEyeComfort045.new()
 var first_touch_timing:=FirstTouchTiming.new() # R004
-var first_touch_clock_override:=-1.0 # tests only; <0 uses wall clock
+var first_touch_clock_override:=-1.0 # tests only; <0 uses active-play clock
+var first_touch_clock:=0.0
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera
 
@@ -128,7 +129,8 @@ func _physics_process(delta: float) -> void:
 	move_requested = intended.length()>.05
 	var backwards := intended.dot(facing)<-.2
 	ball_direction = intended.normalized() if move_requested else facing
-	first_touch_timing.observe(intended if move_requested else Vector3.ZERO,Time.get_ticks_msec()/1000.0 if first_touch_clock_override<0 else first_touch_clock_override)
+	if match_controller.phase==match_controller.Phase.PLAY:first_touch_clock+=delta
+	first_touch_timing.observe(intended if move_requested and input_enabled else Vector3.ZERO,first_touch_clock if first_touch_clock_override<0 else first_touch_clock_override)
 	shielding = input_enabled and owned and semantic_policies.get("shield",false) and stamina>2
 	close_control = input_enabled and semantic_policies.get("close_control",false)
 	stop_requested = maxf(0,stop_requested-delta)

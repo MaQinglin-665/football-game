@@ -1,0 +1,108 @@
+{
+  "base_main": "2d3b287010ca41a60beb606e9fa4efc2b0ace21e",
+  "patch_archive": "D:/足球改动/r004-patches.tar.gz",
+  "archive_sha256": "878105776bfccd57c3e072a83d2a594c3c9633fa973d31cc9159806b5c759b81",
+  "imported_commits": [
+    "e4d8727dfbe10c343495c9d6670b8188892677fb",
+    "c11e3cfc0589bfa0cc9955e00b43aa07a62d985f",
+    "790e6c9e7ca8e2fe7358e6396e906366a36685c2"
+  ],
+  "checks": {
+    "final_contact_flow_check.log": 26,
+    "final_defensive_shape_checks.log": 17,
+    "final_first_touch_r004.log": 17,
+    "final_r004_invalidation_checks.log": 7,
+    "final_tactical_flow_checks.log": 19
+  },
+  "real_receive_contact_grades": [
+    "ON_TIME",
+    "EARLY",
+    "LATE"
+  ],
+  "natural_11v11": {
+    "seconds": 20,
+    "live_seconds": 15.9999999999997,
+    "actions": {
+      "PASS": 5,
+      "RECEIVE": 22,
+      "TACKLE": 5,
+      "CLOSE": 6,
+      "SETTLE": 1,
+      "TURN": 1,
+      "SHIELD": 1
+    }
+  },
+  "cpu_ab": {
+    "off": {
+      "frame": {
+        "max_ms": 25.744,
+        "mean_ms": 7.7807,
+        "over_8ms": 439,
+        "p50_ms": 7.352,
+        "p99_ms": 17.084
+      },
+      "pipeline_enabled": false,
+      "players": 22,
+      "pose": {
+        "max_ms": 3.949,
+        "mean_ms": 1.24760216847373,
+        "over_8ms": 0,
+        "p50_ms": 1.16,
+        "p99_ms": 2.866
+      },
+      "refreshes": 56,
+      "scope": "Headless artificial LIVE fixture; interval includes engine and scheduling, no GPU or actual FPS conclusion",
+      "segments": {
+        "director_ms_total": 237.526,
+        "snapshot_ms_total": 97.571
+      },
+      "tactics": {
+        "max_ms": 15.501,
+        "mean_ms": 0.304535446205171,
+        "over_8ms": 14,
+        "p50_ms": 0.0,
+        "p99_ms": 8.337
+      },
+      "ticks": 1200
+    },
+    "on": {
+      "frame": {
+        "max_ms": 19.456,
+        "mean_ms": 7.20927083333333,
+        "over_8ms": 354,
+        "p50_ms": 6.84,
+        "p99_ms": 13.931
+      },
+      "pipeline_enabled": true,
+      "players": 22,
+      "pose": {
+        "max_ms": 3.79,
+        "mean_ms": 1.1957789824854,
+        "over_8ms": 0,
+        "p50_ms": 1.057,
+        "p99_ms": 3.049
+      },
+      "refreshes": 42,
+      "scope": "Headless artificial LIVE fixture; interval includes engine and scheduling, no GPU or actual FPS conclusion",
+      "segments": {
+        "director_ms_total": 150.119,
+        "snapshot_ms_total": 78.702
+      },
+      "tactics": {
+        "max_ms": 10.271,
+        "mean_ms": 0.2099341117598,
+        "over_8ms": 2,
+        "p50_ms": 0.0,
+        "p99_ms": 5.167
+      },
+      "ticks": 1200
+    }
+  },
+  "limits": [
+    "Only necessary subset of existing tests rerun; no claim all existing failures equal main.",
+    "CPU A/B is same R004 build with pipeline toggled, not old main vs new; different trajectories and refresh counts.",
+    "94 materials collected/submitted in dummy renderer; actual GPU compilation and shader variants unverified.",
+    "No graphical/whole-match verification; prior leaks and 70ms spike remain unresolved.",
+    "6v6/9v9 entries provided but no natural-match retest."
+  ]
+}

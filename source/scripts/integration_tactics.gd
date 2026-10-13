@@ -111,13 +111,16 @@ func _warm_delivery_tables()->void:
 
 func _physics_process(delta: float) -> void:
 	if game.phase==game.Phase.PAUSED:
+		_staged_snapshot.clear()
 		local_standing_tackle.clear()
 		return
 	if game.phase in [game.Phase.MENU,game.Phase.FINISHED] or not game.ai_enabled:
+		_staged_snapshot.clear()
 		local_standing_tackle.clear()
 		game.tactical_director.cancel_tactical_tasks("inactive")
 		return
 	if game.services.rules.state!=game.Rules.State.LIVE:
+		_staged_snapshot.clear()
 		local_standing_tackle.clear()
 		_dead_ball(delta)
 		return
@@ -135,12 +138,12 @@ func _physics_process(delta: float) -> void:
 		refresh_now(step)
 	elif not _staged_snapshot.is_empty():
 		# R004 stage 2: director + intent apply one tick after the snapshot build.
-		refresh_now(float(_staged_snapshot.step))
+		refresh_now(float(_staged_snapshot.step),true)
 	elif clock<=0:
 		clock = REFRESH_INTERVAL_S
 		var step := decision_elapsed
 		decision_elapsed = 0
-		if PIPELINE_ENABLED and game.phase==game.Phase.PLAY and game.ai_enabled:
+		if pipeline_enabled and game.phase==game.Phase.PLAY and game.ai_enabled:
 			# R004 stage 1: snapshot only; spreads one ~8 ms refresh over two ticks.
 			var began:int=Time.get_ticks_usec()
 			_staged_snapshot=_build_snapshot()
@@ -156,31 +159,44 @@ func canonical(v: Vector3) -> Vector3:
 	return Vector3(-v.x,v.y,-v.z) if game.attack_direction(0)>0 else v
 
 const SpikeWatch:=preload("res://scripts/frame_spike_watch.gd")
-func refresh_now(delta := .20) -> void:
+func refresh_now(delta := .20, use_staged:bool=false) -> void:
 	var frame:int=Engine.get_physics_frames()
 	if frame==last_refresh_frame:
+		_staged_snapshot.clear()
 		contact_refresh_requested=true
 		coalesced_refreshes+=1
 		return
 	last_refresh_frame=frame
 	refresh_count+=1
 	var began:int=Time.get_ticks_usec()
-	_refresh_now_impl(delta)
+	_refresh_now_impl(delta,use_staged)
 	SpikeWatch.tactics_us+=Time.get_ticks_usec()-began
 ## R004 scheduling (tunable). 0.20 s = original 5 Hz; 0.10 s = 10 Hz.
 const REFRESH_INTERVAL_S := 0.20
 const PIPELINE_ENABLED := true
+var pipeline_enabled := PIPELINE_ENABLED # Headless A/B only; normal entry retains default.
 var _staged_snapshot: Dictionary = {}
 
-func _refresh_now_impl(delta:float) -> void:
+func _refresh_now_impl(delta:float,use_staged:bool=false) -> void:
 	if game.phase!=game.Phase.PLAY or not game.ai_enabled:
 		_staged_snapshot.clear()
 		return
-	var staged:Dictionary=_staged_snapshot if not _staged_snapshot.is_empty() else _build_snapshot()
+	var staged:Dictionary=_staged_snapshot if use_staged and _staged_valid() else _build_snapshot()
 	_staged_snapshot={}
 	var actors: Array[Dictionary] = staged.actors
 	var snapshot: Dictionary = staged.snapshot
 	_run_director(actors,snapshot,delta)
+
+func _staged_valid()->bool:
+	if _staged_snapshot.is_empty() or contact_refresh_requested:return false
+	if int(_staged_snapshot.get("generation",-1))!=game.match_generation:return false
+	if Engine.get_physics_frames()-int(_staged_snapshot.get("frame",-10))>2:return false
+	if _staged_snapshot.get("attack",0)!=game.attack_direction(0):return false
+	var old:Dictionary=_staged_snapshot.snapshot
+	var owner:int=game.players.find(game.ball.carrier) if is_instance_valid(game.ball.carrier) else -1
+	if int(old.carrier_id)!=owner:return false
+	var dt:float=float(Engine.get_physics_frames()-int(_staged_snapshot.frame))/Engine.physics_ticks_per_second
+	return canonical(game.ball.position).distance_to(old.ball_position+old.ball_velocity*dt)<.35 and canonical(game.ball.velocity).distance_to(old.ball_velocity)<.75
 
 func _build_snapshot() -> Dictionary:
 	var _t0:int=Time.get_ticks_usec()
@@ -223,7 +239,7 @@ func _build_snapshot() -> Dictionary:
 	snapshot.small_sided = game.training_configuration!=null
 	snapshot.tactical_scale = clampf(game.field_half_length/52.5,.40,1.0)
 	SpikeWatch.seg_snapshot_us+=Time.get_ticks_usec()-_t0
-	return {"actors":actors,"snapshot":snapshot}
+	return {"actors":actors,"snapshot":snapshot,"generation":game.match_generation,"frame":Engine.get_physics_frames(),"attack":game.attack_direction(0)}
 
 func _run_director(actors:Array[Dictionary],snapshot:Dictionary,delta:float) -> void:
 	var _t1:int=Time.get_ticks_usec()
@@ -580,6 +596,7 @@ func apply_receive_handover(actor:Node3D,event:Dictionary)->void:
 			# Save the prospective pass alignment, but follow the real first touch
 			# until the planner actually commits that pass. Do not move away from it.
 	clock=0.0
+	_staged_snapshot.clear()
 	contact_refresh_requested=true
 	actor.tactical_intent.erase("receive_plan")
 	actor.tactical_intent.receive=false

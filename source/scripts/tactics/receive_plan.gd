@@ -127,7 +127,7 @@ func tick(snapshot: Dictionary, now: float, _delta: float) -> Dictionary:
 	active.live_ball_position = ball
 	active.live_ball_velocity = velocity
 	if LOCK_ENABLED:
-		prediction = _apply_lock(prediction)
+		prediction = _apply_lock(prediction,receiver,snapshot)
 	active.receive_point = prediction.ball_point
 	active.approach_point = prediction.body_point
 	active.arrival_time = now+float(prediction.horizon)
@@ -145,13 +145,13 @@ func tick(snapshot: Dictionary, now: float, _delta: float) -> Dictionary:
 	active.opponent_margin = opponent_eta-float(prediction.receiver_eta) if is_finite(opponent_eta) else null
 	return active.duplicate(true)
 
-func _apply_lock(prediction: Dictionary) -> Dictionary:
+func _apply_lock(prediction: Dictionary, receiver:Dictionary={}, snapshot:Dictionary={}) -> Dictionary:
 	var locked: bool = active.get("intercept_locked",false)
 	var point: Vector3 = prediction.ball_point
 	if locked:
 		var held: Vector3 = active.locked_ball_point
-		var drift := Vector2(point.x-held.x,point.z-held.z).length()
-		if not prediction.reachable or drift>LOCK_TOLERANCE_M:
+		var drift := point.distance_to(held)
+		if not prediction.reachable or drift>LOCK_TOLERANCE_M or prediction.get("await_settle",false) or float(prediction.horizon)>LOCK_HORIZON_S or clock>float(active.get("lock_deadline",clock)) or absf(point.y-held.y)>.20:
 			active.intercept_locked=false
 			active.lock_releases=int(active.get("lock_releases",0))+1
 			return prediction
@@ -159,9 +159,24 @@ func _apply_lock(prediction: Dictionary) -> Dictionary:
 		kept.ball_point = held
 		kept.body_point = active.locked_body_point
 		kept.face_direction = active.locked_face
+		if not receiver.is_empty():
+			var eta:Dictionary=_eta(receiver,kept.body_point,kept.face_direction,snapshot)
+			var late:float=float(eta.ready_time)-float(kept.horizon)
+			if snapshot.has("motor_profile"):
+				var motion:Dictionary=Motion.predict(receiver,kept.body_point,kept.face_direction,kept.horizon,snapshot)
+				late=(float(motion.gap)-.46)/maxf(1.,float(snapshot.get("capabilities",{}).get("receive_speed",5.6)))
+			if late>0:
+				active.intercept_locked=false
+				active.lock_releases=int(active.get("lock_releases",0))+1
+				return prediction
+			kept.receiver_eta=float(kept.horizon)+late
+			kept.late_by=late
+			kept.turn_time=eta.turn_time
+			kept.pace=Motion.pace(receiver.position,kept.body_point,receiver.get("velocity",Vector3.ZERO),snapshot.get("capabilities",{}))
 		return kept
 	if prediction.reachable and float(prediction.horizon)<=LOCK_HORIZON_S and not prediction.get("await_settle",false):
 		active.intercept_locked=true
+		active.lock_deadline=clock+float(prediction.horizon)+.15
 		active.locked_ball_point=point
 		active.locked_body_point=prediction.body_point
 		active.locked_face=prediction.face_direction

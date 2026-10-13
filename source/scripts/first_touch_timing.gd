@@ -14,6 +14,7 @@ const LEAD_SCALE := {"LATE": 1.35, "ON_TIME": 0.80, "EARLY": 1.15, "NONE": 1.0}
 const AIM_ERROR_DEG := {"LATE": 10.0, "ON_TIME": 0.0, "EARLY": 0.0, "NONE": 0.0}
 
 var direction := Vector3.ZERO
+var committed_direction := Vector3.ZERO
 var onset_time := -1.0
 var last_grade := {}
 
@@ -24,8 +25,9 @@ func observe(input_direction: Vector3, now: float) -> void:
 		onset_time = -1.0
 		return
 	d = d.normalized()
-	if direction == Vector3.ZERO or rad_to_deg(direction.angle_to(d)) > DIRECTION_CHANGE_DEG:
+	if direction == Vector3.ZERO or rad_to_deg(committed_direction.angle_to(d)) > DIRECTION_CHANGE_DEG:
 		onset_time = now
+		committed_direction = d
 	direction = d
 
 static func grade_for_age(age: float) -> String:
