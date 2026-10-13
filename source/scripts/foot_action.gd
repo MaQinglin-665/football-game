@@ -516,7 +516,7 @@ func request_semantic_kick(intent: Dictionary, _speed := 0.0, _lift := 0.0, targ
 		return true
 	var action := "PASS" if String(intent.action).begins_with("pass_") else "SHOT"
 	if not legal_ball:return false
-	if actor.is_human and passing and is_instance_valid(target) and not intent.has("space_target"):
+	if actor.is_human and match_controller.assist and passing and is_instance_valid(target) and not intent.has("space_target"):
 		intent=intent.duplicate();intent.direction=KickErrorModel.assist(intent.direction,actor.position,target.position) # R004 assist cone
 	var selected:Dictionary=PassChoice.choose(actor,match_controller.ball,intent) if passing else {}
 	if passing and selected.is_empty():return false
@@ -557,6 +557,13 @@ func _assign_human_kick_error(action:String)->void:
 	var sigma:float=KickErrorModel.error_deg("pass" if action=="PASS" else "shot",Vector2(actor.velocity.x,actor.velocity.z).length(),body_angle,nearest,float(kick_intent.get("overcharge_s",0.0)),side!=0 and side!=dominant)
 	kick_intent["human_error_sigma_deg"]=sigma
 	kick_intent["human_error_deg"]=KickErrorModel.sample(sigma,kick_rng)
+
+func contact_kick_intent()->Dictionary:
+	# Retry against the same nominal aim; never compound the sampled error.
+	var result:=kick_intent.duplicate(true)
+	if result.has("human_error_deg") and kind in ["PASS","SHOT"] and not restarting:
+		result.direction=(result.direction as Vector3).rotated(Vector3.UP,deg_to_rad(float(result.human_error_deg)))
+	return result
 
 func _configure_pass(selected:Dictionary)->void:
 	pass_choice=selected.duplicate(true)
@@ -773,14 +780,13 @@ func _try_contact(delta: float) -> void:
 		if kind=="PASS" and not kick_intent.has("space_target") and not restarting and String(kick_intent.get("action",""))=="pass_ground" and is_instance_valid(receiver) and (not actor.is_human or match_controller.assist) and match_controller.physics_profile.ground_pass_distance_mapping_enabled:
 			var solution := preload("res://addons/football_ground_pass/ground_pass_solution.gd")
 			kick_intent = solution.solve(ball.position,receiver.position,receiver.velocity,kick_intent,kick_intent.get("ground_pass_reference",receiver.position),match_controller.physics_profile)
+		var contact_intent:=contact_kick_intent()
 		if kind=="PASS" and surface=="HEEL":
-			var final_aim:Vector3=kick_intent.direction
+			var final_aim:Vector3=contact_intent.direction
 			if final_aim.dot(direction)<.85:
 				contact_failure="heel_outlet_changed";return
-			kick_intent.power=minf(float(kick_intent.power),.16);kick_intent.elevation_deg=0.0
-		if kick_intent.has("human_error_deg") and kind in ["PASS","SHOT"] and not restarting:
-			kick_intent.direction=(kick_intent.direction as Vector3).rotated(Vector3.UP,deg_to_rad(float(kick_intent.human_error_deg)))
-		success = match_controller.on_kick_contact(actor,kind,kick_intent,receiver,restarting,toe_world,sequence)
+			contact_intent.power=minf(float(contact_intent.power),.16);contact_intent.elevation_deg=0.0
+		success = match_controller.on_kick_contact(actor,kind,contact_intent,receiver,restarting,toe_world,sequence)
 	elif kind in ["RECEIVE","STOP","SETTLE","PULL"] or continuous_control():
 		var target_velocity := Vector3.ZERO if kind in ["STOP","SETTLE"] else Vector3(actor.velocity.x,0,actor.velocity.z)*.82
 		var receive_outlet:=Vector3.ZERO

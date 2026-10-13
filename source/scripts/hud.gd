@@ -195,7 +195,8 @@ func _update_markers(on_field: bool) -> void:
 		_update_ball_arrow(false,camera,m.ball.position,false)
 		return
 	var screen := camera.unproject_position(m.ball.position)
-	if camera.is_position_behind(m.ball.position) or screen.x<80 or screen.x>1200 or screen.y>665 or screen.y<100:
+	var view_size:=get_viewport().get_visible_rect().size
+	if camera.is_position_behind(m.ball.position) or screen.x<80 or screen.x>view_size.x-80 or screen.y>view_size.y-55 or screen.y<100:
 		var relative: Vector3 = m.player.global_basis.inverse()*(m.ball.position-m.player.position)
 		ball_indicator.text = "%s  足球 %.1f m" % ["←" if relative.x<-.3 else "→" if relative.x>.3 else "↓" if relative.z>0 else "↑",m.flat_distance(m.player.position,m.ball.position)]
 	_update_ball_arrow(on_field,camera,m.ball.position,ball_indicator.text!="")

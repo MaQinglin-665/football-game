@@ -24,6 +24,15 @@ var burst_left := 0.0
 var peak_speed := 0.0
 var since_drop := 99.0
 var events: Array[String] = []
+var below_drop:=false
+
+func reset()->void:
+	plant_left=0.0;burst_left=0.0;peak_speed=0.0;since_drop=99.0;below_drop=false
+	events.clear()
+
+func record_event(event:String)->void:
+	events.append(event)
+	if events.size()>64:events.pop_front()
 
 func turn_rate_rad(speed: float) -> float:
 	return deg_to_rad(lerpf(TURN_RATE_LOW_DEG, TURN_RATE_SPRINT_DEG, smoothstep(TURN_LOW_SPEED, TURN_SPRINT_SPEED, speed)))
@@ -32,7 +41,9 @@ func turn_rate_rad(speed: float) -> float:
 func step(flat: Vector3, desired: Vector3, sprint: float, dt: float) -> Vector3:
 	var speed := flat.length()
 	peak_speed = maxf(speed, peak_speed - peak_speed * dt / PEAK_DECAY_S)
-	since_drop = 0.0 if peak_speed > 1.0 and speed < peak_speed * FEINT_DROP_RATIO else since_drop + dt
+	var dropped:=peak_speed > 1.0 and speed < peak_speed * FEINT_DROP_RATIO
+	since_drop = 0.0 if dropped and not below_drop else since_drop + dt
+	below_drop=dropped
 	plant_left = maxf(0.0, plant_left - dt)
 	burst_left = maxf(0.0, burst_left - dt)
 	var want := desired.length()
@@ -40,12 +51,12 @@ func step(flat: Vector3, desired: Vector3, sprint: float, dt: float) -> Vector3:
 	var hard_stop := want < .2 * speed
 	if plant_left <= 0.0 and speed >= PLANT_SPEED and sprint > .5 and (cut or hard_stop):
 		plant_left = lerpf(PLANT_MIN_S, PLANT_MAX_S, smoothstep(PLANT_SPEED, 9.5, speed))
-		events.append("plant")
+		record_event("plant")
 	elif cut and since_drop <= FEINT_LOOKBACK_S and speed < PLANT_SPEED and burst_left <= 0.0:
 		burst_left = FEINT_BURST_S
 		since_drop = 99.0 # one burst per slow-down
 		peak_speed = speed
-		events.append("feint_burst")
+		record_event("feint_burst")
 	if burst_left > 0.0:
 		desired *= FEINT_BURST_GAIN
 		want = desired.length()

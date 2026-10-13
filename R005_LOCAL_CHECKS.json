@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-13",
+  "source_base_main": "c0b531312fb6f34fada9597de1848153f9a03ef5",
+  "source_archive": "D:/足球改动/vmdkShellExt.dll",
+  "archive_sha256": "16cc0a4f953d21fed2d3586895e153f7879251a2efa60870f7469339822aad41",
+  "patches_imported": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "graphical_test_performed": false,
+  "tests": [
+    {
+      "log": "verification\\r005-final-controls_r004.log",
+      "passed": 26,
+      "failed": 0,
+      "errors": [],
+      "warnings": [
+        "WARNING: ObjectDB instances leaked at exit (run with --verbose for details)."
+      ]
+    },
+    {
+      "log": "verification\\r005-final-pass_contact_checks.log",
+      "passed": 24,
+      "failed": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r005-final-r004_invalidation_checks.log",
+      "passed": 7,
+      "failed": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r005-final-r005_merge_checks.log",
+      "passed": 6,
+      "failed": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r005-final-tactical_flow_checks.log",
+      "passed": 19,
+      "failed": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r005-final-contact_flow_check.log",
+      "passed": 26,
+      "failed": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r005-r004_actual_touch.log",
+      "passed": 3,
+      "failed": 0,
+      "errors": [],
+      "warnings": [
+        "WARNING: ObjectDB instances leaked at exit (run with --verbose for details)."
+      ]
+    }
+  ],
+  "shift_transition": {
+    "single_on": {
+      "max_horizontal_gap_m": 0.684,
+      "unowned_samples": 0
+    },
+    "single_off": {
+      "max_horizontal_gap_m": 0.695,
+      "unowned_samples": 0
+    },
+    "rapid_pair": {
+      "max_horizontal_gap_m": 1.039,
+      "unowned_samples": 34
+    },
+    "scope": "Isolated actual input/motor/ball short test, not natural-match or graphical acceptance"
+  },
+  "startup": {
+    "training_3v3": "30 headless frames, exit 0, no script/resource errors",
+    "match_11v11": "30 headless frames, exit 0, no script/resource errors"
+  }
+}

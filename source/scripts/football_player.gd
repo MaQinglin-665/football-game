@@ -326,6 +326,8 @@ func turn_view(yaw: float) -> void:
 	head.rot.y = yaw
 
 func reset_view(yaw: float) -> void:
+	human_motion.reset()
+	_bob_baseline=-1.0;_down_bias=0.0
 	_eye_tick=-1
 	hip_yaw=yaw
 	call_age=2.0;call_weight=0.0
