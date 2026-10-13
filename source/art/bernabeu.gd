@@ -12,6 +12,9 @@ func node_mesh(label:String,b,mat:Material,layer:int=4)->MeshInstance3D:
  var n=MeshInstance3D.new();n.name=label;n.mesh=b.mesh(mat);n.layers=layer;n.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(n);return n
 func outline(rx:float,rz:float,a:float,y:float)->Vector3:
  return Vector3(rx*signf(cos(a))*sqrt(absf(cos(a))),y,rz*signf(sin(a))*sqrt(absf(sin(a))))
+## Half-width of the exponent-4 superellipse used by outline() at depth zz.
+static func ring_half_width(x:float,z:float,zz:float)->float:
+ return x*pow(maxf(0.0,1.0-pow(absf(zz)/z,4.0)),.25)
 func build(stadium:Node3D)->void:
  name="BernabeuArchitecturalStudy"
  var d=stadium.dimensions
@@ -25,7 +28,11 @@ func build(stadium:Node3D)->void:
  # Closed retractable panels, a central seam and triangulated transverse trusses.
  for row in 22:
   var za:float=-z+row*(2*z/22.);var zb:float=za+2*z/22.
-  panels.top_rect(-x+.15,x-.15,za+.06,zb-.06,h+4.5)
+  # R006: clip each closed panel row to the superellipse ring opening. Full-width
+  # rectangles overlapped the sloped glass ring at the four corners (double alpha ->
+  # light/dark triangular patches seen from the pitch).
+  var ea:float=ring_half_width(x,z,za+.06)-.15;var eb:float=ring_half_width(x,z,zb-.06)-.15
+  panels.quad(Vector3(-ea,h+4.5,za+.06),Vector3(-eb,h+4.5,zb-.06),Vector3(eb,h+4.5,zb-.06),Vector3(ea,h+4.5,za+.06),Vector2(2*x,zb-za))
   steel.rod(Vector3(-x,h+4.25,za),Vector3(x,h+4.25,za),.11,6)
   steel.rod(Vector3(-x,h+2.6,za),Vector3(x,h+2.6,za),.13,6)
   for k in 20:
