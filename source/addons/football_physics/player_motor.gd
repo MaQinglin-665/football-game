@@ -80,7 +80,12 @@ func advance_motor(dt: float) -> void:
 	if foot_action!=null and foot_action.kind=="TACKLE" and not foot_action.idle() and foot_action.phase!=foot_action.Phase.RECOVER and not bool(foot_action.touch_plan.get("automatic",false)):
 		var axis:Vector3=foot_action.direction
 		desired=axis*maxf(0,desired.dot(axis))
-	var after:Vector3=preload("res://scripts/movement_inertia.gd").step(flat,desired,profile,sprint_intent,dt,guard)
+	var after:Vector3
+	var hm=get("human_motion")
+	if hm!=null and bool(get("is_human")) and bool(get("human_motion_enabled")) and not guard:
+		after=hm.step(flat,desired,sprint_intent,dt) # R004 human-only curve
+	else:
+		after=preload("res://scripts/movement_inertia.gd").step(flat,desired,profile,sprint_intent,dt,guard)
 	velocity.x = after.x
 	velocity.z = after.z
 	velocity.y -= profile.gravity_mps2 * dt
