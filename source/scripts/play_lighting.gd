@@ -66,6 +66,8 @@ func apply(profile:int,night:bool,shadow_enabled:bool,quality:int=1,shadow_level
 	sky.set_shader_parameter("sun_color",sun.light_color)
 	environment.reflected_light_source=Environment.REFLECTION_SOURCE_SKY
 	game.get_node("MatchEnvironment").set_meta("stadium_lighting_mode","night" if night else "daylight")
+	# R004: Forward+ post stack (no-op on the Compatibility fallback).
+	game.get_node("MatchEnvironment").set_meta("forward_plus_fx",ForwardPlusFx.apply(environment,game.get_viewport(),["low","balanced","high"][clampi(quality,0,2)],level>0))
 func _process(_delta:float)->void:
 	if level==0 or not shadows or not is_instance_valid(game.player):return
 	var used:=0

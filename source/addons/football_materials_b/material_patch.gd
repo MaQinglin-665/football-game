@@ -2,6 +2,7 @@ class_name FootballMaterialsBPatch
 extends RefCounted
 
 const TurfMaterial = preload("materials/turf_filtered.tres")
+const MOWING_BANDS := 20 # R004: ~5.25 m stripes on 105 m (was 14 = 7.5 m)
 const LeatherShader = preload("res://scripts/ball_leather.gdshader")
 
 static func install(stadium: Node3D, library: RefCounted, ball_visual: MeshInstance3D = null,
@@ -18,7 +19,7 @@ static func install(stadium: Node3D, library: RefCounted, ball_visual: MeshInsta
 	set_turf_quality(turf, material_quality)
 	if stadium.has_method("get_layout"):
 		var layout: Dictionary = stadium.call("get_layout")
-		turf.set_shader_parameter("mowing_band_m", float(layout.get("field_half_length", 52.5)) * 2.0 / 14.0)
+		turf.set_shader_parameter("mowing_band_m", float(layout.get("field_half_length", 52.5)) * 2.0 / float(MOWING_BANDS))
 	slots["pitch_grass"] = turf
 	changed["Turf"] = stadium.call("replace_material", "Turf", turf)
 	if correct_stand_palette:

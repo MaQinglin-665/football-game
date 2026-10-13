@@ -14,7 +14,7 @@ config/version="integration-r004-first-touch"
 
 config/name="Football Integration R004"
 run/main_scene="res://scenes/match.tscn"
-config/features=PackedStringArray("4.6", "GL Compatibility")
+config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [input]
@@ -92,7 +92,9 @@ look_right={
 
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="gl_compatibility"
+rendering_device/fallback_to_opengl3=true
 anti_aliasing/quality/msaa_3d=1
 
 [display]

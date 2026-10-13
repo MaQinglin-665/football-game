@@ -31,6 +31,7 @@ var skip_frames=0
 var photo_index=0
 var photo_camera:Camera3D
 
+const FULL_STRIPE_M:=5.25
 func _ready()->void:call_deferred("install")
 func install()->void:
  if DisplayServer.get_name()=="headless":return # Rendering is verified in the separate native run.
@@ -59,8 +60,9 @@ func install()->void:
     turf.set_shader_parameter(pair[0],ImageTexture.create_from_image(texture_image))
   sky=ShaderMaterial.new();sky.shader=load("res://art/scripts/sky.gdshader");sky.set_shader_parameter("panorama",load("res://art/assets/sky.hdr"))
   var im:Image=load("res://art/assets/sky.hdr").get_image();var peak=0.;var pixel=Vector2i.ZERO
-  for y in range(0,im.get_height()/2,2):
-   for x in range(0,im.get_width(),2):
+  var step:int=maxi(2,im.get_width()/512) # R004: same sample count for the 2K sky
+  for y in range(0,im.get_height()/2,step):
+   for x in range(0,im.get_width(),step):
     var c=im.get_pixel(x,y);var energy=c.r+c.g+c.b
     if energy>peak:peak=energy;pixel=Vector2i(x,y)
   var theta=PI*(pixel.y+.5)/im.get_height();var phi=TAU*((pixel.x+.5)/im.get_width()-.5)
@@ -135,7 +137,7 @@ func finish()->void:
  environment.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR if night else Environment.AMBIENT_SOURCE_SKY
  environment.ambient_light_color=Color("a4b1c0") if night else Color("dce7ed")
  environment.ambient_light_sky_contribution=.25 if night else .8
- environment.tonemap_mode=Environment.TONE_MAPPER_ACES if forward else Environment.TONE_MAPPER_FILMIC
+ environment.tonemap_mode=Environment.TONE_MAPPER_AGX if forward else Environment.TONE_MAPPER_FILMIC # R004 AgX
  environment.tonemap_exposure=1.0
  environment.glow_enabled=forward;environment.glow_intensity=.45;environment.glow_strength=.65;environment.glow_bloom=.025;environment.glow_hdr_threshold=1.3
  environment.ssao_enabled=true;environment.ssao_radius=.45;environment.ssao_intensity=1.35
@@ -155,6 +157,8 @@ func finish()->void:
   environment.ambient_light_energy=.35 if night else .48
   return
  preload("res://art/performance_profile.gd").apply_stadium(environment,get_viewport(),game.settings_menu.values,forward)
+ turf.set_shader_parameter("stripe_width",FULL_STRIPE_M) # R004 ~5 m mowing bands
+ ForwardPlusFx.reapply(environment) # R004 tier (AgX/SSAO/glow/TAA) is final
  if stand_rig==null:
   stand_rig=preload("res://art/stand_lighting.gd").new();add_child(stand_rig);stand_rig.build(game.stadium)
  stand_rig.set_night(night)

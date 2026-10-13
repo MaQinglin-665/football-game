@@ -75,4 +75,5 @@ static func apply(stadium: Node3D, world: WorldEnvironment, sun: DirectionalLigh
 		"ssao": false, "glow": false, "pcss": false, "grass_detail_changed": grass_detail_changed,
 		"native_visual_and_frame_time_verified": false}, true)
 	world.set_meta("daylight_profile", selected)
+	ForwardPlusFx.reapply(environment) # R004: keep the Forward+ tier across day/night switches
 	return report

@@ -7,6 +7,6 @@
 resource_name = "FilteredTurfMeters"
 shader = ExtResource("1")
 shader_parameter/detail_texture = ExtResource("2")
-shader_parameter/mowing_band_m = 7.5
+shader_parameter/mowing_band_m = 5.25
 shader_parameter/detail_tile_m = 1.6
 shader_parameter/detail_strength = 0.30
