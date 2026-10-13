@@ -1,0 +1,63 @@
+{
+  "checked_at": "2026-10-13T17:09:21.675903+08:00",
+  "graphical_test_performed": false,
+  "user_approved": false,
+  "shift": {
+    "single_on": {
+      "max_gap_m": 0.6876272334389129,
+      "lost_frames": 0,
+      "heavy_contacts": 0
+    },
+    "single_off": {
+      "max_gap_m": 0.6624809668165635,
+      "lost_frames": 0,
+      "heavy_contacts": 0
+    },
+    "rapid_pair": {
+      "max_gap_m": 1.4731732702673608,
+      "lost_frames": 152,
+      "heavy_contacts": 1
+    }
+  },
+  "combo": [
+    {
+      "check": "actual left and right steps produce opposite visible weight transfer",
+      "passed": true
+    },
+    {
+      "check": "visible shoulder cue stays bounded",
+      "passed": true
+    },
+    {
+      "check": "Q after probing resolves one real directional cut",
+      "passed": true
+    },
+    {
+      "check": "no duplicate ordinary contact after combination",
+      "passed": true
+    },
+    {
+      "check": "probe combination has no height explosion",
+      "passed": true
+    },
+    {
+      "check": "release assistance does not keep forward intent on reverse",
+      "passed": true
+    },
+    {
+      "check": "no input still stops the actor",
+      "passed": true
+    },
+    {
+      "check": "balance settles without perpetual fake motion",
+      "passed": true
+    }
+  ],
+  "interception_passed": true,
+  "11v11_start": {
+    "actors": 22,
+    "all_ai": true,
+    "sim_seconds": 8.00000000000019,
+    "live_seconds": 3.99166666666666
+  }
+}
