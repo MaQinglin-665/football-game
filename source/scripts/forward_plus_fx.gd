@@ -10,7 +10,7 @@ const GLOW_BLOOM := 0.02
 const GLOW_HDR_THRESHOLD := 1.2  # only bright highlights (floodlights, sun specular)
 const SSAO_INTENSITY := 1.2
 const SSAO_POWER := 1.5
-const SSAO_DETAIL := 0.4
+const SSAO_DETAIL := 0.0  # R006: fine-detail AO turned dense seat rows into grain (was 0.4)
 const SHADOW_FILTER := {"low": RenderingServer.SHADOW_QUALITY_SOFT_LOW, "balanced": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM, "high": RenderingServer.SHADOW_QUALITY_SOFT_HIGH}
 
 static var last_tier := ""
