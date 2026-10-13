@@ -151,13 +151,13 @@ func _physics_process(delta: float) -> void:
 	running_to_target=travel_allowed and travel_need
 	var defensive_job:String=String(tactical_intent.get("defensive_task",{}).get("task",""))
 	var guard_range:float=3.6 if guarding_lane else 2.8
-	guarding_lane=not owned and not is_goalkeeper and pending_kick.is_empty() and defensive_job in ["PRESS","COVER","MARK","SCREEN","HOLD"] and toward.length()<guard_range and ball_gap<maxf(7.0,match_controller.field_half_length*.32) and not tactical_intent.get("receive",false)
+	guarding_lane=bool(tactical_intent.get("defensive_stance",true)) and not owned and not is_goalkeeper and pending_kick.is_empty() and defensive_job in ["PRESS","COVER","MARK","SCREEN","HOLD"] and toward.length()<guard_range and ball_gap<maxf(7.0,match_controller.field_half_length*.32) and not tactical_intent.get("receive",false)
 	if guarding_lane and ball_gap>2.0 and toward.length()>1.2 and match_controller.ball.velocity.length()>3.4:
 		guarding_lane=false;running_to_target=travel_allowed
 	if guarding_lane:
 		running_to_target=false
 		var watch:Vector3=Vector3(match_controller.ball.position.x-position.x,0,match_controller.ball.position.z-position.z).normalized()
-		if ball_gap>.40:desired_facing=watch.rotated(Vector3.UP,.22*(-1.0 if jersey%2 else 1.0))
+		if ball_gap>.40:desired_facing=preload("res://scripts/body_pressure.gd").facing(watch,match_controller.ball.position,-match_controller.services.rules.attack_direction(team))
 		else:desired_facing=facing
 	elif running_to_target:desired_facing=toward.normalized()
 	if owned and not (foot.kind in ["PASS","SHOT"] and not foot.idle()):
@@ -257,6 +257,7 @@ func _physics_process(delta: float) -> void:
 		if holding_position:move_requested=false
 		pace=minf(pace,sqrt(2.0*profile.brake_deceleration_mps2*maxf(0,distance-.10)))
 	else:holding_position=false
+	if guarding_lane:pace=minf(pace,3.4) # Side-on control gives way to recovery running at range.
 	pace = minf(pace,foot.movement_cap())
 	if not preparing_kick and not owned and toward.length()<.8 and not tactical_intent.has("receive_plan"): pace *= clampf(toward.length()/.8,0,1)
 	sprinting = run_carry or pace>profile.jog_speed_mps

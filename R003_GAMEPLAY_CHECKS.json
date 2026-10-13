@@ -1,0 +1,71 @@
+{
+  "defense_before_11": {
+    "seed": 391013,
+    "simulation_seconds": 35,
+    "live_seconds": 28.8083333333323,
+    "contacts": {
+      "PASS": 7,
+      "RECEIVE": 20,
+      "CLOSE": 14
+    },
+    "non_kickoff_restarts": [
+      [
+        2,
+        "throw_in"
+      ]
+    ],
+    "held_ball_samples": 37,
+    "max_defenders_within_2m": 1
+  },
+  "defense_after_11": {
+    "seed": 391013,
+    "simulation_seconds": 35,
+    "live_seconds": 30.9999999999989,
+    "contacts": {
+      "PASS": 7,
+      "RECEIVE": 23,
+      "CLOSE": 26,
+      "SHIELD": 1,
+      "TACKLE": 1
+    },
+    "non_kickoff_restarts": [],
+    "held_ball_samples": 56,
+    "max_defenders_within_2m": 2
+  },
+  "defense_after_3": {
+    "seed": 391016,
+    "simulation_seconds": 20,
+    "live_seconds": 19.1083333333329,
+    "contacts": {
+      "CLOSE": 24,
+      "PASS": 6,
+      "RECEIVE": 15,
+      "PULL": 2,
+      "TURN": 2,
+      "TACKLE": 2,
+      "SHIELD": 2
+    },
+    "non_kickoff_restarts": [
+      [
+        2,
+        "corner"
+      ]
+    ],
+    "held_ball_samples": 58,
+    "max_defenders_within_2m": 2
+  },
+  "checks": {
+    "defensive_geometry": 17,
+    "actual_body": 6,
+    "actual_foot_contact": 26,
+    "tactical_regression": 19
+  },
+  "limits": [
+    "Headless only; no rendered posture or frame-time evidence.",
+    "11v11 at 17.53s: actual tackle by roster16, possession detached; attacker8 recovered at17.74s. Not a proven possession win.",
+    "Some pressers still behind the ball carrier; zone handoff needs human playtest.",
+    "3v3 corner/out observed; exit ObjectDB leak remains.",
+    "6v6/9v9 natural matches not retested.",
+    "70ms spikes, repeated reception and high-ball loss unresolved."
+  ]
+}

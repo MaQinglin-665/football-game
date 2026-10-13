@@ -867,7 +867,7 @@ func resolve_tackle_contact(actor: Node3D, _aim: Vector3, point: Vector3) -> boo
 			var response:Dictionary=FootballContactMath.sphere_response(incoming,ball.spin_rads,running*.3,normal,actor.physics_mass_kg(),.20,.35,ball.profile,true)
 			desired=response.velocity
 			budget=(desired-incoming).length()
-	else:desired=(normal*tuning.tackle_poke+running*.30+incoming*.12).limit_length(3.2)
+	else:desired=DefenseContact.poke_velocity(incoming,running,normal,tuning.tackle_poke)
 	var change:Vector3=(desired-incoming).limit_length(budget)
 	var impulse_ns: Vector3 = change*ball.mass_kg
 	if not impulse_ns.is_finite() or impulse_ns.length_squared()<.000001: return false

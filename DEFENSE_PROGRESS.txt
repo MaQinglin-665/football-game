@@ -1,0 +1,18 @@
+R003 防守候选开发记录 2026-10-13
+基线：dev/gameplay 1ab8cf36584b45ef77a2879363038ea75a8eb242；整合基线R002 5bfeff1292212f3f84ec0f2afe90cc3295de5c8a。
+修改：复用DefensiveTasks，按移动阵型锚点约束盯防/压迫职责区域，中卫半径较窄；危险中央禁区允许紧急补防。
+防守第一人从内线侧靠近，第二人留内侧保护；被过时绕肩回球门侧，不能穿过持球人。实际跑位仍受电机、碰撞、体力影响。
+清除近身追肩侧提前返回与远近多套目标覆盖；HOLD不再被进攻接应绕路逻辑改写。原来按号码奇偶侧身改为按球所在边路决定。
+临近目标降低速度、侧身小步防守；快速追防允许恢复奔跑。原AI上身层加强屈膝重心和张臂，抑制侧移时跑步摆臂。
+原按住拦截/压迫辅助复用同一接近几何与到点制动；没有新增按键。真人原有自由方向输入和自动拦截范围不变。
+伸脚破坏继续由实际鞋面接触单次冲量结算，调整低速拨离距离及横向速度保留。身体卡位通过既有实际双人碰撞阻挡，绝不按距离直接转移球权。
+未扩大碰撞体/脚触及范围、未改变球的自由运动或真人盘带核心。
+检查：17项规划/几何、6项实际肩部碰撞、26项实际脚接触、19项战术回归通过。自然无窗口11v11同种子35秒对照，3v3 20秒。详见R003_GAMEPLAY_CHECKS.json与verification/defense*。
+自然证据：11v11第17.53秒出现协防伸脚破坏；第17.74秒原进攻者接回，不宣称夺回成功。仍有防守者回到球门侧太迟。3v3有一次出界，退出ObjectDB泄漏警告。
+未验证：图形动作、主观手感、完整比赛、6/9自然比赛、70ms帧尖峰、退出纹理释放。高球失控/反复接球调整继续未解决。
+调研来源（只借鉴原则，不是复制算法或声称复刻职业比赛）：
+FIFA Training Centre, Developing defensive coordination in small groups, 2026-09-29：第一人压迫并引向外线，第二人在身后内侧保护，弱侧保持平衡。
+https://www.fifatrainingcentre.com/en/practice/talent-coach-programme/zonal-defending/developing-defensive-coordination-in-small-groups.php
+FIFA Training Centre, Team organisation out of possession：压缩中路、防线随球调整；站位是动态结构，不是钉死坐标。
+https://www.fifatrainingcentre.com/en/game/game-analysis/out-of-possession/team-organisation--out-of-possession-.php
+仅允许无窗口检查的AGENTS约束仍有效。待用户试玩，不合入main。
