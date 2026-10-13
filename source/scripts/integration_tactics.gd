@@ -156,6 +156,17 @@ func _refresh_now_impl(delta:float) -> void:
 	for i in range(game.players.size()):
 		var actor: Node3D = game.players[i]
 		actors.append({"id":i,"team":actor.team,"position":canonical(actor.position),"velocity":canonical(actor.velocity),"facing":canonical(actor.facing),"shielding":actor.shielding,"human":actor.is_human,"goalkeeper":actor.is_goalkeeper,"active":actor.visible,"can_kick":game.ball.can_kick(actor),"kick_setup_blocked":not actor.is_human and actor.kick_retry_at>game.tactical_director.clock if actor is FootballAgent else false,"kick_ready":actor.action_cooldown<=0,"tackle_ready":actor.tackle_cooldown<=0,"foot_idle":actor.foot.idle(),"foot_action":actor.foot.kind,"foot_hit":actor.foot.hit,"stamina":actor.get("stamina") if actor.get("stamina")!=null else 100.0,"sprint_locked":actor.get("sprint_locked")==true,"foot_cap":actor.foot.movement_cap(),"can_reach":actor.position.distance_squared_to(game.ball.position)<9.0 and game.can_reach_ball(actor)})
+	for i in range(actors.size()):
+		var actor=game.players[i]
+		actors[i].merge(preload("res://scripts/player_abilities.gd").observation(actor))
+		actors[i].can_pass=game.ball.can_pass(actor)
+		actors[i].ball_offset=canonical(game.ball.position-actor.position)
+		actors[i].ball_relative_speed=(game.ball.velocity-actor.velocity).length()
+		actors[i].ball_velocity=canonical(game.ball.velocity)
+		actors[i].brake_deceleration=preload("res://scripts/movement_inertia.gd").braking_rate(actor.profile)
+		actors[i].motor_profile=actor.profile
+		actors[i].carry_heading=canonical(actor.ai_carry_aim) if actor is FootballAgent and actor.ai_carry_aim.length_squared()>.1 else actors[i].facing
+		actors[i].cut_ready=actor is FootballAgent and actor.ai_cut_cooldown<=0 and actor.pending_kick.is_empty() and actor.foot.can_schedule_kick() and not actor.foot.has_buffer() and (actor.foot.idle() or actor.foot.continuous_control() or actor.foot.phase==actor.foot.Phase.RECOVER)
 	var snapshot := {"players":actors,"field_half_width":game.field_half_width,"field_half_length":game.field_half_length,"goal_half_width":game.goal_width*.5,"ball_position":canonical(game.ball.position),"ball_velocity":canonical(game.ball.velocity),"carrier_id":game.players.find(game.ball.carrier) if is_instance_valid(game.ball.carrier) else -1,"receiver_id":game.players.find(game.pass_receiver) if is_instance_valid(game.pass_receiver) else -1,"receiver_time":game.pass_receiver_timer,"possession_age":game.ball.possession_age,"last_touch_team":game.ball.last_touch_team,"call_id":0 if game.call_timer>0 else -1,"capabilities":{"reaction_delay":.16,"standoff":1.4,"exposed_gap":.90,"tackle_reach":game.tuning.tackle_reach,"receive_reach":.90,"ground_receive_height":.42,"safe_receive_speed":14,"receive_speed":game.tuning.running_move_speed,"run_acceleration":game.physics_profile.start_acceleration_mps2,"brake_deceleration":game.physics_profile.brake_deceleration_mps2,"turn_speed":5.8,"roll_deceleration":game.physics_profile.roll_deceleration_mps2,"gravity":game.physics_profile.gravity_mps2}}
 	_build_delivery_table()
 	snapshot.ground_delivery=ground_delivery
@@ -174,7 +185,7 @@ func _refresh_now_impl(delta:float) -> void:
 	# A recent dribbler may finish one free-roll touch; this is only a team-role hint.
 	# Actual carrier/contact permissions are never invented or retained here.
 	var previous:Node3D=game.ball.previous_carrier
-	if not is_instance_valid(game.ball.carrier) and not game.ball.held and is_instance_valid(previous) and game.ball.last_contact_actor==previous and game.ball.touch_age<.28 and previous.position.distance_squared_to(game.ball.position)<2.56 and game.ball.control_mode in ["LOOSE","PUSH"] and previous.foot.kind not in ["PASS","SHOT"]:
+	if not is_instance_valid(game.ball.carrier) and not game.ball.held and is_instance_valid(previous) and game.ball.last_contact_actor==previous and game.ball.touch_age<.55 and previous.position.distance_squared_to(game.ball.position)<4.0 and game.ball.position.y<.50 and game.ball.control_mode in ["LOOSE","PUSH"] and previous.foot.kind not in ["PASS","SHOT"]:
 		snapshot.control_hint_id=game.players.find(previous)
 	snapshot.small_sided = game.training_configuration!=null
 	snapshot.tactical_scale = clampf(game.field_half_length/52.5,.40,1.0)
@@ -219,6 +230,18 @@ func _refresh_now_impl(delta:float) -> void:
 			intent.erase("receive_plan")
 			intent.face_direction=actor.foot.direction
 			intent.move_target=game.ball.position-actor.foot.direction*.44
+		var buffered_cut:bool=actor.foot.buffer.get("kind","")=="CUT"
+		var preparing_cut:bool=actor.foot.touch_plan.has("cut_style") and actor.foot.phase==actor.foot.Phase.PREPARE and not actor.foot.hit
+		if (buffered_cut or preparing_cut) and game.ball.carrier==actor:
+			var opposition:Array[Dictionary]=[]
+			for row in actors:
+				if row.team!=actor.team:opposition.append(row)
+			var cut_direction:Vector3=actor.foot.buffer.direction if buffered_cut else actor.foot.direction
+			var cut_route:Dictionary=preload("res://scripts/tactics/pressure_route.gd").inspect(actors[id],actors[id].position+canonical(cut_direction)*4.0,opposition,5.0,true)
+			if float(cut_route.immediate)<.80 or intent.action in ["PASS","SHOT","CROSS","CUTBACK"]:
+				if buffered_cut:actor.foot.clear_buffer("ai_cut_exit_closed")
+				elif preparing_cut:actor.foot.cancel("ai_cut_exit_closed")
+				actor.ai_cut_cooldown=maxf(actor.ai_cut_cooldown,.25)
 		if actor.foot.touch_plan.has("cut_style") and actor.foot.phase in [actor.foot.Phase.PREPARE,actor.foot.Phase.CONTACT] and game.ball.carrier==actor:
 			intent.action="NONE";intent.move_target=actor.target;intent.face_direction=actor.face_target
 			intent.pace=minf(float(intent.pace),2.8);intent.receive=false;intent.press=false
@@ -232,13 +255,14 @@ func _refresh_now_impl(delta:float) -> void:
 		actor.close_control = bool(intent.get("close_control",false))
 		if intent.get("carry_cut",false) and intent.action=="NONE" and game.ball.carrier==actor and actor.pending_kick.is_empty() and actor.ai_cut_cooldown<=0 and (actor.foot.idle() or actor.foot.continuous_control() or actor.foot.phase==actor.foot.Phase.RECOVER):
 			var cut_axis:Vector3=intent.move_target-actor.position;cut_axis.y=0
-			# A cut crosses the travelling lane first; it is not another forward knock.
-			var body_forward:Vector3=actor.body_facing.normalized()
-			var body_right:=Vector3(-body_forward.z,0,body_forward.x)
-			cut_axis=body_right*signf(cut_axis.dot(body_right))+body_forward*.08
+			# The same selected exit drives the shoe and subsequent body travel.
 			if cut_axis.length_squared()>.04 and actor.foot.request_cut(cut_axis.normalized()):
 				actor.ai_cut_cooldown=.90
-				if game.tactical_director.carry_routes.has(int(id)):game.tactical_director.carry_routes[int(id)]["cut_attempted"]=true
+				intent.pace=minf(float(intent.pace),2.8)
+				intent.close_control=false;intent.shield=false
+				actor.tactical_pace=intent.pace;actor.close_control=false;actor.shielding=false
+				intent.reason="cut_committed_to_exit"
+				if game.tactical_director.carry_routes.has(int(id)):game.tactical_director.carry_routes[int(id)]["cut_requested_at"]=game.tactical_director.clock
 		if _dispatch_receive_continuation(actor,intent): continue
 		var action := String(intent.action)
 		if action=="NONE" and actor.pending_age>.35 and actor.foot.kind not in ["PASS","SHOT"] and intent.get("reason","") not in ["confirm_control_then_turn","receive_follow_through"]:actor.pending_kick.clear()
@@ -580,6 +604,7 @@ func _receive_snapshot()->Dictionary:
 	for i in game.players.size():
 		var actor:Node3D=game.players[i]
 		rows.append({"id":i,"team":actor.team,"position":canonical(actor.position),"velocity":canonical(actor.velocity),"facing":canonical(actor.facing),"active":actor.visible,"stamina":actor.get("stamina") if actor.get("stamina")!=null else 100.0,"sprint_locked":actor.get("sprint_locked")==true,"foot_cap":actor.foot.movement_cap()})
+	for i in range(rows.size()):rows[i].merge(preload("res://scripts/player_abilities.gd").observation(game.players[i]))
 	var p=game.physics_profile
 	return {"players":rows,"ball_position":canonical(game.ball.position),"ball_velocity":canonical(game.ball.velocity),"carrier_id":game.players.find(game.ball.carrier),"field_half_width":game.field_half_width,"field_half_length":game.field_half_length,"physics_frame":Engine.get_physics_frames(),"motor_profile":p,"movement_cfg":game.tuning,"roll_samples":ReceiveMotion.ball_samples(canonical(game.ball.position),canonical(game.ball.velocity),canonical(game.ball.spin_rads),p),"capabilities":{"receive_speed":game.tuning.running_move_speed,"brake_deceleration":p.brake_deceleration_mps2,"run_acceleration":p.start_acceleration_mps2,"turn_speed":5.8,"ground_receive_height":.42,"reaction_delay":.16}}
 

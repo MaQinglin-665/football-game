@@ -124,3 +124,23 @@ static func predict_motor(initial:Vector3,desired:Vector3,profile:Variant,sprint
 		velocity=preload("res://scripts/movement_inertia.gd").step(velocity,desired,profile,sprint,dt)
 		displacement+=velocity*dt
 	return {"velocity":velocity,"displacement":displacement}
+
+# Only used by the AI's committed inside/outside cut, at the real shoe contact.
+# The player is changing weight at <=3.2m/s here; adding 2.4m/s to its old
+# forward velocity releases a ball the same motor cannot reach after turning.
+static func ai_cut_result(actor:Node3D,ball:Node3D,aim:Vector3)->Vector3:
+	var run:=Vector3(actor.velocity.x,0,actor.velocity.z)
+	var offset:Vector3=ball.position-actor.position;offset.y=0
+	return ai_cut_velocity(run,offset,actor.profile,actor.sprint_intent,aim,ball.profile)
+
+static func ai_cut_velocity(run:Vector3,offset:Vector3,profile:Resource,sprint:float,aim:Vector3,ball_profile:Resource)->Vector3:
+	aim=Vector3(aim.x,0,aim.z).normalized()
+	var horizon:float=.32
+	var forecast:Dictionary=predict_motor(run,aim*3.2,profile,sprint,horizon)
+	var travel:Vector3=forecast.velocity
+	var lead_axis:Vector3=travel.normalized().rotated(Vector3.UP,travel.normalized().signed_angle_to(aim,Vector3.UP)*.45) if travel.length()>.2 else aim
+	var desired:Vector3=(forecast.displacement+lead_axis*.40-offset)/horizon
+	# Leave the ball free to roll; the existing finite impulse/reach checks apply.
+	var loss:float=FootballBallForces.rolling_deceleration_mps2(desired.length(),ball_profile)
+	if desired.length()>.01:desired+=desired.normalized()*.5*loss*horizon
+	return desired.limit_length(4.2)

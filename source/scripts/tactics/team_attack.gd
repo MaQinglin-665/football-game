@@ -1,16 +1,23 @@
 extends RefCounted
 # Team-level reservations at the existing tactical cadence. No actors or physics writes.
+const LearnedPolicy=preload("res://scripts/tactics/learned_team_policy.gd")
 var plans:Dictionary={}
 var forward_runs:Dictionary={}
 var recent_passes:Dictionary={}
 var events:Array[Dictionary]=[]
 var serial:int=0
+var box_reservations:Dictionary={}
 func reset()->void:
-	plans.clear();recent_passes.clear();forward_runs.clear()
+	plans.clear();recent_passes.clear();forward_runs.clear();box_reservations.clear()
 func confirm_pass(team:int,actor:int,receiver:int,now:float)->void:
 	recent_passes[actor]={"team":team,"until":now+2.2}
 	var plan:Dictionary=plans.get(team,{})
 	if plan.is_empty():return
+	# An actual first-time wall return has no intermediate ownership/control
+	# event. Recognize that same plan's second real kick, without inventing one.
+	if plan.get("mode","")=="ONE_TWO" and plan.get("stage","")=="FLIGHT" and actor==int(plan.delivery.receiver) and receiver==int(plan.runner):
+		plan.owner=actor;plan.delivery=plan.delivery.duplicate();plan.delivery.receiver=receiver
+		plan.stage="RETURN";log_event(plan,"WALL_REDIRECT",now)
 	if actor!=int(plan.owner) or receiver!=int(plan.get("delivery",{}).get("receiver",-1)):
 		finish(team,"different_actual_pass",now);return
 	plan.stage="RETURN_FLIGHT" if plan.stage in ["RETURN","RELAY"] else "FLIGHT"
@@ -37,6 +44,7 @@ func control_contact(event:Dictionary,roster:Dictionary,now:float)->void:
 		if int(roster[id].team)!=int(team):finish(team,"opponent_control",now);continue
 		if plan.stage not in ["FLIGHT","RETURN_FLIGHT"]:continue
 		if id!=int(plan.delivery.receiver):finish(team,"other_receiver",now);continue
+		if not preload("res://scripts/tactics/receive_plan.gd").controlled_result(event):return
 		log_event(plan,"CONTROL",now)
 		if plan.mode in ["ONE_TWO","SWITCH_RELAY"] and plan.stage=="FLIGHT":
 			plan.owner=id;plan.stage="RETURN" if plan.mode=="ONE_TWO" else "RELAY";plan.until=now+1.5;plan.controlled_at=now
@@ -67,15 +75,17 @@ func eta(p:Dictionary,target:Vector3)->float:
 	if p.is_empty():return INF
 	var offset:Vector3=flat(target-p.position)
 	var gap:float=maxf(0,offset.length()-.65)
-	var speed:float=4.0 if p.get("sprint_locked",false) or float(p.get("stamina",100))<25 else 5.6
+	var speed:float=4.0 if p.get("sprint_locked",false) or float(p.get("stamina",100))<25 else float(p.get("ability_speed",5.6))
 	# A transient foot cap is charged as preparation time, not a permanent running limit.
-	var initial:float=clampf(flat(p.get("velocity",Vector3.ZERO)).dot(offset.normalized()),0,speed)
-	var acceleration:float=5.5
+	var along:float=flat(p.get("velocity",Vector3.ZERO)).dot(offset.normalized())
+	var initial:float=clampf(along,0,speed)
+	var acceleration:float=float(p.get("ability_acceleration",5.5))
 	var ramp:float=(speed-initial)/acceleration
 	var ramp_distance:float=(initial+speed)*.5*ramp
 	var travel:float=(sqrt(initial*initial+2*acceleration*gap)-initial)/acceleration if gap<ramp_distance else ramp+(gap-ramp_distance)/speed
 	var turn:float=acos(clampf(flat(p.get("facing",offset)).normalized().dot(offset.normalized()),-1,1))/5.8 if gap>.5 else 0.0
-	return travel+turn*.6+.10+(.12 if float(p.get("foot_cap",100))<3 else 0.0)
+	var braking:float=maxf(0,-along)/maxf(1,float(p.get("brake_deceleration",5.5)))
+	return travel+maxf(turn*.6,braking)+.10+(.12 if float(p.get("foot_cap",100))<3 else 0.0)
 
 # One plan per team, evaluated at the director cadence. Only real contacts advance stages.
 func choose(team:int,owner:Dictionary,members:Array[Dictionary],opponents:Array[Dictionary],snapshot:Dictionary,roster:Dictionary,now:float,phase:String)->Dictionary:
@@ -121,6 +131,7 @@ func choose(team:int,owner:Dictionary,members:Array[Dictionary],opponents:Array[
 	var choices:Array[Dictionary]=_candidates(team,owner,members,opponents,snapshot,roster,assignments,phase)
 	var selected:Dictionary={}
 	for choice in choices:
+		choice.score+=LearnedPolicy.bias(int(snapshot.get("learning_actions",{}).get(team,0)),String(choice.get("mode","")))
 		if selected.is_empty() or float(choice.score)>float(selected.score):selected=choice
 	serial+=1
 	var plan:Dictionary={"id":serial,"team":team,"mode":"SHORT","stage":"PREPARE","owner":int(owner.id),"origin":snapshot.ball_position,"until":now+.75,"started":now,"assignments":assignments,"delivery":{},"score":-100.0,"candidate_count":choices.size()}
@@ -160,7 +171,7 @@ func _return_plan(plan:Dictionary,owner:Dictionary,by_id:Dictionary,opponents:Ar
 	var d:Dictionary=_delivery(snapshot.ball_position,target,snapshot,false)
 	d.receiver=int(runner.id)
 	if not _feasible(owner,runner,d,opponents,snapshot,false):finish(int(plan.team),"return_lane_lost",now);return {}
-	plan.delivery=d;plan.score=6.5
+	plan.delivery=d;plan.score=_value(owner,runner,d,opponents,snapshot)
 	if not runner.get("human",false):plan.assignments[int(runner.id)]={"point":plan.runner_goal,"role":"RETURN_RUN","pace":5.6}
 	return plan
 
@@ -187,8 +198,16 @@ func _onside(receiver:Dictionary,snapshot:Dictionary)->bool:
 
 func _setup(owner:Dictionary,target:Vector3)->float:
 	var aim:Vector3=flat(target-owner.position).normalized()
-	var turn:float=acos(clampf(flat(owner.facing).normalized().dot(aim),-1,1))/5.8
-	return .18+turn+(.16 if not owner.get("foot_idle",true) and not owner.get("foot_hit",false) else 0.0)
+	var facing:Vector3=flat(owner.facing).normalized()
+	var angle:float=acos(clampf(facing.dot(aim),-1,1))
+	var offset:Vector3=owner.get("ball_offset",Vector3(0,10,0))
+	var depth:float=offset.dot(facing)
+	# Mirrors the existing pass-choice envelope, without granting a physical hit.
+	# Side-foot passes need no full-body turn. A heel is only a short, near-body return.
+	var direct:bool=owner.get("can_pass",false) and angle<2.15 and depth>-.25 and offset.length()<1.06
+	var heel:bool=owner.get("can_pass",false) and angle>=2.15 and distance(owner.position,target)<5.0 and depth>=-.42 and depth<=.32 and absf(offset.dot(Vector3(-facing.z,0,facing.x)))<=.48 and offset.length()<=.62 and float(owner.get("ball_relative_speed",99))<5.5
+	var turn:float=0.0 if direct or heel else angle/5.8
+	return .18+turn+(.12 if not owner.get("foot_idle",true) and not owner.get("foot_hit",false) else 0.0)
 
 func _feasible(owner:Dictionary,receiver:Dictionary,d:Dictionary,opponents:Array[Dictionary],snapshot:Dictionary,ready_now:bool)->bool:
 	if receiver.is_empty() or not d.get("valid",true) or not inside(d.point,snapshot) or not _onside(receiver,snapshot):return false
@@ -281,17 +300,21 @@ func _candidates(team:int,owner:Dictionary,members:Array[Dictionary],opponents:A
 			if support and _feasible(owner,receiver,d,opponents,snapshot,false):choices.append({"mode":"LONG","subtype":"CONTEST_WITH_SECOND_BALL","delivery":d,"score":_value(owner,receiver,d,opponents,snapshot)-.7})
 		# A two-touch consequence: a short wall pass opens a return beyond the presser.
 		if gap>=3 and gap<=13 and pressure<5.0 and roster[int(owner.id)].role not in ["goalkeeper","center_back"] and roster[id].role!="center_back":
-			var exit:Vector3=flat(owner.position)+attack*5.0+Vector3(signf(owner.position.x-receiver.position.x)*1.5,0,0)
-			if owner.get("human",false):exit=flat(owner.position)+flat(owner.velocity)*1.0
 			var wall:Dictionary=_delivery(snapshot.ball_position,flat(receiver.position)+flat(receiver.velocity)*.25,snapshot,false);wall.receiver=id
-			var second_time:float=_setup(owner,wall.point)+float(wall.flight)+.2+float(ground(distance(wall.point,exit),snapshot).time)
-			var first_ready:float=_setup(owner,wall.point)+float(wall.flight)
-			second_time=maxf(second_time,eta(owner,exit))
-			var return_race:bool=second_time<first_ready+1.5
-			for defender in opponents:
-				if eta(defender,exit)<second_time-.15:return_race=false;break
-			if return_race and flat(exit-owner.position).dot(attack)>1.0 and inside(exit,snapshot) and lane(owner.position,exit,opponents,.85) and lane(wall.point,exit,opponents,1.0) and openness(exit,opponents)>2 and _feasible(owner,receiver,wall,opponents,snapshot,false):
-				choices.append({"mode":"ONE_TWO","delivery":wall,"runner_goal":exit,"score":_value(owner,receiver,wall,opponents,snapshot)+2.0,"wait":0.0})
+			if _feasible(owner,receiver,wall,opponents,snapshot,false):
+				var side:float=signf(owner.position.x-receiver.position.x)
+				if side==0:side=1.0
+				var exits:Array[Vector3]=[flat(owner.position)+attack*4.0+Vector3(side*3.2,0,0),flat(owner.position)+attack*3.2+Vector3(side*4.8,0,0),flat(owner.position)+attack*4.8-Vector3(side*2.8,0,0)]
+				if owner.get("human",false):exits=[flat(owner.position)+flat(owner.velocity)*1.0]
+				for exit in exits:
+					var prepare:float=_setup(owner,wall.point)
+					var first_ready:float=prepare+float(wall.flight)
+					var second_time:float=maxf(first_ready+.28+float(ground(distance(wall.point,exit),snapshot).time),prepare+eta(owner,exit))
+					var return_race:bool=second_time<first_ready+1.65
+					for defender in opponents:
+						if eta(defender,exit)<second_time-.12:return_race=false;break
+					if return_race and flat(exit-owner.position).dot(attack)>1.0 and inside(exit,snapshot) and lane(owner.position,exit,opponents,.75) and lane(wall.point,exit,opponents,.8) and openness(exit,opponents)>1.6:
+						choices.append({"mode":"ONE_TWO","delivery":wall,"runner_goal":exit,"score":maxf(_value(owner,receiver,wall,opponents,snapshot),possession_value(snapshot.ball_position,exit,team,opponents,snapshot)-second_time*.45)+.8,"wait":0.0})
 		# Relay to a holding player can open the weak side with a second pass.
 		if crowded>=6 and wide and not loft and gap<20 and roster[id].get("slot","") in ["DM","LCB","RCB"] and _feasible(owner,receiver,d,opponents,snapshot,false):
 			for weak in members:
@@ -299,7 +322,7 @@ func _candidates(team:int,owner:Dictionary,members:Array[Dictionary],opponents:A
 				var second:Dictionary=_delivery(d.point,flat(weak.position),snapshot,distance(d.point,weak.position)>24)
 				if second.valid and openness(weak.position,opponents)>4 and lane(d.point,weak.position,opponents,1.1):
 					choices.append({"mode":"SWITCH_RELAY","delivery":d,"weak_receiver":int(weak.id),"score":_value(owner,receiver,d,opponents,snapshot)+1.8});break
-	if wide and depth<24 and not snapshot.get("small_sided",false):
+	if wide and depth<34 and not snapshot.get("small_sided",false):
 		var box:Dictionary=_box_roles(team,owner,members,snapshot,roster)
 		for id in box:
 			var receiver:Dictionary={}
@@ -318,7 +341,10 @@ func _candidates(team:int,owner:Dictionary,members:Array[Dictionary],opponents:A
 	if wide and depth<26 and depth>7 and roster[int(owner.id)].role in ["winger","midfielder","striker"]:
 		var inside_point:Vector3=flat(owner.position)+attack*2.5+Vector3(-signf(owner.position.x)*4,0,0)
 		var goal:Vector3=point(Vector2(0,length),team)
-		var possible:bool=lane(owner.position,inside_point,opponents,1.05) and lane(inside_point,goal,opponents,.75)
+		var aperture:bool=false
+		for x in [-2.4,0.0,2.4]:
+			if lane(inside_point,goal+Vector3(x,0,0),opponents,.60):aperture=true
+		var possible:bool=lane(owner.position,inside_point,opponents,1.05) and aperture
 		for other in opponents:
 			if eta(other,inside_point)<distance(owner.position,inside_point)/4.0+.3:possible=false;break
 		if possible:choices.append({"mode":"CUT_IN","delivery":{},"carry_target":inside_point,"score":5.2})
@@ -329,21 +355,36 @@ func _box_roles(team:int,owner:Dictionary,members:Array[Dictionary],snapshot:Dic
 	var attack:Vector3=point(Vector2(0,1),team)
 	var length:float=float(snapshot.field_half_length)
 	for p in members:
-		if int(p.id)==int(owner.id) or roster[int(p.id)].role not in ["striker","winger","midfielder"] or roster[int(p.id)].get("slot","")=="DM":continue
+		if int(p.id)==int(owner.id) or p.get("human",false) or roster[int(p.id)].role not in ["striker","winger","midfielder"] or roster[int(p.id)].get("slot","")=="DM":continue
 		candidates.append(p)
 	candidates.sort_custom(func(a,b):return distance(a.position,snapshot.ball_position)<distance(b.position,snapshot.ball_position))
 	var result:Dictionary={}
 	var sign_x:float=signf(owner.position.x)
 	var targets:Array[Vector3]=[attack*(length-7)+Vector3(sign_x*3,0,0),attack*(length-10),attack*(length-7)+Vector3(-sign_x*5,0,0),attack*(length-17)+Vector3(sign_x*2,0,0)]
 	var names:Array[String]=["NEAR_POST","CENTRAL","FAR_POST","LATE_EDGE"]
+	var now:float=float(snapshot.get("tactical_clock",0))
+	var saved:Dictionary=box_reservations.get(team,{})
+	var reserved:Array=[]
+	if int(saved.get("owner",-1))==int(owner.id) and now<float(saved.get("until",0)):
+		for id in saved.get("ids",[]):
+			for p in candidates:
+				if int(p.id)==int(id):reserved.append(p);break
+	for p in candidates:
+		if not reserved.any(func(row):return int(row.id)==int(p.id)):reserved.append(p)
+	candidates.assign(reserved)
+	if int(saved.get("owner",-1))!=int(owner.id) or now>=float(saved.get("until",0)):
+		box_reservations[team]={"owner":int(owner.id),"until":now+2.4,"ids":candidates.slice(0,4).map(func(p):return int(p.id))}
 	for i in mini(4,candidates.size()):
 		var p:Dictionary=candidates[i]
 		var target:Vector3=targets[i]
-		if p.get("human",false):continue # Real movement is evaluated by ordinary pass candidates.
+		# Shape the run early, but don't park four players on the six-yard line
+		# while the winger is still thirty metres away from a delivery window.
+		var front:float=flat(owner.position).dot(attack)
+		target-=attack*maxf(0,target.dot(attack)-front-(1.0 if i==3 else 9.0))
 		var limit:float=float(snapshot.get("fixed_offside",{}).get(team,length))
 		target-=attack*maxf(0,target.dot(attack)-limit)
-		var timing:float=eta(owner,owner.position+attack*3)+.7
-		result[int(p.id)]={"point":target,"role":names[i],"pace":clampf(distance(p.position,target)/maxf(.7,timing+(.5 if i==3 else 0)),2.8,5.6)}
+		var timing:float=maxf(.7,(length-front-10.0)/maxf(2.8,flat(owner.velocity).length()))
+		result[int(p.id)]={"point":target,"role":names[i],"pace":clampf(distance(p.position,target)/maxf(.7,timing+(.6 if i==3 else 0)),2.0,5.6)}
 	return result
 
 func _support_assignments(team:int,owner:Dictionary,members:Array[Dictionary],opponents:Array[Dictionary],snapshot:Dictionary,roster:Dictionary,delivery:Dictionary,mode:String)->Dictionary:

@@ -64,7 +64,8 @@ func prepare(avatar,delta:float,state:Dictionary,action:Dictionary)->void:
   run_blend=lerpf(run_blend,smoothstep(1.65,3.7,speed),response)
   guard_blend=lerpf(guard_blend,1.0 if guard else 0.0,response)
   weight=lerpf(weight,1.0,1.0-exp(-12.0*delta))
- if not active:avatar._plants.clear();swings.clear();endpoints.clear()
+ if not active:
+  swings.clear();endpoints=avatar._last_ankles.duplicate(true) # Resume from the completed contact pose.
  active=true
 func cadence()->float:
  if speed<.08:return .85 if turn>.15 else 0.0
@@ -78,7 +79,7 @@ func apply(avatar,forward:Vector3,delta:float)->bool:
  var hip_id:int=avatar.cached_bone_id("hips")
  var hip_position:Vector3=sk.get_bone_pose_position(hip_id)
  var hip_rest:Vector3=sk.get_bone_rest(hip_id).origin
- var upright_run:float=run_blend*(1.0-guard_blend)
+ var upright_run:float=run_blend*(1.0-guard_blend)*weight
  var target_height:float=hip_rest.y-.035-.025*braking-.045*cut_load-.014*cos(TAU*(avatar._phase-.10)*2)
  hip_position.y=lerpf(hip_position.y,target_height,upright_run)
  hip_position.z=lerpf(hip_position.z,hip_rest.z-.04-.025*drive,upright_run)

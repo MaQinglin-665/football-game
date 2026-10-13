@@ -192,6 +192,7 @@ func _ready() -> void:
 		actor.lane = row.lane
 		actor.is_goalkeeper = row.is_goalkeeper
 	Selection.initialize(self)
+	preload("res://scripts/player_abilities.gd").apply_roster(self)
 	ball = KeeperBallScript.new() if training_configuration == null else BallScript.new()
 	ball.receive_ab_legacy = (receive_ab=="A")
 	ball.match_controller = self
@@ -579,10 +580,27 @@ func can_reach_ball(actor: Node3D) -> bool:
 		if nearest.distance_squared_to(center)<radius*radius:return false
 	return true
 
+var intercept_check_remaining:=0.0
+func schedule_interceptions(delta:float)->void:
+	intercept_check_remaining-=delta
+	if intercept_check_remaining>0:return
+	intercept_check_remaining=.025
+	if phase!=Phase.PLAY or ball.held or is_instance_valid(ball.carrier) or ball.position.y>.46 or ball.velocity.length()<.08 or ball.last_touch_team<0:return
+	var known:Dictionary={"position":ball.position,"velocity":ball.velocity,"age_s":0.0,"automatic":true}
+	for actor in players:
+		if not actor.visible or actor.is_goalkeeper or actor.team==ball.last_touch_team or actor.tackle_cooldown>0 or not actor.foot.idle() or actor.foot.has_buffer() or actor.foot.has_receive_pass():continue
+		if actor.is_human:
+			if not actor.input_enabled or not input_bridge.adapter.router.snapshot().charge.is_empty():continue
+		elif not ai_enabled or not actor.active or not actor.pending_kick.is_empty():continue
+		if actor.position.distance_squared_to(ball.position)>9.0:continue
+		attempt_tackle(actor,known)
+
 func schedule_receiving() -> void:
 	if phase!=Phase.PLAY or is_instance_valid(ball.carrier) or ball.pickup_block>0 or ball.position.y>.42: return
 	for actor in players:
 		if not actor.visible or not actor.foot.idle() or actor.foot.has_receive_pass() or not can_touch_ball(actor): continue
+		# Opponent rolls use the shared bounded interception path, not a catch.
+		if ball.last_touch_team>=0 and ball.last_touch_team!=actor.team and ball.velocity.length()>=.35 and not actor.is_goalkeeper:continue
 		if not actor.is_human and actor.tactical_intent.has("ball_job_owner") and int(actor.tactical_intent.ball_job_owner)!=players.find(actor): continue
 		if actor.is_goalkeeper and actor.has_method("keeper_dive_allowed") and actor.keeper_dive_allowed(): continue
 		if actor.is_goalkeeper and is_instance_valid(ball.keeper_host) and ball.keeper_host.reserve_slow_capture(actor): continue
@@ -649,6 +667,8 @@ func request_actor_kick(actor: Node3D, intent: Dictionary, target: Node3D = null
 	return true
 
 func on_kick_contact(actor: Node3D, kind: String, intent: Dictionary, receiver: Node3D, restarting: bool, at: Vector3, action_sequence: int) -> bool:
+	if kind=="PASS" and not restarting:
+		intent=preload("res://scripts/player_abilities.gd").pass_intent(actor,intent,action_sequence,ball.position,players)
 	var mapped: Dictionary = KickMapping.from_input_intent(intent,physics_profile)
 	if not mapped.get("accepted",false): return false
 	if restarting:
@@ -702,7 +722,7 @@ func attempt_tackle(actor: Node3D, tackle_observation: Dictionary = {}) -> bool:
 	if not can_touch_ball(actor) or actor.tackle_cooldown>0 or ball.carrier==actor:return false
 	if is_instance_valid(ball.carrier) and ball.carrier.team==actor.team:return false
 	var known:Dictionary=tackle_observation
-	if actor.is_human:known={"position":ball.position,"velocity":ball.velocity,"age_s":0.0}
+	if actor.is_human:known={"position":ball.position,"velocity":ball.velocity,"age_s":0.0,"automatic":bool(tackle_observation.get("automatic",false))}
 	elif known.is_empty():return false
 	var preparation:Dictionary=standing_tackle_prediction(actor,known)
 	var aim:Vector3=actor.facing

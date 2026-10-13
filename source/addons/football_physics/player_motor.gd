@@ -77,7 +77,7 @@ func advance_motor(dt: float) -> void:
 	var guard:bool=bool(get_meta("motor_guard",false))
 	# Only the planted tackle phase commits direction; braking and recovery remain available.
 	var foot_action=get("foot") if "foot" in self else null
-	if foot_action!=null and foot_action.kind=="TACKLE" and not foot_action.idle() and foot_action.phase!=foot_action.Phase.RECOVER:
+	if foot_action!=null and foot_action.kind=="TACKLE" and not foot_action.idle() and foot_action.phase!=foot_action.Phase.RECOVER and not bool(foot_action.touch_plan.get("automatic",false)):
 		var axis:Vector3=foot_action.direction
 		desired=axis*maxf(0,desired.dot(axis))
 	var after:Vector3=preload("res://scripts/movement_inertia.gd").step(flat,desired,profile,sprint_intent,dt,guard)

@@ -2,6 +2,7 @@ extends RefCounted
 const Curves=preload("res://scripts/motion_curves.gd")
 var bone_ids:Dictionary={}
 func weight(action:Dictionary)->float:
+	if float(action.get("tackle_body_weight",-1))>=0:return float(action.tackle_body_weight)
 	var t:float=float(action.get("normalized_time",0))
 	return smoothstep(0,.40,t)*(1.0-smoothstep(.65,1.0,t))
 func shift(action:Dictionary,state:Dictionary,root:Vector3)->Vector3:
@@ -11,7 +12,7 @@ func shift(action:Dictionary,state:Dictionary,root:Vector3)->Vector3:
 	return (reach.limit_length(.08)-right*float(action.side)*.045+Vector3.DOWN*.04)*weight(action)
 func sample_body(sk:Skeleton3D,action:Dictionary)->void:
 	var t:float=float(action.get("normalized_time",0))
-	var w:float=Curves.envelope(t,.36,.64)
+	var w:float=weight(action)
 	var side:float=float(action.side)
 	rotate(sk,"hips",Vector3(-.025,side*.06,side*.035)*w)
 	rotate(sk,"spine",Vector3(-.065,-side*.045,-side*.03)*w)

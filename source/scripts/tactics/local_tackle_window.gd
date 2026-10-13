@@ -78,7 +78,7 @@ func try_due(game: Node) -> void:
 	if simulation_time<next_check_time: return
 	next_check_time = simulation_time+LOCAL_PERIOD_S # No catch-up burst after a slow frame.
 	if not is_instance_valid(game.ball.carrier):
-		_try_intercept(game)
+		_face_incoming_shot(game) # Ground interceptions have one shared human/AI owner.
 		return
 	if sample.is_empty() or slots.is_empty(): return
 	if game.phase!=game.Phase.PLAY or not game.ai_enabled or game.services.rules.state!=game.Rules.State.LIVE:

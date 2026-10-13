@@ -19,6 +19,12 @@ static func pace(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Vector3:
 	if lateral:correction-=actor.body_facing*.28
 	# Bounded body alignment only; no spring/anchor/force is applied to the ball.
 	var original:Vector3=(aim*speed+correction.limit_length(.18)*2.0).limit_length(maximum)
+	if not actor.is_human:
+		# Follow the real rolling pocket when its lateral gap is growing. The
+		# motor remains the only root mover; a shoe still has to reach the ball.
+		var future:Vector3=offset+(rolling-actor.velocity)*.18
+		if future.slide(aim).length()>.38 or offset.length()>.72:
+			return (rolling+(offset-aim*.38)*4.0).limit_length(maximum)
 	return TurnControl.motion(actor,ball,aim,maximum,original,correction)
 
 static func target_velocity(actor:Node3D,ball:Node3D,aim:Vector3)->Vector3:
@@ -39,6 +45,21 @@ static func target_velocity(actor:Node3D,ball:Node3D,aim:Vector3)->Vector3:
 	var exit_speed:float=clampf((travel+lead-offset.dot(aim))/horizon+.5*coast_loss*horizon,.65,7.1 if actor.sprinting else 3.0 if close else 4.5)
 	var exit:Vector3=aim*exit_speed
 	exit=TurnControl.result(actor,ball,aim,exit,horizon,lead)
+	if not actor.is_human:
+		# AI must budget the next touch against its actual motor, including
+		# inertia during a turn, rather than launching along a requested heading.
+		var maximum:float=lerpf(actor.profile.jog_speed_mps,actor.profile.sprint_speed_mps,actor.sprint_intent)
+		var desired:Vector3=actor.move_intent*maximum;desired.y=0
+		var prediction:Dictionary=TurnControl.predict_motor(run,desired,actor.profile,actor.sprint_intent,horizon)
+		var travel_axis:Vector3=(prediction.velocity as Vector3).normalized() if (prediction.velocity as Vector3).length()>.2 else aim
+		var modest_lead:float=lerpf(.22,.40,clampf(run.length()/5.0,0,1))
+		var pocket:Vector3=actor.position+prediction.displacement+travel_axis*modest_lead
+		# Clip the desired next-contact pocket, never the physical ball position.
+		pocket.x=clampf(pocket.x,-actor.match_controller.field_half_width+.65,actor.match_controller.field_half_width-.65)
+		pocket.z=clampf(pocket.z,-actor.match_controller.field_half_length+.65,actor.match_controller.field_half_length-.65)
+		exit=(pocket-ball.position)/horizon;exit.y=0
+		if exit.length()>.01:exit+=exit.normalized()*.5*FootballBallForces.rolling_deceleration_mps2(exit.length(),ball.profile)*horizon
+		exit=exit.limit_length(6.7 if actor.sprinting else 3.0 if close else 4.5)
 	if actor.foot.touch_plan.get("turn_stage","")=="BRAKE":
 		# One bounded real contact removes roll before either body/ball turns out.
 		var incoming:Vector3=actor.foot.ordinary_scheduler.turn_incoming

@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/version="0.6.39-match-intelligence"
+config/version="0.6.39-contact-flow"
 
 config/name="Latest Gameplay + Art + Motion (Independent)"
 run/main_scene="res://scenes/match.tscn"

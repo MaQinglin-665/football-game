@@ -107,7 +107,7 @@ func apply_before_support(avatar,state:Dictionary,action:Dictionary)->void:
 		_rotate(avatar,"forearm."+suffix,Vector3(.20*run+.10*run*(.5+.5*counter)+.12*carry+.13*close+.16*guard+.08*brace,0,0)*gait)
 	# Resolve shoulder/elbow/wrist as one chain. Replacing only the humerus
 	# while retaining donor forearm rotations produced straight or bent-back arms.
-	if action.is_empty():
+	if action.is_empty() or kind in ["CLOSE","TURN","CARRY","SHIELD","SPRINT"]:
 		var pace:float=smoothstep(.65,3.8,balance.z)
 		var sk:Skeleton3D=avatar.skeleton
 		var chest_basis:Basis=sk.get_bone_global_pose(_id(avatar,"chest")).basis.orthonormalized()

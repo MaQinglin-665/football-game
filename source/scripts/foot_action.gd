@@ -252,7 +252,7 @@ func begin(action: String, aim: Vector3, motion_bias := Vector3.ZERO, force := 3
 		var center: Vector3 = preparation.get("tackle_center",match_controller.ball.position)
 		contact_target = preparation.get("tackle_point",ball_surface(center))
 	if action=="RECEIVE":touch_plan={"receive_reach":float(preparation.get("receive_reach",1.08)),"receive_speed":match_controller.ball.velocity.length()}
-	if action=="TACKLE":touch_plan={"intercept":bool(preparation.get("intercept",false)),"locked_center":preparation.get("tackle_center",match_controller.ball.position)}
+	if action=="TACKLE":touch_plan={"intercept":bool(preparation.get("intercept",false)),"automatic":bool(preparation.get("automatic",false)),"locked_center":preparation.get("tackle_center",match_controller.ball.position)}
 	if action=="TACKLE":
 		touch_plan["support_origin"]=actor.avatar.get_foot_contact(-side,"SOLE").point
 		touch_plan["root_origin"]=actor.position
@@ -420,7 +420,9 @@ func pose_request() -> Dictionary:
 		if kind in ["STOP","SETTLE","PULL"]:target+=Vector3.UP*sin(PI*t)*.045
 		elif touch_plan.has("cut_style"):target-=direction*sin(PI*t)*.065
 	elif phase==Phase.RECOVER: target = target.lerp(actor.position+start_local,smoothstep(0,1,(elapsed-windup-window)/maxf(recovery,.001)))
-	return {"cut_style":touch_plan.get("cut_style",""),"receive_speed":touch_plan.get("receive_speed",0),"kind":kind,"phase":Phase.keys()[phase],"normalized_time":clampf(normalized,0,1),"side":side,"world_target":target,"strike_target":contact_target,"direction":foot_direction,"surface":surface,"power":float(kick_intent.get("power",.9 if kind=="SPRINT" else .3)),"progress":progress,"sequence":sequence,"contact_confirmed":hit,"contact_tick":contact_tick,"shot_style":shot_style,"support_origin":touch_plan.get("support_origin",Vector3.ZERO),"root_origin":touch_plan.get("root_origin",actor.position)}
+	var body_weight:float=float(touch_plan.get("withdraw_body_weight",-1.0))
+	if body_weight>=0:body_weight*=1.0-smoothstep(0,1,clampf((elapsed-float(touch_plan.get("withdraw_elapsed",elapsed)))/maxf(recovery,.001),0,1))
+	return {"tackle_body_weight":body_weight,"cut_style":touch_plan.get("cut_style",""),"receive_speed":touch_plan.get("receive_speed",0),"kind":kind,"phase":Phase.keys()[phase],"normalized_time":clampf(normalized,0,1),"side":side,"world_target":target,"strike_target":contact_target,"direction":foot_direction,"surface":surface,"power":float(kick_intent.get("power",.9 if kind=="SPRINT" else .3)),"progress":progress,"sequence":sequence,"contact_confirmed":hit,"contact_tick":contact_tick,"shot_style":shot_style,"support_origin":touch_plan.get("support_origin",Vector3.ZERO),"root_origin":touch_plan.get("root_origin",actor.position)}
 
 func request_push(aim: Vector3) -> bool:
 	if match_controller.ball.carrier!=actor: return false
@@ -452,7 +454,7 @@ func request_cut(aim:Vector3)->bool:
 	var right:=Vector3(-forward.z,0,forward.x)
 	var lateral:float=(match_controller.ball.position-actor.position).dot(right)
 	var desired:Vector3=Vector3(aim.x,0,aim.z)
-	if desired.length_squared()<.01 or absf(desired.normalized().dot(right))<.25:
+	if desired.length_squared()<.01 or actor.is_human and absf(desired.normalized().dot(right))<.25:
 		desired=-right*(1.0 if lateral>=0 else -1.0)+forward*.12
 	desired=desired.normalized()
 	var foot_side:int=(1 if lateral>0 else -1) if absf(lateral)>.07 else (-1 if desired.dot(right)>0 else 1)
@@ -843,7 +845,8 @@ func _try_contact(delta: float) -> void:
 				if actor.is_human: match_controller.message("脚底停球",.8)
 	else:
 		var desired := Vector3(actor.velocity.x,0,actor.velocity.z)+bias
-		if touch_plan.has("cut_style"):desired=Vector3(actor.velocity.x,0,actor.velocity.z)+direction*2.4
+		if touch_plan.has("cut_style"):
+			desired=Vector3(actor.velocity.x,0,actor.velocity.z)+direction*2.4 if actor.is_human else preload("res://scripts/dribble_turn_control.gd").ai_cut_result(actor,ball,direction)
 		if kind=="SPRINT": desired = direction*clampf(maxf(Vector2(actor.velocity.x,actor.velocity.z).length()+3.0,match_controller.tuning.big_touch_speed),6.0,9.2)
 		success = ball.apply_foot_contact(actor,desired,impulse,interval,kind,toe_world)
 	if not success:
@@ -871,6 +874,7 @@ func _try_contact(delta: float) -> void:
 	if kind=="SPRINT": ball.push_free(actor)
 
 func movement_cap() -> float:
+	if kind=="TACKLE" and bool(touch_plan.get("automatic",false)):return 100.0
 	if touch_plan.has("cut_style") and not idle() and phase!=Phase.RECOVER:return 3.2
 	if kind=="PASS" and hit and phase==Phase.RECOVER: return 100
 	if kind=="PASS" and not idle():return 4.8
@@ -963,6 +967,7 @@ func begin_tackle_withdraw()->void:
 	if kind!="TACKLE" or touch_plan.has("withdraw_point"):return
 	var away:Vector3=toe_world-match_controller.ball.position;away.y=0
 	if away.length_squared()<.001:away=-direction
+	touch_plan["withdraw_body_weight"]=preload("res://scripts/tackle_motion.gd").new().weight(pose_request())
 	touch_plan["withdraw_point"]=toe_world
 	touch_plan["withdraw_away"]=away.normalized()
 	touch_plan["withdraw_elapsed"]=elapsed

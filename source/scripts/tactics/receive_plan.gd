@@ -48,7 +48,11 @@ func consume_contact(event: Dictionary, now: float) -> bool:
 		return true
 	if active.is_empty(): return false
 	var carrier_id: int = int(event.get("carrier_id",-1))
-	if actor_id==int(active.receiver_id) and physical_action in ["RECEIVE","STOP","SETTLE","PULL","CONTROL"] and carrier_id==actor_id:
+	var receive_touch:bool=physical_action in ["RECEIVE","STOP","SETTLE","PULL","CONTROL"] or active.get("unsettled_contact",false) and physical_action in ["CLOSE","TURN","SHIELD","CARRY"]
+	if actor_id==int(active.receiver_id) and receive_touch and carrier_id==actor_id:
+		if not controlled_result(event):
+			active.unsettled_contact=true
+			return true
 		active.state = "COMPLETED"
 		active.completed_at=now
 		active.completion_contact = {"actor_id":actor_id,"action":physical_action,"physics_frame":event.get("physics_frame",-1),"serial":event.get("serial",-1),"event_key":key}
@@ -63,6 +67,13 @@ func consume_contact(event: Dictionary, now: float) -> bool:
 		cancel("other_confirmed_kick",now)
 		return true
 	return false
+
+static func controlled_result(event:Dictionary)->bool:
+	# A shoe collision can claim ownership while the ball is still dropping or
+	# rebounding. Keep reception reserved until a later controllable contact.
+	var position:Vector3=event.get("ball_position",Vector3.ZERO)
+	var velocity:Vector3=event.get("after_velocity",Vector3.ZERO)
+	return position.y<=.45 and absf(velocity.y)<=2.8
 
 func cancel(reason: String, now: float) -> void:
 	clock = now
@@ -87,7 +98,7 @@ func tick(snapshot: Dictionary, now: float, _delta: float) -> Dictionary:
 		cancel("timeout",now)
 		return {}
 	var carrier_id: int = int(snapshot.get("carrier_id",-1))
-	if carrier_id>=0:
+	if carrier_id>=0 and not (carrier_id==int(active.receiver_id) and active.get("unsettled_contact",false)):
 		# Ownership or proximity alone is not a successful reception assertion.
 		cancel("receiver_control_without_completion_contact" if carrier_id==int(active.receiver_id) else "opponent_controls_ball" if int(by_id.get(carrier_id,{}).get("team",-1))!=int(active.team) else "other_teammate_controls_ball",now)
 		return {}
@@ -140,6 +151,7 @@ func _intercept(receiver: Dictionary, snapshot: Dictionary) -> Dictionary:
 	if approach.length()<.1: approach = -axis
 	if approach.length()<.1: approach = receiver.get("facing",Vector3.FORWARD)
 	var best: Dictionary = {}
+	var bounce_meet:Dictionary={}
 	var smallest_lateness := INF
 	var live_samples:Array=snapshot.get("roll_samples",[])
 	for i in range(1,maxi(30,live_samples.size())+1):
@@ -148,11 +160,15 @@ func _intercept(receiver: Dictionary, snapshot: Dictionary) -> Dictionary:
 		var point := ball+axis*maxf(0,speed*moving_time-.5*decel*moving_time*moving_time)
 		point.y = maxf(.11,ball.y+velocity.y*horizon-.5*gravity*horizon*horizon)
 		var predicted_speed:float=maxf(0,speed-decel*moving_time)
+		var unsettled:bool=false
 		var samples:Array=snapshot.get("roll_samples",[])
 		if samples.size()>=i:
 			point=samples[i-1].point
 			horizon=float(samples[i-1].get("time",horizon))
 			predicted_speed=float(samples[i-1].speed)
+			# A fast descending first bounce is a contact opportunity, not yet a
+			# controllable foot reception. Meet its actual reachable continuation.
+			unsettled=absf((samples[i-1].get("velocity",Vector3.ZERO) as Vector3).y)>3.0
 		if point.y>float(cap.get("ground_receive_height",.42)) or predicted_speed>float(cap.get("safe_receive_speed",14)): continue
 		if absf(point.x)>float(snapshot.field_half_width)-.6 or absf(point.z)>float(snapshot.field_half_length)-.6: continue
 
@@ -168,10 +184,18 @@ func _intercept(receiver: Dictionary, snapshot: Dictionary) -> Dictionary:
 			var motion:Dictionary=Motion.predict(receiver,body_point,contact_face,horizon,snapshot)
 			lateness=(float(motion.gap)-.46)/maxf(1.0,float(cap.get("receive_speed",5.6)))
 			eta.ready_time=horizon+lateness
+		if unsettled:
+			if bounce_meet.is_empty() or lateness<float(bounce_meet.late_by):
+				bounce_meet={"ball_point":point,"body_point":body_point,"horizon":horizon,"speed":predicted_speed,"turn_time":eta.turn_time,"receiver_eta":eta.ready_time,"late_by":lateness,"reachable":lateness<=0.0,"face_direction":contact_face,"await_settle":true}
+			continue
 		if lateness<smallest_lateness:
 			smallest_lateness = lateness
 			best = {"ball_point":point,"body_point":body_point,"horizon":horizon,"speed":predicted_speed,"turn_time":eta.turn_time,"receiver_eta":eta.ready_time,"late_by":lateness,"reachable":lateness<=0.0,"face_direction":contact_face}
 		if lateness<=0.0: break
+	# Preserve a reachable bounce destination if no settled sample is visible
+	# yet. Returning the ball's current airborne position sends receivers away
+	# from their landing area and falsely cancels a perfectly viable reception.
+	if not bounce_meet.is_empty() and (best.is_empty() or not best.reachable and bounce_meet.reachable):best=bounce_meet
 	if best.is_empty():
 		var body_point := Vector3(ball.x,0,ball.z)-approach*.38
 		var eta: Dictionary = _eta(receiver,body_point,approach,snapshot)
@@ -189,8 +213,8 @@ func _eta(p: Dictionary, point: Vector3, face: Vector3, snapshot: Dictionary) ->
 	var offset := Vector3(point.x-p.position.x,0,point.z-p.position.z)
 	var distance := maxf(0,offset.length()-.55)
 	var axis := offset.normalized()
-	var speed := maxf(1,float(cap.get("receive_speed",6.2)))
-	var acceleration := maxf(1,float(cap.get("run_acceleration",6.8)))
+	var speed := maxf(1,float(p.get("ability_speed",cap.get("receive_speed",6.2))))
+	var acceleration := maxf(1,float(p.get("ability_acceleration",cap.get("run_acceleration",6.8))))
 	var velocity: Vector3 = p.get("velocity",Vector3.ZERO)
 	var along := velocity.dot(axis)
 	var initial := clampf(along,0,speed)

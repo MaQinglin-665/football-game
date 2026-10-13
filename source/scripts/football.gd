@@ -66,6 +66,7 @@ func _physics_process(delta: float) -> void:
 		possession_age += delta
 		_update_dribble()
 	if not held:
+		match_controller.schedule_interceptions(delta)
 		match_controller.schedule_receiving()
 	for actor in match_controller.players:
 		if actor.visible: actor.foot.advance(delta)

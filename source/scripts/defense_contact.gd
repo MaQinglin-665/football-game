@@ -10,6 +10,9 @@ static func plan(actor:Node3D,ball:Node3D,known:Dictionary)->Dictionary:
 	var current:Vector3=seen+roll*minf(age,.20)
 	var offset:Vector3=current-actor.position;offset.y=0
 	var relative:Vector3=roll-actor.velocity;relative.y=0
+	var automatic:bool=bool(known.get("automatic",false))
+	# A nearby departing pass is not a reason to reach behind or chase it.
+	if automatic and offset.dot(relative)>.02:return {}
 	var eta:float=clampf(-offset.dot(relative)/maxf(relative.length_squared(),.01),.025,.22)
 	var center:Vector3=current+roll*eta
 	var root:Vector3=actor.position+Vector3(actor.velocity.x,0,actor.velocity.z)*eta
@@ -17,7 +20,8 @@ static func plan(actor:Node3D,ball:Node3D,known:Dictionary)->Dictionary:
 	if center.y>.46 or center.y<0:return {}
 	var choice:Dictionary=clear_foot(actor,ball,center)
 	if choice.is_empty():return {}
-	choice.merge({"tackle_center":center,"contact_eta_s":eta,"intercept":not is_instance_valid(ball.carrier),"observation_age_s":age})
+	if automatic and float(choice.tackle_travel_s)>eta+.025:return {}
+	choice.merge({"tackle_center":center,"contact_eta_s":eta,"automatic":automatic,"intercept":not is_instance_valid(ball.carrier) and (automatic or Vector2(roll.x,roll.z).length()>.35),"observation_age_s":age})
 	return choice
 
 static func sample(action:RefCounted,ball:Node3D)->Dictionary:

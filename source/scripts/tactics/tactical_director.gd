@@ -61,6 +61,8 @@ var third_man_last: Dictionary = {}
 var pass_options:Dictionary={}
 const TeamAttack:=preload("res://scripts/tactics/team_attack.gd")
 var team_attack=TeamAttack.new()
+const LearnedPolicy=preload("res://scripts/tactics/learned_team_policy.gd")
+var learned_policy=LearnedPolicy.new()
 var support_detours:Dictionary={}
 
 func configure(config: Array, team_styles: Dictionary = {}) -> void:
@@ -80,6 +82,7 @@ func configure(config: Array, team_styles: Dictionary = {}) -> void:
 	reset()
 
 func reset() -> void:
+	learned_policy.reset()
 	clock = 0.0
 	call_windows.clear()
 	team_attack.reset()
@@ -154,6 +157,7 @@ func consume_contact(event: Dictionary) -> bool:
 	var physical_action := String(event.get("action",""))
 	if int(event.get("carrier_id",-1))==actor_id and physical_action in ["RECEIVE","STOP","SETTLE","PULL","CONTROL","CLOSE","TURN","CARRY","SHIELD"]:
 		controlled_contacts[actor_id] = clock
+	if physical_action=="TURN" and not String(event.get("cut_style","")).is_empty() and carry_routes.has(actor_id):carry_routes[actor_id].cut_attempted=true
 	var handled: bool = receive_plan.consume_contact(event,clock)
 	team_attack.control_contact(event,roster,clock)
 	if event.has("space_target"):
@@ -183,6 +187,7 @@ func record_contact(kind: String, actor_id: int, receiver_id := -1) -> void:
 
 func tick(snapshot: Dictionary, delta: float) -> Dictionary:
 	clock += clampf(delta,0.0,0.5)
+	snapshot.learning_actions=learned_policy.tick(snapshot,delta)
 	pass_options.clear()
 	var active: Array[Dictionary] = []
 	var by_id: Dictionary = {}
@@ -195,16 +200,20 @@ func tick(snapshot: Dictionary, delta: float) -> Dictionary:
 		cancel_tactical_tasks("no_active_players")
 		return {"intents":{},"teams":{},"clock":clock}
 	var owner_id: int = int(snapshot.get("carrier_id",-1))
+	snapshot.tactical_clock=clock
 	var owner: Dictionary = by_id.get(owner_id,{})
 	var owner_team: int = int(owner.get("team",-1))
 	var hand_owner:Dictionary=by_id.get(int(snapshot.get("hand_owner_id",-1)),{})
+	# Short, physically observed free roll preserves only planning memory.
+	# It does not grant ownership, reach or permission to kick.
+	var memory_owner:int=owner_id if owner_id>=0 else int(snapshot.get("control_hint_id",-1))
 	for id in controlled_contacts.keys():
-		if int(id)!=owner_id: controlled_contacts.erase(id)
-	if int(carrier_setup.get("owner_id",-1))!=owner_id: carrier_setup.clear()
+		if int(id)!=memory_owner: controlled_contacts.erase(id)
+	if int(carrier_setup.get("owner_id",-1))!=memory_owner: carrier_setup.clear()
 	for id in carry_routes.keys():
-		if int(id)!=owner_id: carry_routes.erase(id)
+		if int(id)!=memory_owner: carry_routes.erase(id)
 	for id in boundary_routes.keys():
-		if int(id)!=owner_id:boundary_routes.erase(id)
+		if int(id)!=memory_owner:boundary_routes.erase(id)
 	requested_support.clear()
 	var reception: Dictionary = receive_plan.tick(snapshot,clock,delta)
 	snapshot.live_reception=reception
@@ -214,7 +223,7 @@ func tick(snapshot: Dictionary, delta: float) -> Dictionary:
 	var combination: Dictionary = {}
 	var receiver_id: int = int(reception.get("receiver_id",-1))
 	var receiver: Dictionary = by_id.get(receiver_id,{})
-	var in_flight: bool = owner_team<0 and not reception.is_empty() and not receiver.is_empty()
+	var in_flight: bool = not reception.is_empty() and not receiver.is_empty() and (owner_team<0 or reception.get("unsettled_contact",false) and owner_id==receiver_id)
 	var hint_id:int=int(snapshot.get("control_hint_id",-1))
 	var possession_team: int = int(hand_owner.team) if not hand_owner.is_empty() else int(receiver.team) if in_flight else owner_team if owner_team>=0 else int(by_id.get(hint_id,{}).get("team",-1))
 	_update_possession(possession_team,owner_id,snapshot)
@@ -983,7 +992,7 @@ func _carrier(p: Dictionary, intent: Dictionary, snapshot: Dictionary, members: 
 	intent.pace=2.4 if intent.close_control else 4.8
 	_apply_carry_gear(p,intent,carry,opponents,snapshot)
 	intent["carry_choice"]=carry
-	if p.get("kick_setup_blocked",false) or not p.get("kick_ready",true) or not p.get("can_kick",true):
+	if p.get("kick_setup_blocked",false) or not p.get("kick_ready",true) or not p.get("can_pass",p.get("can_kick",true)):
 		return
 	var best := _best_pass(p,members,opponents,snapshot,style)
 	if intent.role==Roles.GOALKEEPER:
@@ -1061,7 +1070,7 @@ func _best_pass(p: Dictionary, members: Array[Dictionary], opponents: Array[Dict
 		if repeated>20 and not called:
 			continue
 		var proposal:Dictionary={"point":point,"flight":delivery.time}
-		var utility:float=team_attack._value(p,other,proposal,opponents,snapshot)
+		var utility:float=team_attack._value(p,other,proposal,opponents,snapshot)+LearnedPolicy.bias(int(snapshot.get("learning_actions",{}).get(int(p.team),0)),"PASS")
 		var value:float=utility-minf(repeated,8.0)*.20
 		if requested_support.has(int(other.id)):value+=.35
 		if called:
@@ -1099,19 +1108,10 @@ func _onside_receiver(receiver: Dictionary, opponents: Array[Dictionary], snapsh
 	return y<=maxf(ball_y,line[line.size()-2])-0.35
 
 func _pass_preparation_safe(p: Dictionary, point: Vector3, opponents: Array[Dictionary], snapshot: Dictionary) -> bool:
-	var pressure := _openness(p.position,opponents)
-	if pressure>=4.0:
-		return true
-	var facing := _flat(p.get("facing",Vector3.FORWARD)).normalized()
-	var aim := _flat(point-p.position).normalized()
-	var angle := facing.angle_to(aim)
-	if angle<deg_to_rad(80):
-		return true
-	var cap: Dictionary = snapshot.get("capabilities",{})
-	var turn_rate := maxf(0.5,float(cap.get("ai_turn_rate",4.5)))
-	var prepare_seconds := angle/turn_rate+0.10
-	var approach_seconds := maxf(0.0,pressure-float(cap.get("tackle_reach",1.18)))/maxf(1.0,float(cap.get("ai_press_speed",6.2)))
-	return prepare_seconds+0.08<approach_seconds
+	var prepare_seconds:float=team_attack._setup(p,point)
+	for opponent in opponents:
+		if team_attack.eta(opponent,snapshot.ball_position)<prepare_seconds+.08:return false
+	return true
 
 func _pass_window_safe(start: Vector3, point: Vector3, opponents: Array[Dictionary], power: float, snapshot: Dictionary) -> bool:
 	# Predict only from observed velocity. No future inputs, force application,
@@ -1421,6 +1421,14 @@ func _plan_receive_continuation(plan: Dictionary, by_id: Dictionary, snapshot: D
 			if _lane_clear(plan.receive_point,outlet,opponents,1.05):
 				choice.next_action="CARRY";choice.next_receiver_id=-1
 				choice.next_target=outlet
+				if joint.mode=="ONE_TWO" and float(plan.arrival_time)-clock<.55:
+					var future:Dictionary=snapshot.duplicate(false);future.ball_position=plan.receive_point
+					var wall:Dictionary=receiver.duplicate(false);wall.position=plan.receive_point
+					var returned:Dictionary=team_attack._delivery(plan.receive_point,outlet,future,false);returned.receiver=next_id
+					# Preparation is advisory; actual one-touch reach, foot and phase
+					# still belong to the existing input/contact path below.
+					if _onside_receiver(next_actor,opponents,snapshot) and team_attack._feasible(wall,next_actor,returned,opponents,future,true):
+						choice.next_action="PASS";choice.next_receiver_id=next_id
 	var direction := _flat(choice.next_target-plan.receive_point).normalized()
 	if direction.length()<.1: direction = choice.next_direction
 	for key in ["next_action","next_target","next_receiver_id"]: plan[key] = choice[key]
@@ -1455,7 +1463,7 @@ func _choose_next_intent(p: Dictionary, members: Array[Dictionary], opponents: A
 
 func _pass_value(best:Dictionary,carry:Dictionary,snapshot:Dictionary)->float:
 	var scale:float=_tactical_scale(snapshot)
-	return float(best.get("utility",best.score))
+	return float(best.score)
 
 func _apply_carry_gear(p:Dictionary,intent:Dictionary,carry:Dictionary,opponents:Array[Dictionary],snapshot:Dictionary)->void:
 	intent.carry_run=false
@@ -1465,15 +1473,24 @@ func _apply_carry_gear(p:Dictionary,intent:Dictionary,carry:Dictionary,opponents
 	var direction:Vector3=_flat(carry.point-p.position).normalized()
 	var edge:float=minf(float(snapshot.field_half_width)-absf(p.position.x),float(snapshot.field_half_length)-absf(p.position.z))
 	var turn:float=_flat(p.facing).normalized().dot(direction)
-	var route:Dictionary=PressureRoute.inspect(p,carry.point,opponents,4.5 if conservative else 5.0)
+	var wants_cut:bool=PressureRoute.wants_cut(p,carry.point,opponents)
+	var route:Dictionary=PressureRoute.inspect(p,carry.point,opponents,4.5 if conservative else 5.0,wants_cut)
 	var memory:Dictionary=carry_routes.get(int(p.id),{})
 	var touch_ready:bool=not memory.get("needs_touch",false) or float(controlled_contacts.get(int(p.id),-1))>=float(memory.get("started",clock)) or turn>.96 and _flat(snapshot.ball_velocity).dot(direction)>.8
+	var running_touch:bool=_running_touch_reachable(p,direction,4.5 if conservative else 5.0,snapshot)
+	touch_ready=touch_ready and running_touch
 	var safe:bool=float(route.clearance)>(1.75 if conservative else 1.10) and float(route.immediate)>1.0
+	# Only a defender obstructing our front/side warrants a turning gesture.
+	# A trailing chaser alone calls for forward acceleration, not repeated cuts.
+	var needs_evasion:bool=false
+	for enemy in opponents:
+		var relative:Vector3=_flat(enemy.position-p.position)
+		var projected:Vector3=relative+_flat(enemy.get("velocity",Vector3.ZERO)-p.velocity)*.25
+		if relative.length()<3.6 and relative.normalized().dot(_flat(p.facing).normalized())>-.10 and (relative.length()<2.8 or projected.length()<1.6):needs_evasion=true;break
 	# The selected route owns the cut; passing and shooting still win upstream.
-	intent.carry_cut=not memory.get("cut_attempted",false) and _openness(p.position,opponents)<3.6 and float(route.clearance)>(1.5 if conservative else .80) and float(route.immediate)>.80 and edge>1.3 and turn<.94 and turn>-.35
-	if intent.carry_cut:
-		intent.reason="cut_into_selected_exit";intent.close_control=false;intent.shield=false;intent.pace=2.8
-		return
+	intent.carry_cut=wants_cut and needs_evasion and not memory.get("cut_attempted",false) and float(route.clearance)>(1.5 if conservative else 1.0) and float(route.immediate)>1.0 and edge>1.3
+	# This is only a proposal. The dispatcher reduces pace after the real foot
+	# scheduler accepts it; cooldown / failed reach never become a slow-walk state.
 	if intent.close_control or intent.shield:return
 	if safe and edge>1.8 and turn>.88 and touch_ready and float(carry.progress)>-.5 and float(p.get("stamina",100))>28 and not p.get("sprint_locked",false):
 		intent.carry_run=true
@@ -1482,6 +1499,20 @@ func _apply_carry_gear(p:Dictionary,intent:Dictionary,carry:Dictionary,opponents
 	else:
 		intent.pace=minf(4.2 if safe and turn>.70 else 3.4,lerpf(2.2,4.2,clampf((edge-.8)/1.5,0,1)))
 		intent.reason="escape_touch_turn" if safe and not touch_ready else "carry_route_adjust"
+		if not running_touch:
+			# A cut's successful contact is not a promise that its free rolling
+			# ball already supports sprint cadence. Follow the real moving pocket.
+			var lead:float=maxf(0,_flat(snapshot.ball_position-p.position).dot(direction)-.35)
+			intent.pace=minf(float(intent.pace),maxf(2.2,_flat(snapshot.ball_velocity).dot(direction)+lead*2.0))
+
+func _running_touch_reachable(p:Dictionary,direction:Vector3,pace:float,snapshot:Dictionary)->bool:
+	var profile:Resource=p.get("motor_profile",PressureRoute.default_profile)
+	var horizon:float=.22
+	var predicted:Dictionary=preload("res://scripts/dribble_turn_control.gd").predict_motor(_flat(p.velocity),direction*pace,profile,.65,horizon)
+	var ball_velocity:Vector3=_flat(snapshot.ball_velocity)
+	var loss:float=FootballBallForces.rolling_deceleration_mps2(ball_velocity.length(),profile)
+	var future:Vector3=_flat(snapshot.ball_position-p.position)+ball_velocity*horizon-ball_velocity.normalized()*.5*loss*horizon*horizon-predicted.displacement
+	return future.length()<1.08 and future.dot(direction)>-.12 and future.slide(direction).length()<.65
 func _near_support_points(owner: Dictionary, members: Array[Dictionary], opponents: Array[Dictionary], snapshot: Dictionary) -> Dictionary:
 	var result := {}
 	if owner.is_empty(): return result
@@ -1831,7 +1862,7 @@ func _open_carry_option(p:Dictionary,opponents:Array[Dictionary],snapshot:Dictio
 		if not retained.is_empty() and float(retained.clearance)>.9:
 			retained.committed=true;return retained
 	var best:Dictionary={}
-	var options:Array[Vector2]=[Vector2(0,5.2),Vector2(-2.8,3.6),Vector2(2.8,3.6),Vector2(-3.0,.7),Vector2(3.0,.7),Vector2(-2.0,-1.5),Vector2(2.0,-1.5)]
+	var options:Array[Vector2]=[Vector2(0,5.2),Vector2(-1.7,4.8),Vector2(1.7,4.8),Vector2(-2.8,3.6),Vector2(2.8,3.6),Vector2(-3.0,.7),Vector2(3.0,.7),Vector2(-2.0,-1.5),Vector2(2.0,-1.5)]
 	if origin.y>float(snapshot.field_half_length)*.25 and absf(origin.x)>float(snapshot.field_half_width)*.30:
 		options.append(Vector2(-signf(origin.x)*4.4,2.2))
 		options.append(Vector2(-signf(origin.x)*5.0,0.0))
@@ -1856,13 +1887,17 @@ func _open_carry_option(p:Dictionary,opponents:Array[Dictionary],snapshot:Dictio
 func _evaluate_carry(p:Dictionary,point:Vector3,opponents:Array[Dictionary],risk:float,snapshot:Dictionary={})->Dictionary:
 	var distance:float=_distance(p.position,point)
 	if distance<.55:return {}
-	var route:Dictionary=PressureRoute.inspect(p,point,opponents)
+	var route:Dictionary=PressureRoute.inspect(p,point,opponents,4.5 if risk<.8 else 5.0,PressureRoute.wants_cut(p,point,opponents))
 	var clearance:float=route.clearance
 	if clearance<.80:return {}
 	var progress:float=_local(point,int(p.team)).y-_local(p.position,int(p.team)).y
 	var direction:Vector3=_flat(point-p.position).normalized()
 	var angle:float=_flat(p.facing).normalized().angle_to(direction)
-	var score:float=team_attack.possession_value(p.position,point,int(p.team),opponents,snapshot)+progress*.48*(risk-1.0)-angle*.55-maxf(0,1.5-clearance)*(2.2/risk)-distance/4.5*.30
+	var score:float=LearnedPolicy.bias(int(snapshot.get("learning_actions",{}).get(int(p.team),0)),"CARRY")+team_attack.possession_value(p.position,point,int(p.team),opponents,snapshot)+progress*.48*(risk-1.0)-angle*.55-maxf(0,1.5-clearance)*(2.2/risk)-distance/4.5*.30
+	var travel:Vector3=_flat(p.get("velocity",Vector3.ZERO))
+	if travel.length()>2.8:
+		var momentum_angle:float=travel.normalized().angle_to(direction)
+		score-=maxf(0,momentum_angle-deg_to_rad(55.0))*2.0
 	var style:String="ADVANCE" if progress>2.5 and angle<.45 else "CUT" if progress>1.0 else "SHIELD_EXIT"
 	return {"point":point,"progress":progress,"score":score,"clearance":clearance,"immediate":route.immediate,"style":style,"risk":risk}
 func _pass_profile(distance:float,snapshot:Dictionary)->Dictionary:
@@ -1875,7 +1910,7 @@ func _pass_profile(distance:float,snapshot:Dictionary)->Dictionary:
 	return {"time":lerpf(a.time,b.time,fraction),"speed":lerpf(a.speed,b.speed,fraction),"power":lerpf(a.power,b.power,fraction)}
 
 func _guard_carry_boundary(p:Dictionary,intent:Dictionary,snapshot:Dictionary)->void:
-	if intent.action!="NONE" or intent.role==Roles.GOALKEEPER:return
+	if intent.action!="NONE" or intent.role==Roles.GOALKEEPER or intent.has("receive_plan"):return
 	var ball:Vector3=snapshot.ball_position
 	var velocity:Vector3=snapshot.ball_velocity
 	var body:Vector3=p.velocity
@@ -1892,7 +1927,8 @@ func _guard_carry_boundary(p:Dictionary,intent:Dictionary,snapshot:Dictionary)->
 		# acceleration while the player is sprinting parallel to the touchline.
 		var requested:Vector3=_flat(point-p.position).normalized()*float(intent.pace)
 		var outward:float=maxf(0,maxf(maxf(velocity[axis]*side,body[axis]*side),requested[axis]*side))
-		var reserve:float=2.3+outward*.70+outward*outward/8.0
+		var brake:float=maxf(1.0,float(snapshot.get("capabilities",{}).get("brake_deceleration",5.5)))
+		var reserve:float=1.05+outward*.60+outward*outward/(2.0*brake)
 		if limit-absf(ball[axis])>reserve:continue
 		# The reserve budgets the freely rolling ball and the body braking, not
 		# just the endpoint of a target that the motor may already be overrunning.
@@ -1904,10 +1940,11 @@ func _guard_carry_boundary(p:Dictionary,intent:Dictionary,snapshot:Dictionary)->
 	if memory.is_empty() or clock>=float(memory.until):boundary_routes[int(p.id)]={"point":point,"until":clock+1.2}
 	intent.move_target=_world(_clip_pitch(_local(point,int(p.team)),snapshot,1.6),int(p.team))
 	intent.face_direction=_flat(intent.move_target-p.position).normalized()
-	intent.carry_run=false;intent.close_control=false;intent.shield=false
-	intent.pace=minf(float(intent.pace),2.8)
+	intent.carry_run=false;intent.carry_cut=false;intent.close_control=false;intent.shield=false
+	var outward_now:float=maxf(absf(body.x) if absf(ball.x)>float(snapshot.field_half_width)-2.0 else 0.0,absf(body.z) if absf(ball.z)>float(snapshot.field_half_length)-2.0 else 0.0)
+	intent.pace=minf(float(intent.pace),2.8 if outward_now>1.0 else 3.6)
 	intent.reason="keep_ball_inside_before_line"
-	carry_routes.erase(int(p.id))
+	if carry_routes.has(int(p.id)):carry_routes[int(p.id)].target=intent.move_target
 
 func _shot_option(p:Dictionary,opponents:Array[Dictionary],snapshot:Dictionary)->Dictionary:
 	if roster[int(p.id)].role==Roles.GOALKEEPER:return {}
@@ -1951,7 +1988,7 @@ func _apply_team_attack(p:Dictionary,intent:Dictionary,plan:Dictionary,by_id:Dic
 		var assignment:Dictionary=plan.assignments.get(int(p.id),{})
 		if assignment.is_empty():return
 		intent.move_target=_world(_clip_pitch(_local(assignment.point,int(p.team)),snapshot,1.5),int(p.team))
-		if plan.stage in ["PREPARE","RETURN","RELAY"] and not snapshot.get("small_sided",false):
+		if (plan.stage in ["PREPARE","RETURN","RELAY"] or plan.stage=="FLIGHT" and assignment.role=="RETURN_RUN") and not snapshot.get("small_sided",false):
 			var local_target:Vector2=_local(intent.move_target,int(p.team))
 			local_target.y=minf(local_target.y,float(snapshot.fixed_offside[int(p.team)]))
 			intent.move_target=_world(local_target,int(p.team))
@@ -1981,7 +2018,7 @@ func _apply_team_attack(p:Dictionary,intent:Dictionary,plan:Dictionary,by_id:Dic
 		_apply_carry_gear(p,intent,route,opponents,snapshot)
 		intent.reason="plan_"+String(plan.mode).to_lower()
 		return
-	if not p.get("can_kick",false) or not p.get("kick_ready",false) or p.get("kick_setup_blocked",false):return
+	if not p.get("can_pass",p.get("can_kick",false)) or not p.get("kick_ready",false) or p.get("kick_setup_blocked",false):return
 	if not team_attack.ready(plan,p,by_id,opponents,snapshot):return
 	var delivery:Dictionary=plan.delivery
 	var kind:String=String(plan.mode) if plan.mode in ["CROSS","CUTBACK"] else "PASS"

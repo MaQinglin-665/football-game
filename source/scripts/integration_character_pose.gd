@@ -88,6 +88,14 @@ func _update_pose_impl(delta: float, state: Dictionary) -> void:
 		planted_support=super.get_foot_contact(-side,"SOLE")
 		planted_support["valid"]=support_ok
 		planted_support["target"]=support_target
+		# Commit final post-support shoes, so the next gait begins from the shown pose.
+		for foot_side in [-1,1]:
+			var suffix:String=side_suffix(foot_side)
+			var pose:Transform3D=skeleton.get_bone_global_pose(cached_bone_id("foot."+suffix))
+			var world:Transform3D=skeleton.global_transform*pose
+			_last_contacts[suffix]=skeleton.to_global(skeleton.get_bone_global_pose(cached_bone_id("contact_sole."+suffix)).origin)
+			_last_ankles[suffix]={"point":world.origin,"rotation":world.basis.get_rotation_quaternion()}
+			_last_local_ankles[suffix]={"point":pose.origin,"rotation":pose.basis.get_rotation_quaternion()}
 		return
 	if String(_action.get("kind",""))=="SHOT":
 		_shot_body_sampled = false

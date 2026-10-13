@@ -104,7 +104,7 @@ func _physics_process(delta: float) -> void:
 	var body_target_yaw:float=rotation.y
 	var pressure:RefCounted=match_controller.input_bridge.pressure
 	if pressure.active:body_target_yaw=atan2(-pressure.direction.x,-pressure.direction.z)
-	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER:
+	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):
 		body_target_yaw=atan2(-foot.direction.x,-foot.direction.z)
 	var view_delta:float=angle_difference(hip_yaw,body_target_yaw)
 	var follow:float=smoothstep(.12,.60,absf(view_delta))

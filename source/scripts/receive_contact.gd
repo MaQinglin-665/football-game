@@ -18,7 +18,7 @@ static func settle(ball:Node3D,actor:Node3D,point:Vector3,normal:Vector3,outlet:
 			var tangent:Vector3=Vector3(-offset.z,0,offset.x).normalized()
 			if tangent.dot(wanted)<0:tangent=-tangent
 			wanted=(tangent*.8+offset.normalized()*.2).normalized()*minf(wanted.length(),2.3)
-		var budget:float=minf(11.0,relative.length()*.90+2.0)
+		var budget:float=minf(11.0,(relative.length()*.90+2.0)*preload("res://scripts/player_abilities.gd").value(actor,"touch"))
 		after=before+(wanted-before).limit_length(budget)
 		if ball.grounded:after.y=0
 	var impulse:Vector3=(after-before)*ball.mass_kg

@@ -197,7 +197,7 @@ func _press_exit(p: Dictionary, task: Dictionary, owner: Dictionary, by_id: Dict
 	if absf(point.x)>float(snapshot.get("field_half_width",34))+.5 or absf(point.z)>float(snapshot.get("field_half_length",52.5))+.5: return "ball_outside_pitch"
 	if _distance(point,task.origin)>16.0*_tactical_scale(snapshot) or _distance(p.position,point)>22.0*_tactical_scale(snapshot): return "ball_left_zone"
 	if actual_owner>=0 and _goal_side(p.position,point,goal)<-maxf(1.2,1.8*_tactical_scale(snapshot)): return "beaten_recover_goal_side"
-	if snapshot.get("eleven_duties",false) and point.z*(-1.0 if int(p.team)==0 else 1.0)>float(snapshot.field_half_length)*.32 and _distance(p.position,point)>5.5:return "return_to_mid_block"
+	if snapshot.get("eleven_duties",false) and point.z*(-1.0 if int(p.team)==0 else 1.0)>float(snapshot.field_half_length)*(.43 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==5 else .22 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==6 else .32) and _distance(p.position,point)>5.5:return "return_to_mid_block"
 	if not by_id.has(int(p.id)): return "owner_unavailable"
 	return ""
 
@@ -225,7 +225,7 @@ func _best(members: Array[Dictionary], kind: String, target: Dictionary, snapsho
 				for partner in members:
 					if int(partner.id)!=id and roster[int(partner.id)].role!="goalkeeper" and _distance(partner.position,point)<8.0 and _goal_side(partner.position,point,goal)>0:supported=true;break
 				if (not supported or _distance(p.position,point)>5.5) and _distance(point,goal)>16.0*_tactical_scale(snapshot):continue
-			if snapshot.get("eleven_duties",false) and point.z*(-1.0 if int(p.team)==0 else 1.0)>float(snapshot.field_half_length)*.32 and _distance(p.position,point)>5.5:continue
+			if snapshot.get("eleven_duties",false) and point.z*(-1.0 if int(p.team)==0 else 1.0)>float(snapshot.field_half_length)*(.43 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==5 else .22 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==6 else .32) and _distance(p.position,point)>5.5:continue
 			if _distance(p.position,point)>22.0*_tactical_scale(snapshot) or (not target.is_empty() and _goal_side(p.position,point,goal)<-3.0): continue
 		elif kind in [MARK,SCREEN]:
 			if _distance(_anchor(p,snapshot),point)>16.0: continue
@@ -347,6 +347,8 @@ func _eleven_cover_point(ball: Vector3, goal: Vector3, snapshot: Dictionary) -> 
 			var position: Vector3 = p.position
 			var toward_goal := Vector3(goal.x-ball.x,0,goal.z-ball.z).normalized()
 			var depth := clampf(float(snapshot.field_half_length)*0.067,2.8,4.2)
+			var strategy:int=int(snapshot.get("learning_actions",{}).get(team,0))
+			depth*=.85 if strategy==5 else 1.2 if strategy==6 else 1.0
 			var outward := Vector3(signf(ball.x),0,0)*minf(absf(ball.x)/float(snapshot.field_half_width),1.0)*float(snapshot.field_half_width)*0.035
 			# Do not follow a presser behind the carrier; retain goal-side cover.
 			var origin:Vector3=ball if _goal_side(position,ball,goal)<0 else ball+(position-ball).limit_length(depth)
@@ -399,9 +401,9 @@ func _distance(a: Vector3, b: Vector3) -> float:
 func _eta(p: Dictionary, point: Vector3, snapshot: Dictionary) -> float:
 	if p.is_empty(): return INF
 	var cap: Dictionary = snapshot.get("capabilities",{})
-	var speed: float = maxf(1.0,float(cap.get("jog_speed",5.6)))
+	var speed: float = maxf(1.0,float(p.get("ability_speed",cap.get("jog_speed",5.6))))
 	if p.get("sprint_locked",false) or float(p.get("stamina",100))<25:speed=minf(speed,4.0)
-	var acceleration: float = maxf(1.0,float(cap.get("run_acceleration",6.8)))
+	var acceleration: float = maxf(1.0,float(p.get("ability_acceleration",cap.get("run_acceleration",6.8))))
 	var offset: Vector3 = Vector3(point.x-p.position.x,0,point.z-p.position.z)
 	var distance: float = maxf(0.0,offset.length()-.9)
 	var axis := offset.normalized()

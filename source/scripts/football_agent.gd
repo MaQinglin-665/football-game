@@ -136,6 +136,10 @@ func _physics_process(delta: float) -> void:
 		var turn_rate:float=lerpf(4.0,1.6,clampf(velocity.length()/5.0,0,1))
 		var angle:float=ai_carry_aim.signed_angle_to(toward.normalized(),Vector3.UP)
 		ai_carry_aim=ai_carry_aim.rotated(Vector3.UP,clampf(angle,-turn_rate*delta,turn_rate*delta)).normalized()
+		if tactical_intent.get("reason","")=="keep_ball_inside_before_line":
+			# Begin real motor braking now. Retaining a slowly rotating old target
+			# until after the line consumes the available stopping distance.
+			ai_carry_aim=toward.normalized()
 		toward=ai_carry_aim*toward.length();desired_facing=ai_carry_aim
 		ai_touch_pace=tactical_pace
 	else:ai_carry_aim=Vector3.ZERO
@@ -179,7 +183,7 @@ func _physics_process(delta: float) -> void:
 		var elapsed:float=float(Engine.get_physics_frames()-int(reception.get("sample_frame",Engine.get_physics_frames())))/Engine.physics_ticks_per_second
 		var remaining:float=float(reception.get("arrival_time",0))-float(reception.get("sample_time",match_controller.tactical_director.clock))-elapsed
 		desired_facing=preload("res://scripts/tactics/receive_motion.gd").travel_facing(position,target,face_target,remaining)
-	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER:desired_facing=foot.direction
+	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):desired_facing=foot.direction
 	var current_yaw := atan2(-facing.x,-facing.z)
 	var wanted_yaw := atan2(-desired_facing.x,-desired_facing.z)
 	var turn_rate:float=preload("res://scripts/movement_inertia.gd").yaw_rate(Vector2(velocity.x,velocity.z).length())
@@ -189,7 +193,8 @@ func _physics_process(delta: float) -> void:
 	facing = Vector3(-sin(current_yaw),0,-cos(current_yaw))
 	body_facing = facing
 	var pace := tactical_pace
-	if _ai_ordinary_rhythm and pocket_offset.dot(ai_carry_aim)>.45:
+	if not owned and pace>3.0:pace*=preload("res://scripts/player_abilities.gd").value(self,"pace")
+	if _ai_ordinary_rhythm and pocket_offset.dot(ai_carry_aim)>.45 and tactical_intent.get("reason","")!="keep_ball_inside_before_line":
 		# Do not brake the body away from its already rolling ball before the
 		# next actual shoe contact can shorten that ball's stride.
 		pace=maxf(pace,minf(5.0,Vector2(match_controller.ball.velocity.x,match_controller.ball.velocity.z).length()))

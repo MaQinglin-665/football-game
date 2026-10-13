@@ -2,6 +2,7 @@ extends SceneTree
 # Offline evaluation only. Ordinary launchers never load this script.
 var game:Node
 var elapsed:float=0
+var scene_path:String="res://scenes/match.tscn"
 var duration:float=45
 var full_match:bool=false
 var checkpoint:float=0
@@ -25,13 +26,14 @@ class Observer extends Node:
 	func _physics_process(dt:float)->void:host.observe(dt)
 func _initialize()->void:
 	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--scene="):scene_path=arg.trim_prefix("--scene=")
 		if arg=="--full-match":full_match=true;duration=2400
 		if arg.begins_with("--seed="):seed_value=int(arg.trim_prefix("--seed="))
 		if arg.begins_with("--seconds="):duration=float(arg.trim_prefix("--seconds="))
 		if arg.begins_with("--out="):output=arg.trim_prefix("--out=")
 	seed(seed_value);call_deferred("begin")
 func begin()->void:
-	game=load("res://scenes/match.tscn").instantiate();game.test_mode=true;root.add_child(game);current_scene=game
+	game=load(scene_path).instantiate();game.test_mode=true;root.add_child(game);current_scene=game
 	# Keep the UI/input host inert; replace its roster entry with the same AI
 	# class used by all other outfielders. No fabricated touches or ball moves.
 	var human:Node3D=game.player
@@ -41,6 +43,7 @@ func begin()->void:
 	game.physics_world.actors.erase(human)
 	var ai=game.AgentScript.new();ai.name="OfflineBlue10";ai.team=0;ai.jersey=10;ai.match_controller=game;ai.profile=game.physics_profile;ai.role=human.role;ai.lane=human.lane
 	game.add_child(ai);game.players[0]=ai;game.agents.append(ai);game.physics_world.register_actor(ai);ai.body_contact.connect(game._on_actor_body_contact.bind(ai))
+	preload("res://scripts/player_abilities.gd").attach(ai,game.physics_profile,game.team_size,"--abilities=off" in OS.get_cmdline_user_args())
 	for row in game.roster_configuration:
 		if int(row.id)==0:row.human=false
 	game.tactical_director.configure(game.roster_configuration,{0:game.Director.SHORT_PASS,1:game.Director.SHORT_PASS})
@@ -50,10 +53,14 @@ func begin()->void:
 			contacts.append({"t":elapsed,"actor":game.players.find(a),"action":e.get("action",""),"receiver":game.players.find(a.foot.receiver) if is_instance_valid(a) else -1,"ball":game.ball.position,"velocity":game.ball.velocity,"owner":game.players.find(game.ball.carrier)})
 	)
 	game.settings_menu.values.volume=0;game.settings_menu.apply_values(false)
+	# Training's normal opening otherwise gives the ball to the disabled input
+	# host. Use its existing defensive opening, with ordinary opponent pressure.
+	if is_instance_valid(game.training_mode):
+		game.training_mode.defensive_opening=true;game.training_mode.low_pressure=false
 	game.start_match(false)
-	if seed_value%2==0:game.services.start_match(game.rule_roster(),1);game._sync_rule_phase()
-	setup_ok=game.players.size()==22 and game.physics_world.actors.size()==22 and game.players.all(func(a):return not a.is_human)
-	if not setup_ok:push_error("Offline roster must have exactly 22 AI actors");quit(2);return
+	if seed_value%2==0 and not is_instance_valid(game.training_mode):game.services.start_match(game.rule_roster(),1);game._sync_rule_phase()
+	setup_ok=game.players.size()==game.team_size*2 and game.physics_world.actors.size()==game.team_size*2 and game.players.all(func(a):return not a.is_human)
+	if not setup_ok:push_error("Offline roster must have exactly the configured AI roster");quit(2);return
 	if DisplayServer.get_name()!="headless":
 		camera=Camera3D.new();game.add_child(camera);camera.current=true;camera.position=Vector3(0,30,42);camera.look_at(Vector3.ZERO)
 	var observer:=Observer.new();observer.host=self;observer.process_physics_priority=100;root.add_child(observer)

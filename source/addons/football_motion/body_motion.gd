@@ -89,7 +89,7 @@ func update(delta:float,state:Dictionary,action:Dictionary)->void:
 	drive=lerpf(drive,longitudinal,response)
 	braking=lerpf(braking,maxf(0,-longitudinal),response)
 	# Whole pelvis/trunk lean: quiet walk, visible run, stronger actual start.
-	var normal_lean:=.030*clampf(speed/1.4,0,1) if not running else .215*clampf(speed/4.4,0,1)
+	var normal_lean:float=.030*clampf(speed/1.4,0,1)+.185*smoothstep(1.4,4.4,speed)
 	if tier=="CLOSE":normal_lean=minf(normal_lean,.080)
 	var lean_target:=-normal_lean-.115*maxf(0,longitudinal)+.065*maxf(0,-longitudinal)
 	lean=lerpf(lean,clampf(lean_target,-.34,.06),response)
@@ -195,10 +195,11 @@ func apply(avatar,clip:String,phase:float)->void:
 	if free_transition:
 		if clip=="Idle":sample_phase=_last_free_phase
 		elif float(avatar._pose_delta)>0:_last_free_phase=phase
-	var qs:Dictionary=sample(sample_phase,free_transition)
+	var carry_transition:bool=current_tier in ["CLOSE","CRUISE","KNOCK_CHASE"] and String(avatar._action.get("kind","")) in ["","CARRY","CLOSE","TURN","SHIELD","SPRINT"]
+	var qs:Dictionary=sample(sample_phase,free_transition or carry_transition)
 	# Idle keeps a frozen last gait phase while residual body_mix decays.
 	var mix:float=body_mix if moving or free_transition else 0.0
-	var arm_weight:float=lerpf(.86,1.0,_jog_blend) if free_transition else .64 if tier=="CLOSE" else .86 if body_source=="Walk_Loop" else 1.0
+	var arm_weight:float=lerpf(.86,1.0,_jog_blend) if free_transition or carry_transition else .64 if tier=="CLOSE" else .86 if body_source=="Walk_Loop" else 1.0
 	var applied_lean:float=_free_lean if free_transition else lean
 	var intent039=avatar._motion039
 	var motion039:bool=free_transition and bool(intent039.eligible)

@@ -36,7 +36,7 @@ static func resolve(command: Dictionary, state: Dictionary, cfg: Variant, delta:
 	if requested>=0: speed = minf(speed,requested)
 	var velocity: Vector3 = state.get("velocity",Vector3.ZERO)
 	if shield: stamina = maxf(0,stamina-delta*4)
-	elif sprint and velocity.length()>5.5: stamina = maxf(0,stamina-delta*15)
+	elif sprint and velocity.length()>5.5: stamina = maxf(0,stamina-delta*15*float(state.get("endurance",1.0)))
 	else: stamina = minf(100,stamina+delta*12)
 	if stamina<2: locked = true
 	elif stamina>26: locked = false
@@ -55,6 +55,7 @@ static func apply(actor: Node3D, game: Node, command: Dictionary, before: Dictio
 	var scheduler=actor.foot.ordinary_scheduler
 	var incoming_carry:bool=not command.has("prepared_motion") and owned and bool(command.get("enabled",false)) and not bool(command.get("shield",false)) and not bool(command.get("close_control",false)) and command.get("style","run")!="walk" and scheduler.keep_incoming042(actor,command.get("move",Vector3.ZERO))
 	if incoming_carry:state["incoming_carry_speed"]=Vector2(actor.velocity.x,actor.velocity.z).length()
+	state.endurance=preload("res://scripts/player_abilities.gd").value(actor,"endurance")
 	var result := resolve(command,state,game.tuning,delta)
 	if bool(command.get("resolved_ai_motion",false)):
 		# AI target arrival, approach, turn and ball follow were already solved once.
@@ -122,7 +123,7 @@ static func _auto_shield(actor:Node3D,game:Node,owned:bool,delta:float)->void:
 static func resolve_receiving_budget(move:Vector3,facing:Vector3,velocity:Vector3,stamina:float,locked:bool,foot_cap:float,requested:float,cfg:Variant,delta:float)->Vector4:
 	var sprint:bool=requested>cfg.normal_move_speed and not locked and stamina>1 and move.dot(facing)>=-.2
 	var speed:float=minf(minf(cfg.running_move_speed if sprint else cfg.normal_move_speed,foot_cap),requested)
-	if sprint and velocity.length()>5.5:stamina=maxf(0,stamina-delta*15)
+	if sprint and velocity.length()>5.5:stamina=maxf(0,stamina-delta*15*float(cfg.get_meta("endurance",1.0)))
 	else:stamina=minf(100,stamina+delta*12)
 	if stamina<2:locked=true
 	elif stamina>26:locked=false

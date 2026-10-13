@@ -16,8 +16,11 @@ static func pace(position:Vector3,target:Vector3,velocity:Vector3,cap:Dictionary
 	var brake:float=maxf(1,float(cap.get("brake_deceleration",5.5)))
 	return minf(float(cap.get("receive_speed",5.6)),sqrt(2*brake*maxf(0,gap-.10)))
 static func predict(row:Dictionary,target:Vector3,incoming:Vector3,horizon:float,snapshot:Dictionary)->Dictionary:
-	var profile=snapshot.motor_profile
-	var cfg=snapshot.movement_cfg
+	var profile=row.get("motor_profile",snapshot.motor_profile)
+	var cfg=row.get("movement_cfg",snapshot.movement_cfg)
+	var actor_cap:Dictionary=snapshot.capabilities.duplicate()
+	actor_cap.receive_speed=float(row.get("ability_speed",actor_cap.get("receive_speed",5.6)))
+	actor_cap.brake_deceleration=profile.brake_deceleration_mps2
 	var position:Vector3=flat(row.position)
 	var velocity:Vector3=flat(row.get("velocity",Vector3.ZERO))
 	var facing:Vector3=flat(row.get("facing",incoming)).normalized()
@@ -32,7 +35,7 @@ static func predict(row:Dictionary,target:Vector3,incoming:Vector3,horizon:float
 		yaw+=clampf(angle_difference(yaw,atan2(-desired_face.x,-desired_face.z)),-preload("res://scripts/movement_inertia.gd").yaw_rate(velocity.length())*dt,preload("res://scripts/movement_inertia.gd").yaw_rate(velocity.length())*dt)
 		facing=Vector3(-sin(yaw),0,-cos(yaw))
 		var gap:Vector3=flat(target-position)
-		var requested:float=pace(position,target,velocity,snapshot.capabilities)
+		var requested:float=pace(position,target,velocity,actor_cap)
 		var move:Vector3=gap.normalized() if gap.length()>.18 else Vector3.ZERO
 		var resolved:Vector4=Shared.resolve_receiving_budget(move,facing,velocity,stamina,locked,float(row.get("foot_cap",100)),requested,cfg,dt)
 		stamina=resolved.y;locked=resolved.z>0
@@ -59,8 +62,8 @@ static func ball_samples(position:Vector3,velocity:Vector3,spin:Vector3,profile:
 				var bounce:Dictionary=preload("res://addons/football_physics/contact_math.gd").sphere_response(velocity,spin,Vector3.ZERO,Vector3.UP,0.0,profile.turf_restitution if -velocity.y>profile.low_bounce_cutoff_mps else 0.0,profile.bounce_friction_coefficient,profile,false)
 				velocity=bounce.velocity;spin=bounce.spin
 				if velocity.y<=profile.rest_speed_mps:velocity.y=0
-			var item:Dictionary={"point":position,"speed":velocity.length(),"time":(bucket*8+j+1)*dt}
+			var item:Dictionary={"point":position,"speed":velocity.length(),"velocity":velocity,"time":(bucket*8+j+1)*dt}
 			if low.is_empty() or position.y<float(low.point.y):low=item
-			if descending.is_empty() and position.y<=.42 and velocity.length()<=14.0:descending=item
-		samples.append(descending if not descending.is_empty() else low if low.point.y>.42 else {"point":position,"speed":velocity.length(),"time":(bucket+1)*.1})
+			if descending.is_empty() and position.y<=.42 and velocity.length()<=14.0 and absf(velocity.y)<=3.0:descending=item
+		samples.append(descending if not descending.is_empty() else low)
 	return samples

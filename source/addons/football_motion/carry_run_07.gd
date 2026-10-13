@@ -109,6 +109,7 @@ func apply(avatar,delta:float,state:Dictionary)->void:
 			var fraction:float=.60 if name=="hips" else .25 if name=="spine" else .15 if name=="chest" else -.95
 			sk.set_bone_pose_rotation(int(ids[name]),Quaternion(Vector3.RIGHT,pitch*fraction*strength)*(rotations[int(ids[name])] as Quaternion))
 		for name in ARM_BONES:
+			if not avatar.get_parent().is_human:continue # Shared AI arm chain remains authoritative during carry.
 			var target:Quaternion=(jog[name] as Quaternion).slerp(sprint[name],arm_mix)
 			if name.begins_with("upper_arm"):
 				var side_sign:float=1.0 if name.ends_with("L") else -1.0
