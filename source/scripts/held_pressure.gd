@@ -48,8 +48,7 @@ func step(game:Node,router:RefCounted,delta:float)->void:
 				if absf(to_ball.dot(side))>.12:flank=signf(to_ball.dot(side))
 				target=actor.position+toward.normalized()*.55+side*flank*.65
 	var offset:Vector3=target-actor.position;offset.y=0
-	var closing:float=maxf(0.0,Vector3(ball.velocity.x,0,ball.velocity.z).dot(direction))
-	pace=minf(5.6,maxf(.7,closing+offset.length()*3.0))
+	pace=minf(5.6 if offset.length()>3.0 else 3.4,sqrt(2.0*actor.profile.brake_deceleration_mps2*maxf(0,offset.length()-.12)))
 	motion=offset.normalized()*clampf(offset.length()/.25,0,1)
 	if clock>=next_poke:
 		next_poke=clock+.075

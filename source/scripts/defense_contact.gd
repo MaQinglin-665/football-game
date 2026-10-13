@@ -83,3 +83,15 @@ static func clear_foot(actor:Node3D,ball:Node3D,center:Vector3)->Dictionary:
 			best={"tackle_side":side,"tackle_surface":surface,"tackle_point":point,"tackle_foot_direction":facing.rotated(Vector3.UP,yaw),"tackle_travel_s":clampf(start.distance_to(point)/7.5,.025,.12)}
 			distance=toward.length()
 	return best
+
+static func poke_velocity(incoming:Vector3,running:Vector3,normal:Vector3,poke:float)->Vector3:
+	incoming.y=0;running.y=0;normal.y=0
+	normal=normal.normalized()
+	# Deflect away from the contacting boot, preserving part of lateral roll.
+	# A controlled poke has follow-up space; faster balls remain loose contests.
+	var tangent:Vector3=incoming-normal*incoming.dot(normal)
+	var relative:float=(incoming-running).length()
+	var outward:float=clampf(poke*(.65 if relative<3.0 else 1.0),1.2,2.8)
+	var desired:Vector3=normal*outward+tangent*.45+running.limit_length(4.0)*.25
+	desired+=normal*maxf(0,.8-desired.dot(normal))
+	return desired.limit_length(4.5)

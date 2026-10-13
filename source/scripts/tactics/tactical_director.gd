@@ -470,6 +470,7 @@ func _apply_defensive_task(p: Dictionary, intent: Dictionary, task: Dictionary, 
 	var travel:Vector3=_flat(task.target-p.position)
 	intent.face_direction = _flat(snapshot.ball_position-p.position).normalized()
 	intent.observe_ball=true
+	intent.defensive_stance=task.task!=DefensiveTasks.RECOVER and travel.length()<3.6
 	intent.marked_opponent=int(task.target_id)
 	intent.action = "NONE"
 	intent.press = false
@@ -796,88 +797,29 @@ func _press(p: Dictionary, intent: Dictionary, owner: Dictionary, snapshot: Dict
 		intent.receive = true
 		intent.reason = "recover_loose_ball"
 		return
-	if _distance(p.position,owner.position)<3.0:
-		var goalward:Vector3=_flat(_world(Vector2(0,-float(snapshot.field_half_length)),team)-owner.position).normalized()
-		intent.move_target=preload("res://scripts/body_pressure.gd").target(p.position,owner.position,owner.get("velocity",Vector3.ZERO),ball,goalward)
-		intent.pace=minf(6.2,maxf(.7,_flat(owner.get("velocity",Vector3.ZERO)).length()+_distance(p.position,intent.move_target)*2.5))
-		intent.reason="body_pressure_shoulder"
-		var shoe_lane:Vector3=_flat(ball-p.position)
-		var carrier_screen:Vector3=Geometry3D.get_closest_point_to_segment(_flat(owner.position),_flat(p.position),_flat(ball))
-		var exposed:bool=_distance(carrier_screen,owner.position)>.34 or _distance(p.position,ball)<_distance(p.position,owner.position)-.12
-		if shoe_lane.length()<float(cap.get("tackle_reach",1.18)) and ball.y<.40 and exposed and _flat(p.facing).normalized().dot(shoe_lane.normalized())>.72 and observed_carrier==int(owner.id) and p.get("can_reach",false) and p.get("tackle_ready",true) and p.get("foot_idle",true):
-			intent.action="TACKLE"
-			intent.aim_point=ball
-		return
-	if _flat(owner.get("velocity",Vector3.ZERO)).length()>1.8:
-		_press_running_lane(p,intent,owner,snapshot)
-		return
-	var attacker := _local(owner.position,team)
-	var current := _local(p.position,team)
-	var small: bool = not eleven_duties and snapshot.get("small_sided",false)
-	var toward_defender := _flat(p.position-owner.position).normalized()
-	var seen_offset := _flat(observed_ball-owner.position)
-	var live_offset := _flat(ball-owner.position)
-	var visible: bool = seen_offset.length()>=.30 and live_offset.length()>=.30 and seen_offset.normalized().dot(toward_defender)>.60 and live_offset.normalized().dot(toward_defender)>.60 and not owner.get("shielding",false) and owner.get("foot_action","")!="SHIELD"
-	var standoff := (.95 if visible else 1.20) if small else float(cap.get("standoff",1.4))
-	if eleven_duties:
-		standoff = 1.10 if intent.duty in ["hold","cover"] else 0.95
-	var target := attacker+Vector2(clampf((_local(ball,team)-attacker).x*0.25,-0.4,0.4),-standoff)
-	if current.y>attacker.y+0.5:
-		target.y -= 1.0
-		intent.reason = "recover_goal_side"
-	else:
-		intent.pace = 4.1 if current.distance_to(attacker)<3.5 else 5.8
-		intent.reason = "press_ball"
-		if small:
-			var near: bool = current.distance_to(attacker)<2.3
-			intent.pace = clampf(current.distance_to(target)*2.2,.65,2.0) if near else 5.8
-			intent.reason = "contain_carrier" if near else "approach_carrier"
-	if eleven_duties and current.y<=attacker.y+0.5:
-		intent.pace = 3.2 if current.distance_to(attacker)<2.0 else 5.8
-		intent.reason = "duty_jockey" if current.distance_to(attacker)<2.0 else "duty_close_pressure"
-	var distance := _distance(p.position,observed_ball)
-	var exposed: bool = _distance(owner.position,observed_ball)>float(cap.get("exposed_gap",0.90)) or distance<0.70
-	var reach := float(cap.get("tackle_reach",1.18))
-	if eleven_duties:
-		var live_distance := _distance(p.position,ball)
-		var facing_ball := _flat(p.get("facing",Vector3.FORWARD)).normalized().dot(_flat(ball-p.position).normalized())>0.87
-		var slow_owner := _flat(owner.get("velocity",Vector3.ZERO)).length()<1.5
-		exposed = exposed or (slow_owner and live_distance<minf(1.2,reach) and facing_ball)
-	elif small: exposed = exposed or (visible and distance<=reach)
-	if observed_carrier==int(snapshot.get("carrier_id",-1)) and exposed and distance<=reach and _distance(p.position,ball)<=reach and float(ball.y)<=float(cap.get("ground_receive_height",0.40)) and p.get("tackle_ready",true) and p.get("foot_idle",true) and p.get("can_reach",true):
-		intent.action = "TACKLE"
-		intent.reason = "poke_exposed_ball"
-		intent.aim_point = ball
-	var predicted:Vector3=ball+_flat(snapshot.ball_velocity)*.14
-	var approach:Vector3=_flat(p.position-predicted).normalized()
-	if _flat(owner.get("velocity",Vector3.ZERO)).length()>1.2 and _distance(p.position,ball)>1.4:
-		var goal_side:Vector3=_flat(_world(Vector2(0,-float(snapshot.field_half_length)),team)-predicted).normalized()
-		approach=(approach*.65+goal_side*.35).normalized()
-	var ball_side:Vector3=predicted+approach*.62
-	# Approach the ball-facing side of a stationary shield instead of pressing
-	# forever into the carrier's torso. Waypoint stays outside the body radius.
-	if _flat(owner.get("velocity",Vector3.ZERO)).length()<1.2 and _distance(p.position,ball)<3.0:
-		var exposed_side:Vector3=_flat(ball-owner.position).normalized()
-		if exposed_side.length_squared()<.01:exposed_side=_flat(owner.get("facing",Vector3.FORWARD)).normalized()
-		var from_owner:Vector3=_flat(p.position-owner.position).normalized()
-		if from_owner.dot(exposed_side)<.35:
-			var flank:Vector3=Vector3(-exposed_side.z,0,exposed_side.x)
-			if flank.dot(from_owner)<0:flank=-flank
-			ball_side=owner.position+flank*.78+exposed_side*.32
-		else:ball_side=ball+exposed_side*.60
-		target=_local(ball_side,team)
-		intent.pace=clampf(_distance(p.position,ball_side)*2.7+.25,.65,3.2)
-		intent.reason="approach_open_shoe_lane"
-	elif _distance(p.position,ball)<3.0 and p.get("can_reach",true):
-		target=_local(ball_side,team)
-		intent.pace=clampf(_distance(p.position,ball_side)*3.0+.65,1.1,4.2)
-		intent.reason="track_touch_window"
-	intent.move_target = _world(_clip_pitch(target,snapshot,0.6),team)
-	# The nearby presser reads completed visible balance, never future inputs.
-	if intent.action=="NONE" and _distance(p.position,owner.position)<3.0 and not exposed:
-		var visible_cue:Vector3=owner.get("visible_weight_cue",Vector3.ZERO)
-		intent.move_target+=visible_cue.limit_length(.16)
-		intent.move_target=_world(_clip_pitch(_local(intent.move_target,team),snapshot,.6),team)
+	var goalward:Vector3=_flat(_world(Vector2(0,-float(snapshot.field_half_length)),team)-owner.position).normalized()
+	var geometry=preload("res://scripts/body_pressure.gd")
+	intent.move_target=geometry.target(p.position,owner.position,owner.get("velocity",Vector3.ZERO),ball,goalward)
+	intent.move_target=_world(_clip_pitch(_local(intent.move_target,team),snapshot,.6),team)
+	var travel:float=_distance(p.position,intent.move_target)
+	var gap:float=_distance(p.position,owner.position)
+	var brake:float=maxf(1.0,float(cap.get("brake_deceleration",5.5)))
+	var chase:bool=_flat(owner.get("velocity",Vector3.ZERO)).length()>3.4 and travel>1.2
+	intent.pace=minf(6.2 if gap>3.0 or chase else 3.4,sqrt(2.0*brake*maxf(0,travel-.12)))
+	intent.face_direction=geometry.facing(_flat(ball-p.position),owner.position,goalward)
+	intent.defensive_stance=gap<3.6 and not chase
+	intent.reason="contain_inside_show_outside" if gap<3.0 else "close_inside_lane"
+	var shoe_lane:Vector3=_flat(ball-p.position)
+	var carrier_screen:Vector3=Geometry3D.get_closest_point_to_segment(_flat(owner.position),_flat(p.position),_flat(ball))
+	var exposed:bool=_distance(carrier_screen,owner.position)>.34 or shoe_lane.length()<_distance(p.position,owner.position)-.12
+	var motion:Vector3=_flat(p.get("velocity",Vector3.ZERO))
+	var overshooting:bool=motion.length()>2.8 and motion.normalized().dot(shoe_lane.normalized())<.55
+	if exposed and not overshooting and shoe_lane.length()<float(cap.get("tackle_reach",1.18)) and ball.y<.40 and observed_carrier==int(owner.id) and p.get("can_reach",false) and p.get("tackle_ready",true) and p.get("foot_idle",true):
+		intent.action="TACKLE"
+		intent.aim_point=ball
+		intent.reason="poke_exposed_ball"
+	elif not exposed and gap<3.0:
+		intent.move_target+=Vector3(owner.get("visible_weight_cue",Vector3.ZERO)).limit_length(.16)
 
 func _receiving_point(p: Dictionary, snapshot: Dictionary) -> Vector3:
 	var ball: Vector3 = snapshot.ball_position
@@ -2087,7 +2029,7 @@ func _resume_receive(p:Dictionary,intent:Dictionary,snapshot:Dictionary,members:
 
 func _route_support(p:Dictionary,intent:Dictionary,snapshot:Dictionary,actors:Array[Dictionary])->void:
 	var id:int=int(p.id)
-	if p.get("human",false) or id==int(snapshot.carrier_id) or intent.receive or intent.press or intent.role==Roles.GOALKEEPER or intent.action!="NONE" or intent.get("defensive_task",{}).get("task","") in [DefensiveTasks.COVER,DefensiveTasks.MARK,DefensiveTasks.SCREEN,DefensiveTasks.RECOVER]:
+	if p.get("human",false) or id==int(snapshot.carrier_id) or intent.receive or intent.press or intent.role==Roles.GOALKEEPER or intent.action!="NONE" or intent.get("defensive_task",{}).get("task","") in [DefensiveTasks.COVER,DefensiveTasks.MARK,DefensiveTasks.SCREEN,DefensiveTasks.RECOVER,DefensiveTasks.HOLD]:
 		support_detours.erase(id);return
 	# Keep the semantic receiver/runner endpoint intact; this owns only off-ball travel.
 	var goal:Vector3=intent.move_target

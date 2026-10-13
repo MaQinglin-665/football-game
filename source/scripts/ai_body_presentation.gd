@@ -68,7 +68,7 @@ func apply_before_support(avatar,state:Dictionary,action:Dictionary)->void:
 	var hips:int=_id(avatar,"hips")
 	var hip_position:Vector3=avatar.skeleton.get_bone_pose_position(hips)
 	# Small COM change bends the knees through final fixed-foot support IK.
-	hip_position.y-=.065*guard+.015*brace
+	hip_position.y-=.075*guard+.015*brace
 	hip_position+=Vector3(wave*.006*walk,-.027*close+.005*cos(TAU*phase*2)*run,0)*gait
 	if kind=="PASS":hip_position+=Vector3(-side*.012,-.012,-.008)*envelope
 	avatar.skeleton.set_bone_pose_position(hips,hip_position)
@@ -114,9 +114,9 @@ func apply_before_support(avatar,state:Dictionary,action:Dictionary)->void:
 		for suffix in ["L","R"]:
 			var sign_side:float=-1.0 if suffix=="L" else 1.0
 			var wave_arm:float=sign_side*sin(TAU*phase-.12)
-			var shoulder:float=(wave_arm*lerpf(.20,.60,pace)+.08*pace*absf(wave_arm))*moving
+			var shoulder:float=(wave_arm*lerpf(.20,.60,pace)*(1.0-.72*guard)+.08*pace*absf(wave_arm))*moving
 			var flex:float=lerpf(.32,1.15,pace)-.30*pace*wave_arm+.18*guard
-			var upper_direction:Vector3=chest_basis*Vector3(sign_side*(.09+.045*pace+.07*guard),-cos(shoulder),sin(shoulder)).normalized()
+			var upper_direction:Vector3=chest_basis*Vector3(sign_side*(.09+.045*pace+.18*guard),-cos(shoulder),sin(shoulder)).normalized()
 			var lower_direction:Vector3=chest_basis*Vector3(sign_side*.055,-cos(shoulder-flex),sin(shoulder-flex)).normalized()
 			_aim_segment(avatar,"upper_arm."+suffix,"forearm."+suffix,upper_direction)
 			_aim_segment(avatar,"forearm."+suffix,"hand."+suffix,lower_direction)

@@ -73,7 +73,7 @@ func tick(snapshot: Dictionary, delta: float) -> Dictionary:
 				if opponent.is_empty(): reason = "target_unavailable"
 				elif int(opponent.id)==owner_id:
 					task.task=HOLD # Reassign directly this tick; a pass to your mark is not a forced retreat.
-				elif _distance(opponent.position,task.origin)>18.0 or _distance(opponent.position,_anchor(p,snapshot))>(13.0 if snapshot.get("eleven_duties",false) else 7.0): reason = "target_left_zone"
+				elif _distance(opponent.position,task.origin)>18.0 or not _in_zone(p,opponent.position,snapshot,1.25): reason = "target_left_zone"
 				elif clock>=float(task.deadline): task.deadline=clock+3.8
 			elif task.task==COVER:
 				if _distance(snapshot.ball_position,task.origin)>20.0: reason = "ball_left_zone"
@@ -159,7 +159,7 @@ func tick(snapshot: Dictionary, delta: float) -> Dictionary:
 			var task: Dictionary = tasks[id]
 			match String(task.task):
 				PRESS: task.target = _press_point(owner,snapshot)
-				COVER: task.target = _cover_point(snapshot.ball_position,goal,snapshot)
+				COVER: task.target = _zone_point(p,_cover_point(snapshot.ball_position,goal,snapshot),snapshot,1.15)
 				MARK: task.target = _mark_point(by_id[int(task.target_id)],goal,snapshot)
 				SCREEN: task.target = _screen_point(by_id[int(task.target_id)],goal,snapshot)
 				_:
@@ -198,6 +198,7 @@ func _press_exit(p: Dictionary, task: Dictionary, owner: Dictionary, by_id: Dict
 	if _distance(point,task.origin)>16.0*_tactical_scale(snapshot) or _distance(p.position,point)>22.0*_tactical_scale(snapshot): return "ball_left_zone"
 	if actual_owner>=0 and _goal_side(p.position,point,goal)<-maxf(1.2,1.8*_tactical_scale(snapshot)): return "beaten_recover_goal_side"
 	if snapshot.get("eleven_duties",false) and point.z*(-1.0 if int(p.team)==0 else 1.0)>float(snapshot.field_half_length)*(.43 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==5 else .22 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==6 else .32) and _distance(p.position,point)>5.5:return "return_to_mid_block"
+	if actual_owner>=0 and not _in_zone(p,point,snapshot,1.65) and _distance(p.position,point)>3.8:return "carrier_left_responsibility"
 	if not by_id.has(int(p.id)): return "owner_unavailable"
 	return ""
 
@@ -219,6 +220,7 @@ func _best(members: Array[Dictionary], kind: String, target: Dictionary, snapsho
 		if not existing.is_empty():
 			if existing.task not in ([HOLD,PRESS,COVER,MARK,SCREEN] if kind==PRESS else [HOLD,PRESS]) or (existing.task==PRESS and kind!=PRESS): continue
 		if kind==PRESS:
+			if not target.is_empty() and not _in_zone(p,point,snapshot,1.35) and _distance(p.position,point)>3.0:continue
 			var remaining:float=float(snapshot.get("loss_until",{}).get(int(p.team),0))-float(snapshot.get("tactical_clock",0))
 			if remaining>1.4:
 				var supported:bool=false
@@ -228,7 +230,7 @@ func _best(members: Array[Dictionary], kind: String, target: Dictionary, snapsho
 			if snapshot.get("eleven_duties",false) and point.z*(-1.0 if int(p.team)==0 else 1.0)>float(snapshot.field_half_length)*(.43 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==5 else .22 if int(snapshot.get("learning_actions",{}).get(int(p.team),0))==6 else .32) and _distance(p.position,point)>5.5:continue
 			if _distance(p.position,point)>22.0*_tactical_scale(snapshot) or (not target.is_empty() and _goal_side(p.position,point,goal)<-3.0): continue
 		elif kind in [MARK,SCREEN]:
-			if _distance(_anchor(p,snapshot),point)>16.0: continue
+			if not _in_zone(p,point,snapshot): continue
 		var cost: float = _eta(p,point,snapshot)
 		if kind==COVER: cost += -.35 if role.get("duty","")=="hold" else .1 if role.role=="midfielder" else 1.4 if role.role in ["winger","striker","full_back"] else .6
 		if snapshot.get("eleven_duties",false):
@@ -349,10 +351,10 @@ func _eleven_cover_point(ball: Vector3, goal: Vector3, snapshot: Dictionary) -> 
 			var depth := clampf(float(snapshot.field_half_length)*0.067,2.8,4.2)
 			var strategy:int=int(snapshot.get("learning_actions",{}).get(team,0))
 			depth*=.85 if strategy==5 else 1.2 if strategy==6 else 1.0
-			var outward := Vector3(signf(ball.x),0,0)*minf(absf(ball.x)/float(snapshot.field_half_width),1.0)*float(snapshot.field_half_width)*0.035
+			var inside := Vector3(-signf(ball.x),0,0)*minf(absf(ball.x)/float(snapshot.field_half_width),1.0)*float(snapshot.field_half_width)*0.045
 			# Do not follow a presser behind the carrier; retain goal-side cover.
 			var origin:Vector3=ball if _goal_side(position,ball,goal)<0 else ball+(position-ball).limit_length(depth)
-			point = origin+toward_goal*depth+outward
+			point = origin+toward_goal*depth+inside
 			break
 	# Cover the dangerous run behind pressure, while markers retain their own opponents.
 	var defending_team:int=0 if goal.z>0 else 1
@@ -448,3 +450,21 @@ func _incoming_meet(snapshot:Dictionary,by_id:Dictionary)->Vector3:
 		var cost:float=maxf(arrival,horizon)+maxf(0,arrival-horizon)*2
 		if cost<best:best=cost;choice=Vector3(sample.x,0,sample.z)
 	return choice
+
+# Role-relative zones move with the existing team formation, not world-fixed spots.
+func _zone_size(p:Dictionary,snapshot:Dictionary)->Vector2:
+	var role:String=String(roster[int(p.id)].role)
+	var scale:float=_tactical_scale(snapshot)
+	return Vector2(8.0 if role=="center_back" else 11.0,11.0 if role=="center_back" else 15.0)*scale
+func _in_zone(p:Dictionary,point:Vector3,snapshot:Dictionary,slack:float=1.0)->bool:
+	var delta:Vector3=point-_anchor(p,snapshot)
+	var size:Vector2=_zone_size(p,snapshot)*slack
+	# Last-ditch protection inside the central box remains available.
+	var goal:Vector3=_goal(int(p.team),snapshot)
+	if absf(point.x)<float(snapshot.field_half_width)*.24 and _distance(point,goal)<float(snapshot.field_half_length)*.25:return true
+	return absf(delta.x)<size.x and absf(delta.z)<size.y
+func _zone_point(p:Dictionary,point:Vector3,snapshot:Dictionary,slack:float=1.0)->Vector3:
+	if _in_zone(p,point,snapshot,slack):return point
+	var anchor:Vector3=_anchor(p,snapshot)
+	var size:Vector2=_zone_size(p,snapshot)*slack
+	return _clip(anchor+Vector3(clampf(point.x-anchor.x,-size.x,size.x),0,clampf(point.z-anchor.z,-size.y,size.y)),snapshot)
