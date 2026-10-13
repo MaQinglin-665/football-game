@@ -9,6 +9,7 @@ var pipeline_off:=false
 var output:=""
 var tick_us:Array[int]=[]
 var tactics_us:Array[int]=[]
+var spike_kinds:={}
 var pose_us:Array[int]=[]
 func _initialize()->void:
 	for a in OS.get_cmdline_user_args():
@@ -37,9 +38,10 @@ func run()->void:
 		tick_us.append(now-last);last=now
 		if i>0:
 			tactics_us.append(SpikeWatch.tactics_us);pose_us.append(SpikeWatch.pose_us)
-		SpikeWatch.tactics_us=0;SpikeWatch.pose_us=0
+		if i>0 and SpikeWatch.tactics_us>8000:spike_kinds[SpikeWatch.tactics_kind]=int(spike_kinds.get(SpikeWatch.tactics_kind,0))+1
+		SpikeWatch.tactics_us=0;SpikeWatch.pose_us=0;SpikeWatch.tactics_kind=""
 	var seg:={"snapshot_ms_total":SpikeWatch.seg_snapshot_us/1000.0,"director_ms_total":SpikeWatch.seg_director_us/1000.0}
-	var r:={"pipeline_enabled":not pipeline_off,"scope":"Headless artificial LIVE fixture; interval includes engine and scheduling, no GPU or actual FPS conclusion", "segments":seg,"ticks":n_ticks,"frame":_stats(tick_us),"tactics":_stats(tactics_us),"pose":_stats(pose_us),"refreshes":game.tactics_bridge.refresh_count,"players":game.players.size()}
+	var r:={"pipeline_enabled":not pipeline_off,"scope":"Headless artificial LIVE fixture; interval includes engine and scheduling, no GPU or actual FPS conclusion", "segments":seg,"ticks":n_ticks,"frame":_stats(tick_us),"tactics":_stats(tactics_us),"pose":_stats(pose_us),"refreshes":game.tactics_bridge.refresh_count,"players":game.players.size(),"tactics_spike_kinds":spike_kinds}
 	print("BENCH ",JSON.stringify(r))
 	if output!="":FileAccess.open(output,FileAccess.WRITE).store_string(JSON.stringify(r,"  "))
 	quit()

@@ -11,6 +11,7 @@ static var human_pose_us:=0
 static var tactics_us:=0
 static var seg_snapshot_us:=0 # R004 bench split
 static var seg_director_us:=0
+static var tactics_kind:="" # R004 bench: which tactics path ran this tick
 static var world_us:=0
 static var proxy_us:=0
 static var promoted:=0
