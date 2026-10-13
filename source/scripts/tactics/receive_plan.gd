@@ -269,7 +269,7 @@ func _eta(p: Dictionary, point: Vector3, face: Vector3, snapshot: Dictionary) ->
 	var facing: Vector3 = p.get("facing",face)
 	var turn := acos(clampf(Vector3(facing.x,0,facing.z).normalized().dot(face),-1,1))/maxf(1,float(cap.get("turn_speed",5.8)))
 	# In this host movement and facing rotate concurrently, rather than RCSS cycles.
-	var reaction:float=.045 if not active.is_empty() and int(active.get("receiver_id",-1))==int(p.id) else float(cap.get("reaction_delay",.16))
+	var reaction:float=.045 if not active.is_empty() and int(active.get("receiver_id",-1))==int(p.id) else float(p.get("reaction_delay",cap.get("reaction_delay",.16)))
 	return {"ready_time":maxf(travel,minf(turn,.12))+reaction+.035,"turn_time":turn}
 
 func _event(kind: String, reason: String) -> void:

@@ -476,6 +476,7 @@ func _apply_defensive_task(p: Dictionary, intent: Dictionary, task: Dictionary, 
 	intent.press = false
 	intent.receive = false
 	intent.pace = 5.8 if task.task==DefensiveTasks.RECOVER or (eleven_duties and intent.duty in ["overlap","width"] and intent.phase=="transition_defend") else 5.4
+	if task.task==DefensiveTasks.RECOVER:intent.pace=AiAwareness.recover_pace(intent.pace,travel.length()) # R004 track-back
 	var brake:float=maxf(1.0,float(snapshot.get("capabilities",{}).get("brake_deceleration",5.5)))
 	intent.pace=minf(intent.pace,sqrt(2.0*brake*maxf(0,travel.length()-.20)))
 	intent.reason = "defense_"+String(task.task).to_lower()
@@ -1845,6 +1846,7 @@ func _evaluate_carry(p:Dictionary,point:Vector3,opponents:Array[Dictionary],risk
 	if travel.length()>2.8:
 		var momentum_angle:float=travel.normalized().angle_to(direction)
 		score-=maxf(0,momentum_angle-deg_to_rad(55.0))*2.0
+	if not snapshot.is_empty():score-=AiAwareness.touchline_penalty(point,float(snapshot.field_half_width),float(snapshot.field_half_length)) # R004
 	var style:String="ADVANCE" if progress>2.5 and angle<.45 else "CUT" if progress>1.0 else "SHIELD_EXIT"
 	return {"point":point,"progress":progress,"score":score,"clearance":clearance,"immediate":route.immediate,"style":style,"risk":risk}
 func _pass_profile(distance:float,snapshot:Dictionary)->Dictionary:

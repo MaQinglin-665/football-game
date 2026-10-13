@@ -210,6 +210,7 @@ func _build_snapshot() -> Dictionary:
 		actors[i].can_pass=game.ball.can_pass(actor)
 		actors[i].visible_weight_cue=canonical(actor.dribble_balance.cue)
 		actors[i].ball_offset=canonical(game.ball.position-actor.position)
+		actors[i].reaction_delay=AiAwareness.reaction_delay(float(actors[i].get("ability_touch",1.0))) # R004
 		actors[i].ball_relative_speed=(game.ball.velocity-actor.velocity).length()
 		actors[i].ball_velocity=canonical(game.ball.velocity)
 		actors[i].brake_deceleration=preload("res://scripts/movement_inertia.gd").braking_rate(actor.profile)

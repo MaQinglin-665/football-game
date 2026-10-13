@@ -7,8 +7,20 @@ var recent_passes:Dictionary={}
 var events:Array[Dictionary]=[]
 var serial:int=0
 var box_reservations:Dictionary={}
+## R004 awareness: vision cone + scan memory, softmax with hysteresis, call boost.
+const AWARENESS_ENABLED:=true
+var last_keys:Dictionary={}
+var scan_memory:Dictionary={}
+var rng:=_seeded()
+static func _seeded()->RandomNumberGenerator:
+	var r:=RandomNumberGenerator.new();r.randomize();return r
+func _seen(team:int,owner:Dictionary,receiver:Dictionary,now:float)->bool:
+	var key:="%d:%d"%[int(owner.id),int(receiver.id)]
+	if AiAwareness.in_vision(owner.position,owner.get("facing",Vector3.FORWARD),receiver.position):
+		scan_memory[key]=now;return true
+	return now-float(scan_memory.get(key,-99.0))<=AiAwareness.SCAN_MEMORY_S
 func reset()->void:
-	plans.clear();recent_passes.clear();forward_runs.clear();box_reservations.clear()
+	last_keys.clear();scan_memory.clear();plans.clear();recent_passes.clear();forward_runs.clear();box_reservations.clear()
 func confirm_pass(team:int,actor:int,receiver:int,now:float)->void:
 	recent_passes[actor]={"team":team,"until":now+2.2}
 	var plan:Dictionary=plans.get(team,{})
@@ -130,9 +142,21 @@ func choose(team:int,owner:Dictionary,members:Array[Dictionary],opponents:Array[
 	_advance_run(team,owner,members,opponents,snapshot,roster,now,assignments)
 	var choices:Array[Dictionary]=_candidates(team,owner,members,opponents,snapshot,roster,assignments,phase)
 	var selected:Dictionary={}
+	var call_id:int=int(snapshot.get("call_id",-1))
+	var visible:Array=[]
 	for choice in choices:
 		choice.score+=LearnedPolicy.bias(int(snapshot.get("learning_actions",{}).get(team,0)),String(choice.get("mode","")))
-		if selected.is_empty() or float(choice.score)>float(selected.score):selected=choice
+		if not AWARENESS_ENABLED:
+			if selected.is_empty() or float(choice.score)>float(selected.score):selected=choice
+			continue
+		var receiver_id:int=int(choice.get("delivery",{}).get("receiver",-1))
+		choice.key="%s:%d"%[String(choice.get("mode","")),receiver_id]
+		if receiver_id>=0 and receiver_id==call_id:choice.score=float(choice.score)+absf(float(choice.score))*AiAwareness.CALL_BOOST+.05
+		if receiver_id>=0 and by_id.has(receiver_id) and not _seen(team,owner,by_id[receiver_id],now):continue
+		visible.append(choice)
+	if AWARENESS_ENABLED:
+		selected=AiAwareness.select(visible,String(last_keys.get(team,"")),AiAwareness.temperature(float(owner.get("ability_touch",1.0))),rng)
+		if not selected.is_empty():last_keys[team]=String(selected.get("key",""))
 	serial+=1
 	var plan:Dictionary={"id":serial,"team":team,"mode":"SHORT","stage":"PREPARE","owner":int(owner.id),"origin":snapshot.ball_position,"until":now+.75,"started":now,"assignments":assignments,"delivery":{},"score":-100.0,"candidate_count":choices.size()}
 	if not selected.is_empty():
