@@ -78,3 +78,17 @@ Mixamo（需用户自己登录 Adobe 账号下载）
 - 等价性：tests/director_split_r004.gd 用拆分前导演副本（tests/reference/）在 60 个实时快照上比对，单次与分阶段结果逐项一致。
 - 基准（1200 tick，无窗口）：战术 P99 7.11→3.95ms，最大 12.03→5.37ms，>8ms 7→0 次。
 - 回归：与 main 一致（integration_checks 22/8，main 21/9）；ai/first_touch/controls/director_split R004 测试均通过。
+== 第八批（R006 本机反馈）==
+CPU（tests/bench_r006_cpu.gd，无窗口 11v11，每物理帧平均 ms）：
+  改前：帧 95.1（P99 174.7）；其中 其它 86.0、姿态 2.56、物理世界 1.41、AI 球员 0.99、球 0.99、match _process 1.65、match 物理 0.45、碰撞代理 0.46、战术 0.42、人类 0.14。
+  改后：帧 15.8（P99 45.6）；其中 其它 7.75、姿态 1.99、物理世界 1.29、AI 球员 0.94、球 0.68、match _process 1.66、match 物理 0.56、碰撞代理 0.37、战术 0.41、人类 0.12。
+- 主因：HUD 每帧给同一 Label 先后赋两次不同文字（控球/提示/球距），每帧触发中文字形重排+系统字体回退；无窗口约 110ms/帧。改为一次拼好且仅变化时赋值。Windows 上回退更快，实际收益需本机复测。
+- 物理追帧：max_physics_steps_per_frame=3（原默认 8），开启物理插值时 physics_jitter_fix=0。慢帧时游戏会略微变慢，而不是越追越卡。
+- 远处球员姿态已由 distant_pose_queue 以 30/60Hz 在 _process 中处理；球、脚、接触、AI 仍为 120Hz。本批未再降频，因为测得剩余脚本总量约 6ms/tick。
+画质：统一三档（流畅/均衡/高画质），F2 循环 3 档；抗锯齿选项改为 关闭 / 随画质。
+  流畅=FXAA，均衡=2x MSAA，高=仅 TAA（无 MSAA）。FSR2 时三者全关。SSIL 仅高画质 + 增强特效。旧存档 quality=3 → 2。
+屋顶：ArtGlassRoof 的平顶矩形玻璃板在四角越出斜环开口，两层半透明叠加形成明暗三角；已按超椭圆裁剪（tests/roof_seams_r006.gd，旧几何 1.98 → 0.9998）。
+  已排除：法线折叠（0.2°）与相邻楔形法线跳变（0.11°）。透明排序/阴影未改。
+看台颗粒：SSAO detail 0.4→0（密集座椅上的细节 AO 是颗粒主因之一）；看台纹理均有 mipmap+各向异性；座椅 LOD 距离未改（需本机看图决定）。
+ai_r004 退出 3 个资源占用：在本机无窗口与 xvfb+lavapipe Vulkan（--verbose）下均未复现，未改代码；请本机用 --verbose 运行后提供资源路径列表。
+回归：套件与 main 一致；R004/R006 测试均通过。
