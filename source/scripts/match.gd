@@ -291,7 +291,13 @@ func _ready() -> void:
 				observer.game=self
 				add_child(observer)
 				break
+	# R004: compile all match materials while the menu is up, before kickoff.
+	if SHADER_WARMUP_ENABLED and DisplayServer.get_name()!="headless":
+		shader_warmup=ShaderWarmup.new();shader_warmup.name="ShaderWarmup";add_child(shader_warmup)
+		shader_warmup.call_deferred("run",self,player.camera)
 
+const SHADER_WARMUP_ENABLED:=true
+var shader_warmup:ShaderWarmup
 const DistantPoseQueue:=preload("res://scripts/distant_pose_queue.gd")
 var distant_pose_queue:=DistantPoseQueue.new()
 func _process(delta: float) -> void:

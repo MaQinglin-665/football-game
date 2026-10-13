@@ -125,12 +125,29 @@ func _physics_process(delta: float) -> void:
 	local_standing_tackle.elapse(delta)
 	decision_elapsed += delta
 	clock -= delta
-	if clock<=0 or (contact_refresh_requested and decision_elapsed>=.075):
-		clock = .20
+	if contact_refresh_requested and decision_elapsed>=.075:
+		# Contact-driven refresh stays synchronous (responsiveness over cost).
+		clock = REFRESH_INTERVAL_S
 		var step := decision_elapsed
 		decision_elapsed = 0
 		contact_refresh_requested = false
+		_staged_snapshot.clear()
 		refresh_now(step)
+	elif not _staged_snapshot.is_empty():
+		# R004 stage 2: director + intent apply one tick after the snapshot build.
+		refresh_now(float(_staged_snapshot.step))
+	elif clock<=0:
+		clock = REFRESH_INTERVAL_S
+		var step := decision_elapsed
+		decision_elapsed = 0
+		if PIPELINE_ENABLED and game.phase==game.Phase.PLAY and game.ai_enabled:
+			# R004 stage 1: snapshot only; spreads one ~8 ms refresh over two ticks.
+			var began:int=Time.get_ticks_usec()
+			_staged_snapshot=_build_snapshot()
+			_staged_snapshot.step=step
+			SpikeWatch.tactics_us+=Time.get_ticks_usec()-began
+		else:
+			refresh_now(step)
 	elif not game.tactical_director.receive_plan.active.is_empty() and game.tactical_director.clock+decision_elapsed-receive_motion_at>=.095:
 		_refresh_receive_motion()
 	local_standing_tackle.try_due(game)
@@ -150,8 +167,23 @@ func refresh_now(delta := .20) -> void:
 	var began:int=Time.get_ticks_usec()
 	_refresh_now_impl(delta)
 	SpikeWatch.tactics_us+=Time.get_ticks_usec()-began
+## R004 scheduling (tunable). 0.20 s = original 5 Hz; 0.10 s = 10 Hz.
+const REFRESH_INTERVAL_S := 0.20
+const PIPELINE_ENABLED := true
+var _staged_snapshot: Dictionary = {}
+
 func _refresh_now_impl(delta:float) -> void:
-	if game.phase!=game.Phase.PLAY or not game.ai_enabled: return
+	if game.phase!=game.Phase.PLAY or not game.ai_enabled:
+		_staged_snapshot.clear()
+		return
+	var staged:Dictionary=_staged_snapshot if not _staged_snapshot.is_empty() else _build_snapshot()
+	_staged_snapshot={}
+	var actors: Array[Dictionary] = staged.actors
+	var snapshot: Dictionary = staged.snapshot
+	_run_director(actors,snapshot,delta)
+
+func _build_snapshot() -> Dictionary:
+	var _t0:int=Time.get_ticks_usec()
 	var actors: Array[Dictionary] = []
 	for i in range(game.players.size()):
 		var actor: Node3D = game.players[i]
@@ -190,7 +222,13 @@ func _refresh_now_impl(delta:float) -> void:
 		snapshot.control_hint_id=game.players.find(previous)
 	snapshot.small_sided = game.training_configuration!=null
 	snapshot.tactical_scale = clampf(game.field_half_length/52.5,.40,1.0)
+	SpikeWatch.seg_snapshot_us+=Time.get_ticks_usec()-_t0
+	return {"actors":actors,"snapshot":snapshot}
+
+func _run_director(actors:Array[Dictionary],snapshot:Dictionary,delta:float) -> void:
+	var _t1:int=Time.get_ticks_usec()
 	observation = game.tactical_director.tick(snapshot,delta)
+	SpikeWatch.seg_director_us+=Time.get_ticks_usec()-_t1
 	receive_motion_at=game.tactical_director.clock
 	team_observation = observation.get("teams",{})
 	_refresh_standing_tackle_observation(snapshot)
