@@ -110,6 +110,8 @@ func _warm_delivery_tables()->void:
 	set_meta("delivery_warm_usec",Time.get_ticks_usec()-began)
 
 func _physics_process(delta: float) -> void:
+	if not _dir_ctx.is_empty() and (game.phase!=game.Phase.PLAY or not game.ai_enabled or game.services.rules.state!=game.Rules.State.LIVE):
+		_complete_director_stages(false) # keep director state consistent; intents discarded like a dropped snapshot
 	if game.phase==game.Phase.PAUSED:
 		_staged_snapshot.clear()
 		local_standing_tackle.clear()
@@ -135,9 +137,25 @@ func _physics_process(delta: float) -> void:
 		decision_elapsed = 0
 		contact_refresh_requested = false
 		_staged_snapshot.clear()
-		refresh_now(step)
+		SpikeWatch.tactics_kind="contact"
+		_complete_director_stages(true)
+		if CONTACT_STAGING_ENABLED and pipeline_enabled and DIRECTOR_STAGING_ENABLED and game.phase==game.Phase.PLAY:
+			# R004: contact snapshot is taken now; director phases follow on the next ticks.
+			var began:int=Time.get_ticks_usec()
+			_staged_snapshot=_build_snapshot()
+			_staged_snapshot.step=step
+			SpikeWatch.tactics_us+=Time.get_ticks_usec()-began
+		else:
+			refresh_now(step)
+	elif not _dir_ctx.is_empty():
+		# R004 stages 3..5: one director phase per physics tick.
+		var began:int=Time.get_ticks_usec()
+		SpikeWatch.tactics_kind="stage%d"%(_dir_stage+1)
+		_advance_director_stage()
+		SpikeWatch.tactics_us+=Time.get_ticks_usec()-began
 	elif not _staged_snapshot.is_empty():
 		# R004 stage 2: director + intent apply one tick after the snapshot build.
+		SpikeWatch.tactics_kind="director"
 		refresh_now(float(_staged_snapshot.step),true)
 	elif clock<=0:
 		clock = REFRESH_INTERVAL_S
@@ -146,12 +164,14 @@ func _physics_process(delta: float) -> void:
 		if pipeline_enabled and game.phase==game.Phase.PLAY and game.ai_enabled:
 			# R004 stage 1: snapshot only; spreads one ~8 ms refresh over two ticks.
 			var began:int=Time.get_ticks_usec()
+			SpikeWatch.tactics_kind="snapshot"
 			_staged_snapshot=_build_snapshot()
 			_staged_snapshot.step=step
 			SpikeWatch.tactics_us+=Time.get_ticks_usec()-began
 		else:
 			refresh_now(step)
 	elif not game.tactical_director.receive_plan.active.is_empty() and game.tactical_director.clock+decision_elapsed-receive_motion_at>=.095:
+		SpikeWatch.tactics_kind="receive_motion"
 		_refresh_receive_motion()
 	local_standing_tackle.try_due(game)
 
@@ -175,16 +195,68 @@ func refresh_now(delta := .20, use_staged:bool=false) -> void:
 const REFRESH_INTERVAL_S := 0.20
 const PIPELINE_ENABLED := true
 var pipeline_enabled := PIPELINE_ENABLED # Headless A/B only; normal entry retains default.
+## R004: spread director.tick over ticks (begin -> team 0 -> team 1 -> finish+apply).
+## false = old single director.tick call on the tick after the snapshot.
+const DIRECTOR_STAGING_ENABLED := true
+## R004: contact-triggered refreshes also use the staged path (+4 ticks, ~33 ms latency).
+## false = old synchronous contact refresh (one ~8 ms tick).
+const CONTACT_STAGING_ENABLED := true
 var _staged_snapshot: Dictionary = {}
+var _dir_ctx: Dictionary = {}
+var _dir_stage := 0
+var _dir_actors: Array[Dictionary] = []
+var _dir_snapshot: Dictionary = {}
+var staged_director_ticks := 0
+
+func _advance_director_stage() -> void:
+	var t:int=Time.get_ticks_usec()
+	if _dir_stage<2:
+		game.tactical_director.tick_team(_dir_ctx,_dir_stage)
+		_dir_stage+=1
+		SpikeWatch.seg_director_us+=Time.get_ticks_usec()-t
+		return
+	observation=game.tactical_director.tick_finish(_dir_ctx)
+	SpikeWatch.seg_director_us+=Time.get_ticks_usec()-t
+	_dir_ctx={}
+	staged_director_ticks+=1
+	_apply_director(_dir_actors,_dir_snapshot)
+
+## Finishes an in-flight staged director tick now, so a contact/external refresh never
+## interleaves with it (director clock/state advance exactly once per tick).
+func _complete_director_stages(apply:bool) -> void:
+	if _dir_ctx.is_empty():return
+	var t:int=Time.get_ticks_usec()
+	while _dir_stage<2:
+		game.tactical_director.tick_team(_dir_ctx,_dir_stage)
+		_dir_stage+=1
+	var result:Dictionary=game.tactical_director.tick_finish(_dir_ctx)
+	SpikeWatch.seg_director_us+=Time.get_ticks_usec()-t
+	_dir_ctx={}
+	staged_director_ticks+=1
+	if apply:
+		observation=result
+		_apply_director(_dir_actors,_dir_snapshot)
 
 func _refresh_now_impl(delta:float,use_staged:bool=false) -> void:
 	if game.phase!=game.Phase.PLAY or not game.ai_enabled:
 		_staged_snapshot.clear()
 		return
-	var staged:Dictionary=_staged_snapshot if use_staged and _staged_valid() else _build_snapshot()
+	_complete_director_stages(true)
+	var from_pipeline:=use_staged and _staged_valid()
+	var staged:Dictionary=_staged_snapshot if from_pipeline else _build_snapshot()
 	_staged_snapshot={}
 	var actors: Array[Dictionary] = staged.actors
 	var snapshot: Dictionary = staged.snapshot
+	if DIRECTOR_STAGING_ENABLED and from_pipeline:
+		var t:int=Time.get_ticks_usec()
+		var ctx:Dictionary=game.tactical_director.tick_begin(snapshot,delta)
+		SpikeWatch.seg_director_us+=Time.get_ticks_usec()-t
+		if ctx.has("result"):
+			observation=ctx.result
+			_apply_director(actors,snapshot)
+			return
+		_dir_ctx=ctx;_dir_stage=0;_dir_actors=actors;_dir_snapshot=snapshot
+		return
 	_run_director(actors,snapshot,delta)
 
 func _staged_valid()->bool:
@@ -246,6 +318,9 @@ func _run_director(actors:Array[Dictionary],snapshot:Dictionary,delta:float) -> 
 	var _t1:int=Time.get_ticks_usec()
 	observation = game.tactical_director.tick(snapshot,delta)
 	SpikeWatch.seg_director_us+=Time.get_ticks_usec()-_t1
+	_apply_director(actors,snapshot)
+
+func _apply_director(actors:Array[Dictionary],snapshot:Dictionary) -> void:
 	receive_motion_at=game.tactical_director.clock
 	team_observation = observation.get("teams",{})
 	_refresh_standing_tackle_observation(snapshot)
