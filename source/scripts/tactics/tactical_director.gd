@@ -185,7 +185,16 @@ func record_contact(kind: String, actor_id: int, receiver_id := -1) -> void:
 	elif kind=="RECEIVE":
 		contact_counts.receives += 1
 
+## R004: tick is split into begin / per-team / finish stages. tick() runs them
+## back to back (identical to the former single call); a host may run them on
+## consecutive frames via tick_begin/tick_team/tick_finish with the returned ctx.
 func tick(snapshot: Dictionary, delta: float) -> Dictionary:
+	var ctx: Dictionary = tick_begin(snapshot,delta)
+	if ctx.has("result"): return ctx.result
+	for team in [0,1]: tick_team(ctx,team)
+	return tick_finish(ctx)
+
+func tick_begin(snapshot: Dictionary, delta: float) -> Dictionary:
 	clock += clampf(delta,0.0,0.5)
 	snapshot.learning_actions=learned_policy.tick(snapshot,delta)
 	pass_options.clear()
@@ -198,7 +207,7 @@ func tick(snapshot: Dictionary, delta: float) -> Dictionary:
 			by_id[int(p.id)] = p
 	if active.is_empty():
 		cancel_tactical_tasks("no_active_players")
-		return {"intents":{},"teams":{},"clock":clock}
+		return {"result":{"intents":{},"teams":{},"clock":clock}}
 	var owner_id: int = int(snapshot.get("carrier_id",-1))
 	snapshot.tactical_clock=clock
 	var owner: Dictionary = by_id.get(owner_id,{})
@@ -257,98 +266,128 @@ func tick(snapshot: Dictionary, delta: float) -> Dictionary:
 	var defense := defensive_tasks.tick(defense_snapshot,delta)
 	var intents: Dictionary = {}
 	var teams: Dictionary = {}
-	for team in [0,1]:
-		var phase := _phase(team,possession_team)
-		var members: Array[Dictionary] = []
-		var opponents: Array[Dictionary] = []
-		for p in active:
-			if int(p.team)==team:
-				members.append(p)
-			else:
-				opponents.append(p)
-		var presser: int = int(defense.teams.get(team,{}).get("presser_id",-1)) if possession_team!=team else _pick_presser(team,members,owner,possession_team,receiver_id,in_flight,snapshot)
-		if hint_id>=0 and possession_team==team and not in_flight:presser=hint_id
-		if owner_id<0 and not in_flight and hint_id<0:
-			for candidate:Dictionary in members:
-				if roster[int(candidate.id)].role!=Roles.GOALKEEPER or candidate.get("human",false):continue
-				var local_ball:Vector2=_local(snapshot.ball_position,team)
-				if local_ball.y < -float(snapshot.field_half_length)+6.5 and absf(local_ball.x)<6.0 and _keeper_claim_window(candidate,snapshot).safe:
-					presser=int(candidate.id)
-					break
-		if snapshot.get("ball_held",false):presser=-1
-		pressers[team] = presser
-		teams[team] = {"phase":phase,"style":styles.get(team,SHORT_PASS),"presser_id":presser,"transition_remaining":maxf(0,float(transition_until.get(team,0))-clock)}
-		snapshot.run_reservations={}
-		if not third_man.is_empty() and third_man.state!="SECOND_IN_FLIGHT" and by_id.get(int(third_man.runner_id),{}).get("team",-1)==team:
-			snapshot.run_reservations[int(third_man.runner_id)]=third_man.runner_target
-		if not combination.is_empty() and combination.state!="RETURN_IN_FLIGHT" and by_id.get(int(combination.runner_id),{}).get("team",-1)==team:
-			snapshot.run_reservations[int(combination.runner_id)]=combination.runner_goal
-		if in_flight and int(receiver.team)==team:snapshot.run_reservations[receiver_id]=reception.approach_point
-		var attack_plan:Dictionary=team_attack.choose(team,hand_owner if not hand_owner.is_empty() else owner,members,opponents,snapshot,roster,clock,phase)
-		teams[team].attack_mode=attack_plan.get("mode","")
-		teams[team].shared_plan=attack_plan.duplicate(true)
-		var support_points:Dictionary={}
-		for support_id in attack_plan.get("assignments",{}):
-			support_points[int(support_id)]=attack_plan.assignments[support_id].point
-		for support_id in support_points:
-			var offer: Dictionary = by_id.get(int(support_id),{})
-			if not offer.is_empty() and _distance(offer.position,support_points[support_id])<2.0 and _lane_clear(snapshot.ball_position,offer.position,opponents,1.2) and _onside_receiver(offer,opponents,snapshot):
-				requested_support[int(support_id)] = true
-		teams[team].support_ids = []
-		for p in members:
-			var role: Dictionary = roster[int(p.id)]
-			var intent := _intent(p,role,phase,snapshot)
-			var target: Vector2
-			var ball_local := _local(snapshot.ball_position,team)
-			if in_flight and int(p.id)==receiver_id:
-				_apply_receive_plan(p,intent,reception)
-			elif int(p.id)==presser and owner_id<0 and role.role!=Roles.GOALKEEPER:
-				_press(p,intent,owner,snapshot)
-			elif not third_man.is_empty() and third_man.state!="SECOND_IN_FLIGHT" and int(p.id)==int(third_man.runner_id):
-				intent.third_man_plan = third_man.duplicate(false)
-				intent.move_target = third_man.runner_target
-				intent.face_direction = _flat(snapshot.ball_position-p.position).normalized()
-				var run_gap: float = _distance(p.position,third_man.runner_target)
-				var brake: float = maxf(1.0,float(snapshot.get("capabilities",{}).get("brake_deceleration",5.5)))
-				intent.pace = minf(6.2,sqrt(2.0*brake*maxf(0.0,run_gap-.18)))
+	return {"snapshot":snapshot,"delta":delta,"active":active,"by_id":by_id,"owner_id":owner_id,"owner":owner,"owner_team":owner_team,"hand_owner":hand_owner,"reception":reception,"combination":combination,"receiver_id":receiver_id,"receiver":receiver,"in_flight":in_flight,"hint_id":hint_id,"possession_team":possession_team,"defense":defense,"intents":intents,"teams":teams}
+
+func tick_team(ctx: Dictionary, team: int) -> void:
+	var snapshot: Dictionary = ctx.snapshot
+	var active: Array[Dictionary] = ctx.active
+	var by_id: Dictionary = ctx.by_id
+	var owner_id: int = ctx.owner_id
+	var owner: Dictionary = ctx.owner
+	var hand_owner: Dictionary = ctx.hand_owner
+	var reception: Dictionary = ctx.reception
+	var combination: Dictionary = ctx.combination
+	var receiver_id: int = ctx.receiver_id
+	var receiver: Dictionary = ctx.receiver
+	var in_flight: bool = ctx.in_flight
+	var hint_id: int = ctx.hint_id
+	var possession_team: int = ctx.possession_team
+	var defense: Dictionary = ctx.defense
+	var intents: Dictionary = ctx.intents
+	var teams: Dictionary = ctx.teams
+	var phase := _phase(team,possession_team)
+	var members: Array[Dictionary] = []
+	var opponents: Array[Dictionary] = []
+	for p in active:
+		if int(p.team)==team:
+			members.append(p)
+		else:
+			opponents.append(p)
+	var presser: int = int(defense.teams.get(team,{}).get("presser_id",-1)) if possession_team!=team else _pick_presser(team,members,owner,possession_team,receiver_id,in_flight,snapshot)
+	if hint_id>=0 and possession_team==team and not in_flight:presser=hint_id
+	if owner_id<0 and not in_flight and hint_id<0:
+		for candidate:Dictionary in members:
+			if roster[int(candidate.id)].role!=Roles.GOALKEEPER or candidate.get("human",false):continue
+			var local_ball:Vector2=_local(snapshot.ball_position,team)
+			if local_ball.y < -float(snapshot.field_half_length)+6.5 and absf(local_ball.x)<6.0 and _keeper_claim_window(candidate,snapshot).safe:
+				presser=int(candidate.id)
+				break
+	if snapshot.get("ball_held",false):presser=-1
+	pressers[team] = presser
+	teams[team] = {"phase":phase,"style":styles.get(team,SHORT_PASS),"presser_id":presser,"transition_remaining":maxf(0,float(transition_until.get(team,0))-clock)}
+	snapshot.run_reservations={}
+	if not third_man.is_empty() and third_man.state!="SECOND_IN_FLIGHT" and by_id.get(int(third_man.runner_id),{}).get("team",-1)==team:
+		snapshot.run_reservations[int(third_man.runner_id)]=third_man.runner_target
+	if not combination.is_empty() and combination.state!="RETURN_IN_FLIGHT" and by_id.get(int(combination.runner_id),{}).get("team",-1)==team:
+		snapshot.run_reservations[int(combination.runner_id)]=combination.runner_goal
+	if in_flight and int(receiver.team)==team:snapshot.run_reservations[receiver_id]=reception.approach_point
+	var attack_plan:Dictionary=team_attack.choose(team,hand_owner if not hand_owner.is_empty() else owner,members,opponents,snapshot,roster,clock,phase)
+	teams[team].attack_mode=attack_plan.get("mode","")
+	teams[team].shared_plan=attack_plan.duplicate(true)
+	var support_points:Dictionary={}
+	for support_id in attack_plan.get("assignments",{}):
+		support_points[int(support_id)]=attack_plan.assignments[support_id].point
+	for support_id in support_points:
+		var offer: Dictionary = by_id.get(int(support_id),{})
+		if not offer.is_empty() and _distance(offer.position,support_points[support_id])<2.0 and _lane_clear(snapshot.ball_position,offer.position,opponents,1.2) and _onside_receiver(offer,opponents,snapshot):
+			requested_support[int(support_id)] = true
+	teams[team].support_ids = []
+	for p in members:
+		var role: Dictionary = roster[int(p.id)]
+		var intent := _intent(p,role,phase,snapshot)
+		var target: Vector2
+		var ball_local := _local(snapshot.ball_position,team)
+		if in_flight and int(p.id)==receiver_id:
+			_apply_receive_plan(p,intent,reception)
+		elif int(p.id)==presser and owner_id<0 and role.role!=Roles.GOALKEEPER:
+			_press(p,intent,owner,snapshot)
+		elif not third_man.is_empty() and third_man.state!="SECOND_IN_FLIGHT" and int(p.id)==int(third_man.runner_id):
+			intent.third_man_plan = third_man.duplicate(false)
+			intent.move_target = third_man.runner_target
+			intent.face_direction = _flat(snapshot.ball_position-p.position).normalized()
+			var run_gap: float = _distance(p.position,third_man.runner_target)
+			var brake: float = maxf(1.0,float(snapshot.get("capabilities",{}).get("brake_deceleration",5.5)))
+			intent.pace = minf(6.2,sqrt(2.0*brake*maxf(0.0,run_gap-.18)))
+			intent.support_offer = true
+			intent.reason = "third_man_recover_position" if third_man.get("recovering",false) else "third_man_forward_run"
+		elif not combination.is_empty() and int(p.id)==int(combination.runner_id) and combination.state!="RETURN_IN_FLIGHT":
+			_apply_give_go_run(intent,combination)
+		elif role.role==Roles.GOALKEEPER and owner_id!=int(p.id):
+			_keeper(p,intent,ball_local,snapshot,opponents)
+		elif owner_id==int(p.id):
+			_carrier(p,intent,snapshot,members,opponents)
+			if not combination.is_empty() and int(p.id)==int(combination.wall_id): _consider_give_go_return(intent,combination,snapshot)
+			_consider_third_man_pass(p,intent,by_id,snapshot)
+			if intent.action=="NONE" and intent.reason in ["carry_open_channel","duty_carry_space"]:
+				intent.move_target = _stable_carry_route(p,intent.move_target,opponents,snapshot)
+				intent.face_direction = _flat(intent.move_target-p.position).normalized()
+		elif int(p.id)==presser:
+			_press(p,intent,owner,snapshot)
+		else:
+			target = _anchor(p,role,phase,ball_local,owner,snapshot)
+			if possession_team==team and attack_plan.is_empty():
+				target = _open_support(target,p,ball_local,opponents,snapshot)
+				# Planned combinations replace the old unconditional timed forward run.
+			if in_flight and int(receiver.get("team",-1))==team:
+				target = _clear_pass_lane(target,p,receiver,snapshot)
+			intent.move_target = _world(_clip_role(target,role,snapshot),team)
+			if support_points.has(int(p.id)):
+				intent.move_target = support_points[int(p.id)]
 				intent.support_offer = true
-				intent.reason = "third_man_recover_position" if third_man.get("recovering",false) else "third_man_forward_run"
-			elif not combination.is_empty() and int(p.id)==int(combination.runner_id) and combination.state!="RETURN_IN_FLIGHT":
-				_apply_give_go_run(intent,combination)
-			elif role.role==Roles.GOALKEEPER and owner_id!=int(p.id):
-				_keeper(p,intent,ball_local,snapshot,opponents)
-			elif owner_id==int(p.id):
-				_carrier(p,intent,snapshot,members,opponents)
-				if not combination.is_empty() and int(p.id)==int(combination.wall_id): _consider_give_go_return(intent,combination,snapshot)
-				_consider_third_man_pass(p,intent,by_id,snapshot)
-				if intent.action=="NONE" and intent.reason in ["carry_open_channel","duty_carry_space"]:
-					intent.move_target = _stable_carry_route(p,intent.move_target,opponents,snapshot)
-					intent.face_direction = _flat(intent.move_target-p.position).normalized()
-			elif int(p.id)==presser:
-				_press(p,intent,owner,snapshot)
-			else:
-				target = _anchor(p,role,phase,ball_local,owner,snapshot)
-				if possession_team==team and attack_plan.is_empty():
-					target = _open_support(target,p,ball_local,opponents,snapshot)
-					# Planned combinations replace the old unconditional timed forward run.
-				if in_flight and int(receiver.get("team",-1))==team:
-					target = _clear_pass_lane(target,p,receiver,snapshot)
-				intent.move_target = _world(_clip_role(target,role,snapshot),team)
-				if support_points.has(int(p.id)):
-					intent.move_target = support_points[int(p.id)]
-					intent.support_offer = true
-					intent.request_ball = requested_support.has(int(p.id))
-				intent.reason = "striker_offer_forward" if intent.get("support_offer",false) and role.role==Roles.STRIKER else "open_short_support" if intent.get("support_offer",false) else "cover_lane" if possession_team!=team else "counter_run" if phase=="transition_attack" and styles.get(team)==COUNTER else "short_support" if styles.get(team)==SHORT_PASS else "attack_support"
-				intent.pace = 6.2 if intent.reason=="counter_run" or phase=="transition_defend" else 5.4
-			var task: Dictionary = defense.tasks.get(int(p.id),{})
-			if not task.is_empty() and not (task.task==DefensiveTasks.PRESS and int(p.id)!=presser) and not intent.has("receive_plan") and not intent.has("third_man_plan") and not intent.has("give_go_plan") and role.role!=Roles.GOALKEEPER and not p.get("human",false):
-				_apply_defensive_task(p,intent,task,snapshot)
-			if possession_team==team and not attack_plan.is_empty() and not p.get("human",false):
-				_apply_team_attack(p,intent,attack_plan,by_id,opponents,snapshot)
-			intents[int(p.id)] = intent
-		_resolve_ball_jobs(team,members,intents,presser,receiver_id,in_flight,snapshot)
-		_compact_defense(team,members,intents,snapshot,possession_team)
-		teams[team].support_ids = members.filter(func(p): return intents[int(p.id)].get("support_offer",false)).map(func(p): return int(p.id))
+				intent.request_ball = requested_support.has(int(p.id))
+			intent.reason = "striker_offer_forward" if intent.get("support_offer",false) and role.role==Roles.STRIKER else "open_short_support" if intent.get("support_offer",false) else "cover_lane" if possession_team!=team else "counter_run" if phase=="transition_attack" and styles.get(team)==COUNTER else "short_support" if styles.get(team)==SHORT_PASS else "attack_support"
+			intent.pace = 6.2 if intent.reason=="counter_run" or phase=="transition_defend" else 5.4
+		var task: Dictionary = defense.tasks.get(int(p.id),{})
+		if not task.is_empty() and not (task.task==DefensiveTasks.PRESS and int(p.id)!=presser) and not intent.has("receive_plan") and not intent.has("third_man_plan") and not intent.has("give_go_plan") and role.role!=Roles.GOALKEEPER and not p.get("human",false):
+			_apply_defensive_task(p,intent,task,snapshot)
+		if possession_team==team and not attack_plan.is_empty() and not p.get("human",false):
+			_apply_team_attack(p,intent,attack_plan,by_id,opponents,snapshot)
+		intents[int(p.id)] = intent
+	_resolve_ball_jobs(team,members,intents,presser,receiver_id,in_flight,snapshot)
+	_compact_defense(team,members,intents,snapshot,possession_team)
+	teams[team].support_ids = members.filter(func(p): return intents[int(p.id)].get("support_offer",false)).map(func(p): return int(p.id))
+
+func tick_finish(ctx: Dictionary) -> Dictionary:
+	var snapshot: Dictionary = ctx.snapshot
+	var delta: float = ctx.delta
+	var active: Array[Dictionary] = ctx.active
+	var by_id: Dictionary = ctx.by_id
+	var owner_id: int = ctx.owner_id
+	var reception: Dictionary = ctx.reception
+	var combination: Dictionary = ctx.combination
+	var defense: Dictionary = ctx.defense
+	var intents: Dictionary = ctx.intents
+	var teams: Dictionary = ctx.teams
 	for id in intents:
 		var intent: Dictionary = intents[id]
 		var role: Dictionary = roster[id]
