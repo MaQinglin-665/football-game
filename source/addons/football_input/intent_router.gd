@@ -321,7 +321,10 @@ func _update_charge(emit_update: bool = true) -> void:
 		_cancel_charge("unsupported_variant")
 		_block_token_sources(["shot", "pass"])
 		return
-	_charge.power = clampf(catalog.value("minimum_power", 0.2) + (1.0 - catalog.value("minimum_power", 0.2)) * (now - float(_charge.started_at)) / maxf(catalog.value("charge_seconds", 0.85), 0.01), 0.0, 1.0)
+	# R004: full power at KickErrorModel.CHARGE_FULL_S; holding longer is overcharge (more error).
+	var held_s: float = now - float(_charge.started_at)
+	_charge.power = KickErrorModel.charge_power(held_s, catalog.value("minimum_power", 0.2))
+	_charge.overcharge_s = KickErrorModel.overcharge(held_s)
 	if emit_update and (changed or now - float(_charge.last_update_at) >= catalog.value("continuous_update_seconds", 0.05)):
 		_charge.last_update_at = now
 		_emit_from_charge(_charge, "update", "" if _charge.valid else "unsupported_variant")
@@ -497,7 +500,8 @@ func _emit_from_charge(charge: Dictionary, phase: String, reason: String = "") -
 	_emit(charge.action, phase, {"actor_id": charge.actor_id, "context_revision": charge.context_revision,
 		"gesture_id": charge.gesture_id,
 		"direction": charge.direction, "power": charge.power, "elevation_deg": charge.elevation_deg,
-		"spin": charge.spin, "style": charge.style, "valid": charge.valid}, reason)
+		"spin": charge.spin, "style": charge.style, "valid": charge.valid,
+		"overcharge_s": float(charge.get("overcharge_s", 0.0))}, reason)
 
 func _cancel_charge(reason: String) -> void:
 	if _charge.is_empty():

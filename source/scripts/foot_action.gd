@@ -516,6 +516,8 @@ func request_semantic_kick(intent: Dictionary, _speed := 0.0, _lift := 0.0, targ
 		return true
 	var action := "PASS" if String(intent.action).begins_with("pass_") else "SHOT"
 	if not legal_ball:return false
+	if actor.is_human and passing and is_instance_valid(target) and not intent.has("space_target"):
+		intent=intent.duplicate();intent.direction=KickErrorModel.assist(intent.direction,actor.position,target.position) # R004 assist cone
 	var selected:Dictionary=PassChoice.choose(actor,match_controller.ball,intent) if passing else {}
 	if passing and selected.is_empty():return false
 	if not begin(action,intent.direction): return false
@@ -523,6 +525,7 @@ func request_semantic_kick(intent: Dictionary, _speed := 0.0, _lift := 0.0, targ
 	kick_intent = intent.duplicate(true)
 	if action=="PASS":_configure_pass(selected)
 	receiver = target
+	if actor.is_human and HUMAN_KICK_ERROR_ENABLED:_assign_human_kick_error(action)
 	if action=="PASS":
 		actor.stop_requested = 0.0
 		trace_stage("inputaccepted","pass")
@@ -537,6 +540,23 @@ func request_semantic_kick(intent: Dictionary, _speed := 0.0, _lift := 0.0, targ
 		if float(intent.get("power",0))>=.55:shot_style="full"
 		trace_stage("inputaccepted")
 	return true
+
+## R004 human kick error: sigma from speed, body-vs-kick angle, pressure, overcharge, foot.
+const HUMAN_KICK_ERROR_ENABLED:=true
+var kick_rng:=_seeded_rng()
+static func _seeded_rng()->RandomNumberGenerator:
+	var r:=RandomNumberGenerator.new();r.randomize();return r
+func _assign_human_kick_error(action:String)->void:
+	var dir:Vector3=kick_intent.get("direction",actor.facing);dir.y=0
+	var face:Vector3=actor.body_facing if "body_facing" in actor else actor.facing;face.y=0
+	var body_angle:float=rad_to_deg(face.angle_to(dir)) if dir.length()>.01 and face.length()>.01 else 0.0
+	var nearest:=INF
+	for other in match_controller.players:
+		if other.team!=actor.team and other.visible:nearest=minf(nearest,other.position.distance_to(actor.position))
+	var dominant:int=-1 if int(actor.get_meta("dominant_foot_side",1))<0 else 1
+	var sigma:float=KickErrorModel.error_deg("pass" if action=="PASS" else "shot",Vector2(actor.velocity.x,actor.velocity.z).length(),body_angle,nearest,float(kick_intent.get("overcharge_s",0.0)),side!=0 and side!=dominant)
+	kick_intent["human_error_sigma_deg"]=sigma
+	kick_intent["human_error_deg"]=KickErrorModel.sample(sigma,kick_rng)
 
 func _configure_pass(selected:Dictionary)->void:
 	pass_choice=selected.duplicate(true)
@@ -758,6 +778,8 @@ func _try_contact(delta: float) -> void:
 			if final_aim.dot(direction)<.85:
 				contact_failure="heel_outlet_changed";return
 			kick_intent.power=minf(float(kick_intent.power),.16);kick_intent.elevation_deg=0.0
+		if kick_intent.has("human_error_deg") and kind in ["PASS","SHOT"] and not restarting:
+			kick_intent.direction=(kick_intent.direction as Vector3).rotated(Vector3.UP,deg_to_rad(float(kick_intent.human_error_deg)))
 		success = match_controller.on_kick_contact(actor,kind,kick_intent,receiver,restarting,toe_world,sequence)
 	elif kind in ["RECEIVE","STOP","SETTLE","PULL"] or continuous_control():
 		var target_velocity := Vector3.ZERO if kind in ["STOP","SETTLE"] else Vector3(actor.velocity.x,0,actor.velocity.z)*.82
