@@ -1,0 +1,1574 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/modern_stadium/layout_api.gd" id="1_qdska"]
+[ext_resource type="Resource" path="res://addons/modern_stadium/presets/full_105x68_low.tres" id="2_21lch"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/seat_lod_0.res" id="3_16ics"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/seat_lod_1.res" id="4_rw6e4"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/seat_lod_2.res" id="5_r8yg0"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_000.res" id="6_cgv77"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_001.res" id="7_qooaw"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_002.res" id="8_5k5pp"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_003.res" id="9_ucx74"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_004.res" id="10_ykrus"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_005.res" id="11_hn5lp"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_006.res" id="12_181ut"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_007.res" id="13_rhyfr"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_008.res" id="14_84ph7"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_009.res" id="15_gwuxv"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_010.res" id="16_ufg8j"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_011.res" id="17_f5o71"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_012.res" id="18_6ifr7"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_013.res" id="19_88vjg"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_014.res" id="20_6xg3w"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_015.res" id="21_pshuj"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_016.res" id="22_rdrv2"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_017.res" id="23_spiyn"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_018.res" id="24_nbgim"]
+[ext_resource type="Material" path="res://addons/modern_stadium/materials/SeatBlue.tres" id="25_njipe"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_019.res" id="26_b6lrr"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_020.res" id="27_2uavc"]
+[ext_resource type="Material" path="res://addons/modern_stadium/materials/SeatNavy.tres" id="28_e6so8"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_021.res" id="29_3cigm"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_022.res" id="30_fy0mr"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_023.res" id="31_f06kw"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_024.res" id="32_h6prv"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_025.res" id="33_molp4"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_026.res" id="34_rngnu"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_027.res" id="35_0xg5g"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_028.res" id="36_enaws"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_029.res" id="37_2oti7"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_030.res" id="38_wojcq"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_031.res" id="39_grok8"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_032.res" id="40_ifj6t"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_033.res" id="41_lijlm"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_034.res" id="42_01aqe"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_035.res" id="43_ef2pf"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_036.res" id="44_jjv88"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_037.res" id="45_rwhhc"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_038.res" id="46_tt8kh"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_039.res" id="47_et1dh"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_040.res" id="48_yr07j"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_041.res" id="49_xnkh4"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_042.res" id="50_c5n2j"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_043.res" id="51_enccy"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_044.res" id="52_labnc"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_045.res" id="53_0p6b5"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_046.res" id="54_r21c5"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_047.res" id="55_v5tbe"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_048.res" id="56_ycpat"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_049.res" id="57_cshsd"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_050.res" id="58_gktb3"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_051.res" id="59_ghoh0"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_052.res" id="60_euoa0"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_053.res" id="61_vwp1l"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_054.res" id="62_n2p5n"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_055.res" id="63_d0hom"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_056.res" id="64_ax54u"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_057.res" id="65_rvr7r"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_058.res" id="66_m21b0"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_059.res" id="67_yh08s"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_060.res" id="68_5pmus"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_061.res" id="69_m456x"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_062.res" id="70_qiv8d"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_063.res" id="71_uprv5"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_064.res" id="72_lwf78"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_065.res" id="73_w3cf7"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_066.res" id="74_2wbk0"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_067.res" id="75_7lc43"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_068.res" id="76_s48sg"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_069.res" id="77_wipdo"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_070.res" id="78_ljifi"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_071.res" id="79_iy7yw"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_072.res" id="80_2yv3s"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_073.res" id="81_cxbbk"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_074.res" id="82_57rcs"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_075.res" id="83_jb7qc"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_076.res" id="84_avgu1"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_077.res" id="85_opcls"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_078.res" id="86_tpd03"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_079.res" id="87_rue1e"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_080.res" id="88_gksro"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_081.res" id="89_36x5n"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_082.res" id="90_wh3cf"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_083.res" id="91_575y8"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_084.res" id="92_8vdl8"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_085.res" id="93_utei6"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_086.res" id="94_tl31g"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_087.res" id="95_u08jl"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_088.res" id="96_8v3ns"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_089.res" id="97_gkqbw"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_090.res" id="98_jc3n5"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_091.res" id="99_fevy5"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_092.res" id="100_dnf7l"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_093.res" id="101_8pale"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_094.res" id="102_7qt81"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_095.res" id="103_xd05r"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_096.res" id="104_umd2h"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_097.res" id="105_xbria"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_098.res" id="106_og8w6"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_099.res" id="107_p3wpa"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_100.res" id="108_40igl"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_101.res" id="109_rkvdc"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_102.res" id="110_omg3g"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_103.res" id="111_1is31"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_104.res" id="112_g33y1"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_105.res" id="113_oua0o"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_106.res" id="114_8th3f"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_107.res" id="115_ufqf5"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_108.res" id="116_62ohq"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_109.res" id="117_pwgk6"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_110.res" id="118_x8fw5"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_111.res" id="119_fd6wc"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_112.res" id="120_845i3"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_113.res" id="121_yafye"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_114.res" id="122_myjct"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_115.res" id="123_r1fkw"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_116.res" id="124_sjh5c"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_117.res" id="125_8oc02"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_118.res" id="126_8vb7i"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_119.res" id="127_5545d"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_120.res" id="128_i6rw2"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_121.res" id="129_8pdv1"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_122.res" id="130_i8mdh"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_123.res" id="131_jhi4s"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_124.res" id="132_537g5"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_125.res" id="133_cnckq"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_126.res" id="134_fl3m1"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_127.res" id="135_5pb1w"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_128.res" id="136_66p5a"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_129.res" id="137_6yfyq"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_130.res" id="138_acwht"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_131.res" id="139_gjgnp"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_132.res" id="140_k6s12"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_133.res" id="141_ik271"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_134.res" id="142_lrplm"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_135.res" id="143_usht1"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_136.res" id="144_4u740"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_137.res" id="145_sif5v"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_138.res" id="146_vyjsh"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_139.res" id="147_wc7qd"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_140.res" id="148_ydyj2"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_141.res" id="149_k7iqk"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_142.res" id="150_d2hhj"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_143.res" id="151_jhp2b"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_144.res" id="152_2e12m"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_145.res" id="153_03wab"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_146.res" id="154_xy8r1"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_147.res" id="155_j2dar"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_148.res" id="156_x77en"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_149.res" id="157_huyfx"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_150.res" id="158_myxjr"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_151.res" id="159_oknrx"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_152.res" id="160_fjny2"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_153.res" id="161_nqrsc"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_154.res" id="162_3skgg"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_155.res" id="163_oncdl"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_156.res" id="164_qjadj"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_157.res" id="165_etw0i"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_158.res" id="166_oohji"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_159.res" id="167_d6gpp"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_160.res" id="168_do0ep"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_161.res" id="169_1h5m0"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_162.res" id="170_3ek6q"]
+[ext_resource type="MultiMesh" path="res://addons/modern_stadium/generated/full_105x68_low/instances_163.res" id="171_s6u35"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_164.res" id="172_t0c1d"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_165.res" id="173_y7t0e"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_166.res" id="174_06s7c"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_167.res" id="175_r6jlu"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_168.res" id="176_in4i0"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_169.res" id="177_t2h3a"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_170.res" id="178_fohr6"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_171.res" id="179_1ohkl"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_172.res" id="180_nr1xs"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_173.res" id="181_f1l7f"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_174.res" id="182_bnihs"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_175.res" id="183_3e67x"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_178.res" id="184_7xn6g"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_179.res" id="185_h3mgr"]
+[ext_resource type="ArrayMesh" path="res://addons/modern_stadium/generated/full_105x68_low/mesh_180.res" id="186_8u8x4"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_j7r06"]
+size = Vector3(224, 0.5, 265)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_i4no7"]
+height = 2.49
+radius = 0.05
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_8y51u"]
+height = 2.49
+radius = 0.05
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_4ip0q"]
+height = 7.42
+radius = 0.05
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_7083x"]
+height = 2.49
+radius = 0.05
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_uhaun"]
+height = 2.49
+radius = 0.05
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_fpid1"]
+height = 7.42
+radius = 0.05
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ffog2"]
+size = Vector3(0.25, 2.4, 125)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w67nl"]
+size = Vector3(0.25, 2.4, 125)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_govm2"]
+size = Vector3(88, 2.4, 0.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2ffpe"]
+size = Vector3(88, 2.4, 0.25)
+
+[node name="ModernStadium" type="Node3D" unique_id=1733571381]
+script = ExtResource("1_qdska")
+dimensions = ExtResource("2_21lch")
+build_details = {
+"build_ms": 253,
+"crowd_instances": 0,
+"generator_version": "1.2-stand-patch",
+"geometry_batches": 179,
+"no_dynamic_crowd": true,
+"quality": "low",
+"seat_instances": 27742,
+"seat_nodes": 72
+}
+seat_lod_meshes = Array[Mesh]([ExtResource("3_16ics"), ExtResource("4_rw6e4"), ExtResource("5_r8yg0")])
+
+[node name="Pitch" type="Node3D" parent="." unique_id=1202302903]
+
+[node name="TurfSurface" type="MeshInstance3D" parent="Pitch" unique_id=456047626]
+cast_shadow = 0
+mesh = ExtResource("6_cgv77")
+metadata/material_slot = "Turf"
+
+[node name="ServiceApron" type="MeshInstance3D" parent="Pitch" unique_id=68299689]
+cast_shadow = 0
+mesh = ExtResource("7_qooaw")
+metadata/material_slot = "Concrete"
+
+[node name="Ground" type="StaticBody3D" parent="Pitch" unique_id=1405589461]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Pitch/Ground" unique_id=892825814]
+shape = SubResource("BoxShape3D_j7r06")
+
+[node name="Markings" type="Node3D" parent="." unique_id=1166058081]
+
+[node name="RegulationPaint" type="MeshInstance3D" parent="Markings" unique_id=497880189]
+cast_shadow = 0
+mesh = ExtResource("8_5k5pp")
+metadata/material_slot = "LinesWhite"
+
+[node name="Goals" type="Node3D" parent="." unique_id=1700243087]
+
+[node name="North" type="Node3D" parent="Goals" unique_id=1342663851]
+metadata/opening_width = 7.32
+metadata/opening_height = 2.44
+metadata/goal_line_outer_z = -52.5
+
+[node name="LeftPostBody" type="StaticBody3D" parent="Goals/North" unique_id=885132340]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.71, 1.245, -52.45)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Goals/North/LeftPostBody" unique_id=1703511216]
+shape = SubResource("CylinderShape3D_i4no7")
+
+[node name="RightPostBody" type="StaticBody3D" parent="Goals/North" unique_id=96339753]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.71, 1.245, -52.45)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Goals/North/RightPostBody" unique_id=926532329]
+shape = SubResource("CylinderShape3D_8y51u")
+
+[node name="CrossbarBody" type="StaticBody3D" parent="Goals/North" unique_id=830957342]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 2.49, -52.45)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Goals/North/CrossbarBody" unique_id=9331266]
+shape = SubResource("CylinderShape3D_4ip0q")
+
+[node name="Frame" type="MeshInstance3D" parent="Goals/North" unique_id=1848937991]
+mesh = ExtResource("9_ucx74")
+metadata/material_slot = "GoalFrame"
+
+[node name="Net" type="MeshInstance3D" parent="Goals/North" unique_id=743969594]
+cast_shadow = 0
+mesh = ExtResource("10_ykrus")
+metadata/material_slot = "GoalNet"
+
+[node name="NetCoarse" type="MeshInstance3D" parent="Goals/North" unique_id=349817290]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("11_hn5lp")
+metadata/material_slot = "GoalNet"
+
+[node name="NetSupports" type="MeshInstance3D" parent="Goals/North" unique_id=905401032]
+mesh = ExtResource("12_181ut")
+metadata/material_slot = "Metal"
+
+[node name="South" type="Node3D" parent="Goals" unique_id=777061103]
+metadata/opening_width = 7.32
+metadata/opening_height = 2.44
+metadata/goal_line_outer_z = 52.5
+
+[node name="LeftPostBody" type="StaticBody3D" parent="Goals/South" unique_id=2041569132]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.71, 1.245, 52.45)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Goals/South/LeftPostBody" unique_id=1738920741]
+shape = SubResource("CylinderShape3D_7083x")
+
+[node name="RightPostBody" type="StaticBody3D" parent="Goals/South" unique_id=21978421]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.71, 1.245, 52.45)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Goals/South/RightPostBody" unique_id=1885855583]
+shape = SubResource("CylinderShape3D_uhaun")
+
+[node name="CrossbarBody" type="StaticBody3D" parent="Goals/South" unique_id=401529327]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 2.49, 52.45)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Goals/South/CrossbarBody" unique_id=1971884690]
+shape = SubResource("CylinderShape3D_fpid1")
+
+[node name="Frame" type="MeshInstance3D" parent="Goals/South" unique_id=1820294520]
+mesh = ExtResource("13_rhyfr")
+metadata/material_slot = "GoalFrame"
+
+[node name="Net" type="MeshInstance3D" parent="Goals/South" unique_id=1334574532]
+cast_shadow = 0
+mesh = ExtResource("14_84ph7")
+metadata/material_slot = "GoalNet"
+
+[node name="NetCoarse" type="MeshInstance3D" parent="Goals/South" unique_id=998957740]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("15_gwuxv")
+metadata/material_slot = "GoalNet"
+
+[node name="NetSupports" type="MeshInstance3D" parent="Goals/South" unique_id=266318534]
+mesh = ExtResource("16_ufg8j")
+metadata/material_slot = "Metal"
+
+[node name="Flags" type="Node3D" parent="." unique_id=1493513188]
+
+[node name="Poles" type="MeshInstance3D" parent="Flags" unique_id=401615044]
+cast_shadow = 0
+mesh = ExtResource("17_f5o71")
+metadata/material_slot = "GoalFrame"
+
+[node name="Flags" type="MeshInstance3D" parent="Flags" unique_id=965588375]
+cast_shadow = 0
+mesh = ExtResource("18_6ifr7")
+metadata/material_slot = "Flag"
+
+[node name="TechnicalAreas" type="Node3D" parent="." unique_id=1011174850]
+
+[node name="BenchPlatforms" type="MeshInstance3D" parent="TechnicalAreas" unique_id=1092939183]
+mesh = ExtResource("19_88vjg")
+metadata/material_slot = "Concrete"
+
+[node name="BenchFrames" type="MeshInstance3D" parent="TechnicalAreas" unique_id=248187907]
+mesh = ExtResource("20_6xg3w")
+metadata/material_slot = "Metal"
+
+[node name="OpaqueTintedCanopies" type="MeshInstance3D" parent="TechnicalAreas" unique_id=813852119]
+mesh = ExtResource("21_pshuj")
+metadata/material_slot = "Glass"
+
+[node name="SubstituteSeats" type="MeshInstance3D" parent="TechnicalAreas" unique_id=1418755246]
+mesh = ExtResource("22_rdrv2")
+metadata/material_slot = "SeatBlue"
+
+[node name="TechnicalPaint" type="MeshInstance3D" parent="TechnicalAreas" unique_id=1390076403]
+cast_shadow = 0
+mesh = ExtResource("23_spiyn")
+metadata/material_slot = "LinesWhite"
+
+[node name="Bowl" type="Node3D" parent="." unique_id=1763208956]
+
+[node name="Tier1" type="Node3D" parent="Bowl" unique_id=853905898]
+
+[node name="Terraces" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=836292763]
+mesh = ExtResource("24_nbgim")
+metadata/material_slot = "Concrete"
+
+[node name="Seats_00" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=615502426]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("26_b6lrr")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_00" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=428375541]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("27_2uavc")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_01" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1200285987]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("29_3cigm")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_01" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=798832204]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("30_fy0mr")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_02" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=648226138]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("31_f06kw")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_02" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=154697216]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("32_h6prv")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_03" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1490708746]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("33_molp4")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_03" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=655469253]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("34_rngnu")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_04" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1447310955]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("35_0xg5g")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_04" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1187943620]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("36_enaws")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_05" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1023195744]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("37_2oti7")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_05" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1941361511]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("38_wojcq")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_06" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=726991355]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("39_grok8")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_06" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=740406448]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("40_ifj6t")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_07" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=462520847]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("41_lijlm")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_07" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=784219203]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("42_01aqe")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_08" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=818245133]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("43_ef2pf")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_08" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=946572138]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("44_jjv88")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_09" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=229184666]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("45_rwhhc")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_09" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1331767345]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("46_tt8kh")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_10" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1837027852]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("47_et1dh")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_10" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1859683110]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("48_yr07j")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_11" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=402454520]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("49_xnkh4")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_11" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1521825635]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("50_c5n2j")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_12" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=419491686]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("51_enccy")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_12" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=502175498]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("52_labnc")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_13" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=400582273]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("53_0p6b5")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_13" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1134147869]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("54_r21c5")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_14" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1642711410]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("55_v5tbe")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_14" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1655535951]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("56_ycpat")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_15" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1198876945]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("57_cshsd")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_15" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1010756265]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("58_gktb3")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_16" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1445470005]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("59_ghoh0")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_16" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=108023993]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("60_euoa0")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_17" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1029459769]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("61_vwp1l")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_17" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=388089714]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("62_n2p5n")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_18" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=2133576257]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("63_d0hom")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_18" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1346246598]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("64_ax54u")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_19" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1259996755]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("65_rvr7r")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_19" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=568715315]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("66_m21b0")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_20" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=1570016197]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("67_yh08s")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_20" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1632251625]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("68_5pmus")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_21" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=49471973]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("69_m456x")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_21" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1699620440]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("70_qiv8d")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_22" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=494649859]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("71_uprv5")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_22" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=1656597810]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("72_lwf78")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_23" type="MultiMeshInstance3D" parent="Bowl/Tier1" unique_id=788059271]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("73_w3cf7")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_23" type="MeshInstance3D" parent="Bowl/Tier1" unique_id=181950576]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("74_2wbk0")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Tier2" type="Node3D" parent="Bowl" unique_id=872788253]
+
+[node name="Terraces" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1344533483]
+mesh = ExtResource("75_7lc43")
+metadata/material_slot = "Concrete"
+
+[node name="Seats_00" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1063469535]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("76_s48sg")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_00" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=379198734]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("77_wipdo")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_01" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1198637759]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("78_ljifi")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_01" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1289941674]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("79_iy7yw")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_02" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=324754619]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("80_2yv3s")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_02" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1380746972]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("81_cxbbk")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_03" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=21610441]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("82_57rcs")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_03" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=142464601]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("83_jb7qc")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_04" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=965357775]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("84_avgu1")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_04" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1151336637]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("85_opcls")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_05" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1021753591]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("86_tpd03")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_05" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=2021733222]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("87_rue1e")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_06" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=528113744]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("88_gksro")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_06" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1136656881]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("89_36x5n")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_07" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1442929390]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("90_wh3cf")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_07" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1392207131]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("91_575y8")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_08" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1881083304]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("92_8vdl8")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_08" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=980352928]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("93_utei6")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_09" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1314779052]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("94_tl31g")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_09" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=2142897332]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("95_u08jl")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_10" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1157024875]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("96_8v3ns")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_10" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1850052548]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("97_gkqbw")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_11" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=6605619]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("98_jc3n5")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_11" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=480315062]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("99_fevy5")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_12" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1319404628]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("100_dnf7l")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_12" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1337146250]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("101_8pale")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_13" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=663884598]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("102_7qt81")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_13" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1415935107]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("103_xd05r")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_14" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1725593833]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("104_umd2h")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_14" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=711003931]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("105_xbria")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_15" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=2116585590]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("106_og8w6")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_15" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1866554225]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("107_p3wpa")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_16" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=2015433653]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("108_40igl")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_16" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=961696554]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("109_rkvdc")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_17" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=76236447]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("110_omg3g")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_17" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1961757144]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("111_1is31")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_18" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=277682044]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("112_g33y1")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_18" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=949609]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("113_oua0o")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_19" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=1452380676]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("114_8th3f")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_19" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=676913372]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("115_ufqf5")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_20" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=575770858]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("116_62ohq")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_20" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1977330136]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("117_pwgk6")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_21" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=557905060]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("118_x8fw5")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_21" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=739266568]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("119_fd6wc")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_22" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=270576987]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("120_845i3")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_22" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=368404323]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("121_yafye")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_23" type="MultiMeshInstance3D" parent="Bowl/Tier2" unique_id=361185]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("122_myjct")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_23" type="MeshInstance3D" parent="Bowl/Tier2" unique_id=1058010109]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("123_r1fkw")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Tier3" type="Node3D" parent="Bowl" unique_id=1093036418]
+
+[node name="Terraces" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=500873865]
+mesh = ExtResource("124_sjh5c")
+metadata/material_slot = "Concrete"
+
+[node name="Seats_00" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=2010121886]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("125_8oc02")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_00" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1872741835]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("126_8vb7i")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_01" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=2118158062]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("127_5545d")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_01" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1811985955]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("128_i6rw2")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_02" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=1855171257]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("129_8pdv1")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_02" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=383032816]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("130_i8mdh")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_03" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=49218486]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("131_jhi4s")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_03" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1630530889]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("132_537g5")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_04" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=423648973]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("133_cnckq")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_04" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=759790059]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("134_fl3m1")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_05" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=571783836]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("135_5pb1w")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_05" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=49785851]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("136_66p5a")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_06" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=593160821]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("137_6yfyq")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_06" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=811266929]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("138_acwht")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_07" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=1737929339]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("139_gjgnp")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_07" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1847933481]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("140_k6s12")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_08" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=134967844]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("141_ik271")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_08" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=877519388]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("142_lrplm")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_09" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=39328860]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("143_usht1")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_09" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=175090912]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("144_4u740")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_10" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=1221815842]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("145_sif5v")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_10" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1623989050]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("146_vyjsh")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_11" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=863056201]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("147_wc7qd")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_11" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1799719836]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("148_ydyj2")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_12" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=491991583]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("149_k7iqk")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_12" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=726316906]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("150_d2hhj")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_13" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=2125791081]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("151_jhp2b")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_13" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1740348584]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("152_2e12m")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_14" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=266846030]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("153_03wab")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_14" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1762590657]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("154_xy8r1")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_15" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=478753997]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("155_j2dar")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_15" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=836145118]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("156_x77en")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_16" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=182566009]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("157_huyfx")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_16" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1901757463]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("158_myxjr")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_17" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=1781797640]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("159_oknrx")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_17" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=226316324]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("160_fjny2")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_18" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=1964712348]
+material_override = ExtResource("25_njipe")
+cast_shadow = 0
+multimesh = ExtResource("161_nqrsc")
+metadata/material_slot = "SeatBlue"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_18" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=722884178]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("162_3skgg")
+metadata/material_slot = "SeatBlue"
+metadata/seat_proxy = true
+
+[node name="Seats_19" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=1302897107]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("163_oncdl")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_19" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=619692177]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("164_qjadj")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_20" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=2129199089]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("165_etw0i")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_20" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1239787535]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("166_oohji")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_21" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=554197434]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("167_d6gpp")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_21" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=190093770]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("168_do0ep")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_22" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=672509543]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("169_1h5m0")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_22" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=2081365087]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("170_3ek6q")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="Seats_23" type="MultiMeshInstance3D" parent="Bowl/Tier3" unique_id=759750889]
+material_override = ExtResource("28_e6so8")
+cast_shadow = 0
+multimesh = ExtResource("171_s6u35")
+metadata/material_slot = "SeatNavy"
+metadata/detail_distance = 215.0
+
+[node name="FarSeats_23" type="MeshInstance3D" parent="Bowl/Tier3" unique_id=1155567684]
+visible = false
+cast_shadow = 0
+mesh = ExtResource("172_t0c1d")
+metadata/material_slot = "SeatNavy"
+metadata/seat_proxy = true
+
+[node name="AisleSteps" type="MeshInstance3D" parent="Bowl" unique_id=1109742042]
+cast_shadow = 0
+mesh = ExtResource("173_y7t0e")
+metadata/material_slot = "LinesWhite"
+
+[node name="BalconyRails" type="MeshInstance3D" parent="Bowl" unique_id=1070395140]
+cast_shadow = 0
+mesh = ExtResource("174_06s7c")
+metadata/material_slot = "Metal"
+
+[node name="BalconyFascias" type="MeshInstance3D" parent="Bowl" unique_id=1498132720]
+mesh = ExtResource("175_r6jlu")
+metadata/material_slot = "Board"
+
+[node name="OuterShell" type="MeshInstance3D" parent="Bowl" unique_id=1832092432]
+mesh = ExtResource("176_in4i0")
+metadata/material_slot = "Roof"
+
+[node name="ConcourseWindows" type="MeshInstance3D" parent="Bowl" unique_id=665223861]
+mesh = ExtResource("177_t2h3a")
+metadata/material_slot = "Glass"
+
+[node name="ExteriorColumns" type="MeshInstance3D" parent="Bowl" unique_id=243306581]
+mesh = ExtResource("178_fohr6")
+metadata/material_slot = "Metal"
+
+[node name="PlayerTunnelPortals" type="MeshInstance3D" parent="Bowl" unique_id=675291110]
+cast_shadow = 0
+mesh = ExtResource("179_1ohkl")
+metadata/material_slot = "Board"
+
+[node name="Roof" type="Node3D" parent="." unique_id=296147436]
+
+[node name="Canopy" type="MeshInstance3D" parent="Roof" unique_id=1763320499]
+mesh = ExtResource("180_nr1xs")
+metadata/material_slot = "Roof"
+
+[node name="RibsAndFacadeLouvers" type="MeshInstance3D" parent="Roof" unique_id=1031136141]
+mesh = ExtResource("181_f1l7f")
+metadata/material_slot = "Metal"
+
+[node name="InnerRingFascia" type="MeshInstance3D" parent="Roof" unique_id=1977346030]
+mesh = ExtResource("182_bnihs")
+metadata/material_slot = "Board"
+
+[node name="FloodlightStrips" type="MeshInstance3D" parent="Roof" unique_id=1913414383]
+cast_shadow = 0
+mesh = ExtResource("183_3e67x")
+metadata/material_slot = "Light"
+
+[node name="NorthDisplay" type="Label3D" parent="Roof" unique_id=1289099570]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21.55, -76.34)
+pixel_size = 0.01
+modulate = Color(0.77254903, 0.85882354, 0.9098039, 1)
+text = "NORTH ARENA
+105 × 68   /   FOOTBALL"
+font_size = 64
+outline_size = 0
+
+[node name="SouthDisplay" type="Label3D" parent="Roof" unique_id=593966129]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 21.55, 76.34)
+pixel_size = 0.01
+modulate = Color(0.77254903, 0.85882354, 0.9098039, 1)
+text = "NORTH ARENA
+105 × 68   /   FOOTBALL"
+font_size = 64
+outline_size = 0
+
+[node name="DisplayHousings" type="MeshInstance3D" parent="Roof" unique_id=1129193093]
+mesh = ExtResource("184_7xn6g")
+metadata/material_slot = "Board"
+
+[node name="Perimeter" type="Node3D" parent="." unique_id=1225907724]
+
+[node name="PitchsideBoards" type="MeshInstance3D" parent="Perimeter" unique_id=2089534192]
+mesh = ExtResource("185_h3mgr")
+metadata/material_slot = "Board"
+
+[node name="NeutralBoardPanels" type="MeshInstance3D" parent="Perimeter" unique_id=9430080]
+cast_shadow = 0
+mesh = ExtResource("186_8u8x4")
+metadata/material_slot = "SeatBlue"
+
+[node name="WestOuterStop" type="StaticBody3D" parent="Perimeter" unique_id=1970940934]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44, 1.2, 0)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Perimeter/WestOuterStop" unique_id=587496252]
+shape = SubResource("BoxShape3D_ffog2")
+
+[node name="EastOuterStop" type="StaticBody3D" parent="Perimeter" unique_id=1796388389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.2, 0)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Perimeter/EastOuterStop" unique_id=132543806]
+shape = SubResource("BoxShape3D_w67nl")
+
+[node name="NorthOuterStop" type="StaticBody3D" parent="Perimeter" unique_id=1034014716]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -62.5)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Perimeter/NorthOuterStop" unique_id=687610550]
+shape = SubResource("BoxShape3D_govm2")
+
+[node name="SouthOuterStop" type="StaticBody3D" parent="Perimeter" unique_id=157343850]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 62.5)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Perimeter/SouthOuterStop" unique_id=1602407465]
+shape = SubResource("BoxShape3D_2ffpe")
+
+[node name="Anchors" type="Node3D" parent="." unique_id=1502495172]
+
+[node name="Center" type="Marker3D" parent="Anchors" unique_id=1636268848]
+
+[node name="NorthGoalLine" type="Marker3D" parent="Anchors" unique_id=1466255607]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -52.5)
+
+[node name="SouthGoalLine" type="Marker3D" parent="Anchors" unique_id=2010423879]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 52.5)
+
+[node name="NorthPenaltySpot" type="Marker3D" parent="Anchors" unique_id=2017957439]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -41.5)
+
+[node name="SouthPenaltySpot" type="Marker3D" parent="Anchors" unique_id=602469272]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 41.5)
+
+[node name="CornerNW" type="Marker3D" parent="Anchors" unique_id=1670207210]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 0, -52.5)
+
+[node name="CornerNE" type="Marker3D" parent="Anchors" unique_id=1101338139]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, -52.5)
+
+[node name="CornerSW" type="Marker3D" parent="Anchors" unique_id=1411158859]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 0, 52.5)
+
+[node name="CornerSE" type="Marker3D" parent="Anchors" unique_id=1339303712]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 52.5)
+
+[node name="NorthGoalMouth" type="Marker3D" parent="Anchors" unique_id=521622354]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, -52.45)
+
+[node name="SouthGoalMouth" type="Marker3D" parent="Anchors" unique_id=594616118]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 52.45)
+
+[node name="WestTunnel" type="Marker3D" parent="Anchors" unique_id=2095938079]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -49, 0, 0)
+
+[node name="EastTunnel" type="Marker3D" parent="Anchors" unique_id=1196186496]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, 0, 0)

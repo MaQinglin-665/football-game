@@ -1,0 +1,4 @@
+full_body_01 motion code and authored blending are supplied for this project.
+Donor upper-body quaternion loops derive from Quaternius Universal Animation Library under CC0 1.0; the supplied original CC0 notice is retained as QUATERNIUS_CC0.txt.
+C_SHAPE_ORIGIN.md describes the C geometry-only asset; its statement about not using donor animations applies to that earlier geometry package. This full-body release additionally uses the separately licensed CC0 upper-body loops.
+Existing project MIT code, original character/foot03 license and all previous third-party notices remain intact. No GDQuest model, texture or code is copied.

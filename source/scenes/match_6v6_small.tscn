@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/match.gd" id="1"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/tacticshd037_entry.gd" id="37"]
+
+[ext_resource type="Script" path="res://art/integration.gd" id="art"]
+
+[node name="SixSideSmallMatch" type="Node3D"]
+script = ExtResource("1")
+match_players_per_team = 6
+small_training_pitch = true
+
+[node name="TacticsHD037Entry" type="Node" parent="."]
+script = ExtResource("37")
+
+[node name="IndependentArt" type="Node3D" parent="."]
+script = ExtResource("art")

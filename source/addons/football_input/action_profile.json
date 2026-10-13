@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "charge_seconds": 0.85,
+  "minimum_power": 0.2,
+  "tap_seconds": 0.18,
+  "elevation_step_deg": 5.0,
+  "max_elevation_deg": 65.0,
+  "ground_elevation_deg": 0.0,
+  "high_pass_elevation_deg": 35.0,
+  "shot_elevation_deg": 12.0,
+  "max_charge_hold_seconds": 6.0,
+  "continuous_update_seconds": 0.05,
+  "edge_updates": true,
+  "input_buffer_seconds": 0.075,
+  "actions": {
+    "move": {
+      "label_zh": "移动",
+      "cooldown_seconds": 0.0,
+      "continuous": true
+    },
+    "call_ball": {
+      "label_zh": "要球",
+      "cooldown_seconds": 0.35
+    },
+    "close_control": {
+      "label_zh": "近控",
+      "cooldown_seconds": 0.0,
+      "continuous": true
+    },
+    "shield": {
+      "label_zh": "护球",
+      "cooldown_seconds": 0.0,
+      "continuous": true
+    },
+    "stop_ball": {
+      "label_zh": "停球",
+      "cooldown_seconds": 0.15
+    },
+    "nudge": {
+      "label_zh": "方向拨球",
+      "cooldown_seconds": 0.15
+    },
+    "push_ball": {
+      "label_zh": "大趟",
+      "cooldown_seconds": 0.3,
+      "continuous": true
+    },
+    "receive": {
+      "label_zh": "接球准备",
+      "cooldown_seconds": 0.15
+    },
+    "pass_ground": {
+      "label_zh": "地滚球传球",
+      "cooldown_seconds": 0.2,
+      "charge_family": "pass"
+    },
+    "pass_high": {
+      "label_zh": "高球传球",
+      "cooldown_seconds": 0.2,
+      "charge_family": "pass"
+    },
+    "pass_spin": {
+      "label_zh": "旋转传球",
+      "cooldown_seconds": 0.2,
+      "charge_family": "pass"
+    },
+    "shoot_straight": {
+      "label_zh": "直线射门",
+      "cooldown_seconds": 0.25,
+      "charge_family": "shot"
+    },
+    "shoot_curve": {
+      "label_zh": "弧线射门",
+      "cooldown_seconds": 0.25,
+      "charge_family": "shot"
+    },
+    "shoot_knuckle": {
+      "label_zh": "电梯球",
+      "disabled_reason": "尚无经验证的低旋转尾流与下坠物理；电梯球禁用"
+    },
+    "pressure": {
+      "label_zh": "防守压迫",
+      "cooldown_seconds": 0.0,
+      "continuous": true
+    },
+    "tackle_stand": {
+      "label_zh": "站立抢断",
+      "cooldown_seconds": 0.3
+    },
+    "tackle_slide": {
+      "label_zh": "飞铲",
+      "cooldown_seconds": 0.65
+    },
+    "keeper_ready": {
+      "label_zh": "门将接球准备",
+      "cooldown_seconds": 0.0,
+      "continuous": true,
+      "role": "goalkeeper"
+    },
+    "keeper_dive": {
+      "label_zh": "门将扑救",
+      "cooldown_seconds": 0.4,
+      "role": "goalkeeper"
+    },
+    "keeper_distribute": {
+      "label_zh": "门将出球",
+      "cooldown_seconds": 0.2,
+      "charge_family": "pass",
+      "role": "goalkeeper"
+    },
+    "cut_ball": {
+      "label_zh": "外拨/内扣",
+      "cooldown_seconds": 0.2
+    }
+  }
+}

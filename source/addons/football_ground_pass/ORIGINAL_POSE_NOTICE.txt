@@ -1,0 +1,5 @@
+Ground pass 01: original seven compact right-foot key poses and smooth transitions.
+No GRF/FIFA/commercial animation, image, video or motion library was imported.
+The neutral stance and shared 32-bone/socket contract are dependencies of the existing host rig.
+Existing host model/motion assets and their notices remain unchanged.
+New adapter code and authored action data use the project MIT license included here.

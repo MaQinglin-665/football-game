@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://addons/football_materials_b/materials/turf_filtered.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://assets/turf039/mown_blades_data.png" id="2"]
+
+[resource]
+resource_name = "FilteredTurfMeters"
+shader = ExtResource("1")
+shader_parameter/detail_texture = ExtResource("2")
+shader_parameter/mowing_band_m = 7.5
+shader_parameter/detail_tile_m = 1.6
+shader_parameter/detail_strength = 0.30

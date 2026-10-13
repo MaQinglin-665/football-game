@@ -1,0 +1,5 @@
+Original procedural data texture generated for this candidate, 2026-10-07.
+Generator: generate_turf039.py in candidate parent workspace. Seed 390107.
+No photographs, downloaded textures, third-party source images or new external assets.
+RGBA stores blade height/tone, clump tone, and two normal components; not a colour photograph.
+The generator and generated texture may be used, modified and redistributed with this project under MIT.

@@ -1,0 +1,1130 @@
+{
+  "schema": 1,
+  "name": "PassGround_Compact_R_01",
+  "authorship": "Original key poses and transitions authored for this isolated candidate; no commercial/donor action clip copied.",
+  "reference": "Existing 32-bone rig neutral stance, +Y up / -Z forward, metres. Rotations are local deltas from setup neutral.",
+  "side": 1,
+  "surface": "INSIDE",
+  "loop": false,
+  "clock": "host phase and normalized_time only",
+  "mask": [
+    "hips",
+    "spine",
+    "chest",
+    "neck",
+    "head",
+    "clavicle.L",
+    "upper_arm.L",
+    "forearm.L",
+    "hand.L",
+    "thigh.L",
+    "shin.L",
+    "foot.L",
+    "toe.L",
+    "clavicle.R",
+    "upper_arm.R",
+    "forearm.R",
+    "hand.R",
+    "thigh.R",
+    "shin.R",
+    "foot.R",
+    "toe.R"
+  ],
+  "keyframes": [
+    {
+      "time": 0.0,
+      "hips_delta_m": [
+        0,
+        0,
+        0
+      ],
+      "rotation_delta_degrees": {
+        "hips": [
+          0,
+          0,
+          0
+        ],
+        "spine": [
+          0,
+          0,
+          0
+        ],
+        "chest": [
+          0,
+          0,
+          0
+        ],
+        "neck": [
+          0,
+          0,
+          0
+        ],
+        "head": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.L": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.L": [
+          0,
+          0,
+          0
+        ],
+        "forearm.L": [
+          0,
+          0,
+          0
+        ],
+        "hand.L": [
+          0,
+          0,
+          0
+        ],
+        "thigh.L": [
+          0,
+          0,
+          0
+        ],
+        "shin.L": [
+          0,
+          0,
+          0
+        ],
+        "foot.L": [
+          0,
+          0,
+          0
+        ],
+        "toe.L": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.R": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.R": [
+          0,
+          0,
+          0
+        ],
+        "forearm.R": [
+          0,
+          0,
+          0
+        ],
+        "hand.R": [
+          0,
+          0,
+          0
+        ],
+        "thigh.R": [
+          0,
+          0,
+          0
+        ],
+        "shin.R": [
+          0,
+          0,
+          0
+        ],
+        "foot.R": [
+          0,
+          0,
+          0
+        ],
+        "toe.R": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "time": 0.16,
+      "hips_delta_m": [
+        -0.01,
+        -0.003,
+        0
+      ],
+      "rotation_delta_degrees": {
+        "hips": [
+          0,
+          -4,
+          -2
+        ],
+        "spine": [
+          -1,
+          2,
+          1
+        ],
+        "chest": [
+          0,
+          1,
+          1
+        ],
+        "neck": [
+          1,
+          -1,
+          0
+        ],
+        "head": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.L": [
+          0,
+          0,
+          -1
+        ],
+        "upper_arm.L": [
+          3,
+          0,
+          -6
+        ],
+        "forearm.L": [
+          4,
+          0,
+          0
+        ],
+        "hand.L": [
+          0,
+          0,
+          0
+        ],
+        "thigh.L": [
+          -4,
+          0,
+          0
+        ],
+        "shin.L": [
+          6,
+          0,
+          0
+        ],
+        "foot.L": [
+          -2,
+          0,
+          0
+        ],
+        "toe.L": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.R": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.R": [
+          -3,
+          0,
+          5
+        ],
+        "forearm.R": [
+          3,
+          0,
+          0
+        ],
+        "hand.R": [
+          0,
+          0,
+          0
+        ],
+        "thigh.R": [
+          5,
+          -4,
+          0
+        ],
+        "shin.R": [
+          7,
+          0,
+          0
+        ],
+        "foot.R": [
+          -3,
+          -7,
+          0
+        ],
+        "toe.R": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "time": 0.4,
+      "hips_delta_m": [
+        -0.016,
+        -0.004,
+        0.003
+      ],
+      "rotation_delta_degrees": {
+        "hips": [
+          0,
+          -8,
+          -3
+        ],
+        "spine": [
+          -2,
+          4,
+          1
+        ],
+        "chest": [
+          0,
+          2,
+          2
+        ],
+        "neck": [
+          2,
+          -2,
+          -1
+        ],
+        "head": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.L": [
+          0,
+          0,
+          -2
+        ],
+        "upper_arm.L": [
+          7,
+          0,
+          -11
+        ],
+        "forearm.L": [
+          10,
+          0,
+          0
+        ],
+        "hand.L": [
+          0,
+          0,
+          2
+        ],
+        "thigh.L": [
+          -6,
+          0,
+          1
+        ],
+        "shin.L": [
+          9,
+          0,
+          0
+        ],
+        "foot.L": [
+          -3,
+          0,
+          0
+        ],
+        "toe.L": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.R": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.R": [
+          -6,
+          0,
+          9
+        ],
+        "forearm.R": [
+          8,
+          0,
+          0
+        ],
+        "hand.R": [
+          0,
+          0,
+          -2
+        ],
+        "thigh.R": [
+          9,
+          -7,
+          1
+        ],
+        "shin.R": [
+          12,
+          0,
+          0
+        ],
+        "foot.R": [
+          -5,
+          -12,
+          0
+        ],
+        "toe.R": [
+          2,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "time": 0.5,
+      "hips_delta_m": [
+        -0.012,
+        -0.004,
+        -0.005
+      ],
+      "rotation_delta_degrees": {
+        "hips": [
+          0,
+          5,
+          -2
+        ],
+        "spine": [
+          -2,
+          -2,
+          1
+        ],
+        "chest": [
+          0,
+          -3,
+          1
+        ],
+        "neck": [
+          2,
+          2,
+          -1
+        ],
+        "head": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.L": [
+          0,
+          0,
+          -1
+        ],
+        "upper_arm.L": [
+          4,
+          0,
+          -9
+        ],
+        "forearm.L": [
+          9,
+          0,
+          0
+        ],
+        "hand.L": [
+          0,
+          0,
+          1
+        ],
+        "thigh.L": [
+          -5,
+          0,
+          1
+        ],
+        "shin.L": [
+          8,
+          0,
+          0
+        ],
+        "foot.L": [
+          -3,
+          0,
+          0
+        ],
+        "toe.L": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.R": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.R": [
+          -4,
+          0,
+          7
+        ],
+        "forearm.R": [
+          7,
+          0,
+          0
+        ],
+        "hand.R": [
+          0,
+          0,
+          -1
+        ],
+        "thigh.R": [
+          -13,
+          -5,
+          0
+        ],
+        "shin.R": [
+          7,
+          0,
+          0
+        ],
+        "foot.R": [
+          2,
+          -10,
+          0
+        ],
+        "toe.R": [
+          2,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "time": 0.65,
+      "hips_delta_m": [
+        -0.005,
+        -0.002,
+        -0.008
+      ],
+      "rotation_delta_degrees": {
+        "hips": [
+          0,
+          9,
+          -1
+        ],
+        "spine": [
+          -1,
+          -4,
+          1
+        ],
+        "chest": [
+          0,
+          -3,
+          0
+        ],
+        "neck": [
+          1,
+          3,
+          -1
+        ],
+        "head": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.L": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.L": [
+          -3,
+          0,
+          -6
+        ],
+        "forearm.L": [
+          7,
+          0,
+          0
+        ],
+        "hand.L": [
+          0,
+          0,
+          0
+        ],
+        "thigh.L": [
+          -3,
+          0,
+          0
+        ],
+        "shin.L": [
+          5,
+          0,
+          0
+        ],
+        "foot.L": [
+          -2,
+          0,
+          0
+        ],
+        "toe.L": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.R": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.R": [
+          5,
+          0,
+          5
+        ],
+        "forearm.R": [
+          8,
+          0,
+          0
+        ],
+        "hand.R": [
+          0,
+          0,
+          0
+        ],
+        "thigh.R": [
+          -18,
+          -3,
+          0
+        ],
+        "shin.R": [
+          9,
+          0,
+          0
+        ],
+        "foot.R": [
+          4,
+          -6,
+          0
+        ],
+        "toe.R": [
+          3,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "time": 0.82,
+      "hips_delta_m": [
+        0,
+        -0.001,
+        -0.003
+      ],
+      "rotation_delta_degrees": {
+        "hips": [
+          0,
+          3,
+          0
+        ],
+        "spine": [
+          0,
+          -2,
+          0
+        ],
+        "chest": [
+          0,
+          -1,
+          0
+        ],
+        "neck": [
+          0,
+          1,
+          0
+        ],
+        "head": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.L": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.L": [
+          -1,
+          0,
+          -3
+        ],
+        "forearm.L": [
+          3,
+          0,
+          0
+        ],
+        "hand.L": [
+          0,
+          0,
+          0
+        ],
+        "thigh.L": [
+          -1,
+          0,
+          0
+        ],
+        "shin.L": [
+          2,
+          0,
+          0
+        ],
+        "foot.L": [
+          0,
+          0,
+          0
+        ],
+        "toe.L": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.R": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.R": [
+          2,
+          0,
+          2
+        ],
+        "forearm.R": [
+          4,
+          0,
+          0
+        ],
+        "hand.R": [
+          0,
+          0,
+          0
+        ],
+        "thigh.R": [
+          -4,
+          0,
+          0
+        ],
+        "shin.R": [
+          4,
+          0,
+          0
+        ],
+        "foot.R": [
+          1,
+          -2,
+          0
+        ],
+        "toe.R": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "time": 1.0,
+      "hips_delta_m": [
+        0,
+        0,
+        0
+      ],
+      "rotation_delta_degrees": {
+        "hips": [
+          0,
+          0,
+          0
+        ],
+        "spine": [
+          0,
+          0,
+          0
+        ],
+        "chest": [
+          0,
+          0,
+          0
+        ],
+        "neck": [
+          0,
+          0,
+          0
+        ],
+        "head": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.L": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.L": [
+          0,
+          0,
+          0
+        ],
+        "forearm.L": [
+          0,
+          0,
+          0
+        ],
+        "hand.L": [
+          0,
+          0,
+          0
+        ],
+        "thigh.L": [
+          0,
+          0,
+          0
+        ],
+        "shin.L": [
+          0,
+          0,
+          0
+        ],
+        "foot.L": [
+          0,
+          0,
+          0
+        ],
+        "toe.L": [
+          0,
+          0,
+          0
+        ],
+        "clavicle.R": [
+          0,
+          0,
+          0
+        ],
+        "upper_arm.R": [
+          0,
+          0,
+          0
+        ],
+        "forearm.R": [
+          0,
+          0,
+          0
+        ],
+        "hand.R": [
+          0,
+          0,
+          0
+        ],
+        "thigh.R": [
+          0,
+          0,
+          0
+        ],
+        "shin.R": [
+          0,
+          0,
+          0
+        ],
+        "foot.R": [
+          0,
+          0,
+          0
+        ],
+        "toe.R": [
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "rig_contract": [
+    {
+      "name": "root",
+      "parent_name": "",
+      "translation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "hips",
+      "parent_name": "root",
+      "translation": [
+        0,
+        0.95,
+        0
+      ]
+    },
+    {
+      "name": "spine",
+      "parent_name": "hips",
+      "translation": [
+        0,
+        0.17999999999999994,
+        0
+      ]
+    },
+    {
+      "name": "chest",
+      "parent_name": "spine",
+      "translation": [
+        0,
+        0.2200000000000002,
+        0
+      ]
+    },
+    {
+      "name": "neck",
+      "parent_name": "chest",
+      "translation": [
+        0,
+        0.11999999999999988,
+        0
+      ]
+    },
+    {
+      "name": "head",
+      "parent_name": "neck",
+      "translation": [
+        0,
+        0.10000000000000009,
+        0
+      ]
+    },
+    {
+      "name": "clavicle.L",
+      "parent_name": "chest",
+      "translation": [
+        -0.12,
+        0.039999999999999813,
+        0
+      ]
+    },
+    {
+      "name": "upper_arm.L",
+      "parent_name": "clavicle.L",
+      "translation": [
+        -0.14300000000000002,
+        0.015000000000000124,
+        0
+      ]
+    },
+    {
+      "name": "forearm.L",
+      "parent_name": "upper_arm.L",
+      "translation": [
+        -0.09099999999999997,
+        -0.29000000000000004,
+        -0.006
+      ]
+    },
+    {
+      "name": "hand.L",
+      "parent_name": "forearm.L",
+      "translation": [
+        -0.027000000000000024,
+        -0.21999999999999997,
+        -0.018000000000000002
+      ]
+    },
+    {
+      "name": "thigh.L",
+      "parent_name": "hips",
+      "translation": [
+        -0.145,
+        0.0,
+        0
+      ]
+    },
+    {
+      "name": "shin.L",
+      "parent_name": "thigh.L",
+      "translation": [
+        0.0,
+        -0.41999999999999993,
+        -0.035
+      ]
+    },
+    {
+      "name": "foot.L",
+      "parent_name": "shin.L",
+      "translation": [
+        0.0,
+        -0.42500000000000004,
+        0.035
+      ]
+    },
+    {
+      "name": "toe.L",
+      "parent_name": "foot.L",
+      "translation": [
+        0.0,
+        -0.05499999999999999,
+        -0.175
+      ]
+    },
+    {
+      "name": "contact_inner.L",
+      "parent_name": "foot.L",
+      "translation": [
+        0.066,
+        -0.0445,
+        -0.168
+      ]
+    },
+    {
+      "name": "contact_outer.L",
+      "parent_name": "foot.L",
+      "translation": [
+        -0.06337563366146978,
+        -0.051166770059312874,
+        -0.112
+      ]
+    },
+    {
+      "name": "contact_instep.L",
+      "parent_name": "foot.L",
+      "translation": [
+        8.762435221854048e-14,
+        0.023000000000000007,
+        -0.064
+      ]
+    },
+    {
+      "name": "contact_sole.L",
+      "parent_name": "foot.L",
+      "translation": [
+        -3.503401688198515e-08,
+        -0.093,
+        -0.168
+      ]
+    },
+    {
+      "name": "contact_toe.L",
+      "parent_name": "toe.L",
+      "translation": [
+        5.842548667089886e-14,
+        0.015,
+        -0.064
+      ]
+    },
+    {
+      "name": "clavicle.R",
+      "parent_name": "chest",
+      "translation": [
+        0.12,
+        0.039999999999999813,
+        0
+      ]
+    },
+    {
+      "name": "upper_arm.R",
+      "parent_name": "clavicle.R",
+      "translation": [
+        0.14300000000000002,
+        0.015000000000000124,
+        0
+      ]
+    },
+    {
+      "name": "forearm.R",
+      "parent_name": "upper_arm.R",
+      "translation": [
+        0.09099999999999997,
+        -0.29000000000000004,
+        -0.006
+      ]
+    },
+    {
+      "name": "hand.R",
+      "parent_name": "forearm.R",
+      "translation": [
+        0.027000000000000024,
+        -0.21999999999999997,
+        -0.018000000000000002
+      ]
+    },
+    {
+      "name": "thigh.R",
+      "parent_name": "hips",
+      "translation": [
+        0.145,
+        0.0,
+        0
+      ]
+    },
+    {
+      "name": "shin.R",
+      "parent_name": "thigh.R",
+      "translation": [
+        0.0,
+        -0.41999999999999993,
+        -0.035
+      ]
+    },
+    {
+      "name": "foot.R",
+      "parent_name": "shin.R",
+      "translation": [
+        0.0,
+        -0.42500000000000004,
+        0.035
+      ]
+    },
+    {
+      "name": "toe.R",
+      "parent_name": "foot.R",
+      "translation": [
+        0.0,
+        -0.05499999999999999,
+        -0.175
+      ]
+    },
+    {
+      "name": "contact_inner.R",
+      "parent_name": "foot.R",
+      "translation": [
+        -0.066,
+        -0.04449999999992611,
+        -0.168
+      ]
+    },
+    {
+      "name": "contact_outer.R",
+      "parent_name": "foot.R",
+      "translation": [
+        0.06337563366146978,
+        -0.0511667700593129,
+        -0.112
+      ]
+    },
+    {
+      "name": "contact_instep.R",
+      "parent_name": "foot.R",
+      "translation": [
+        8.762435221854048e-14,
+        0.023000000000000007,
+        -0.064
+      ]
+    },
+    {
+      "name": "contact_sole.R",
+      "parent_name": "foot.R",
+      "translation": [
+        -3.503401688198515e-08,
+        -0.093,
+        -0.168
+      ]
+    },
+    {
+      "name": "contact_toe.R",
+      "parent_name": "toe.R",
+      "translation": [
+        5.842548667089886e-14,
+        0.015,
+        -0.064
+      ]
+    }
+  ]
+}

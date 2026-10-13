@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "double_press_window_ms": 260,
+  "max_first_hold_ms": 180,
+  "burst_quiet_ms": 260,
+  "input_buffer_ms": 75,
+  "heavy_touch_power": 0.8,
+  "deliberate_touch_dispatch": "host_next_contact",
+  "next_contact_wait_ms": 350,
+  "toggle_sprint": true
+}

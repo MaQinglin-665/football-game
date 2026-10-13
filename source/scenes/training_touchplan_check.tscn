@@ -1,0 +1,28 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/match.gd" id="1"]
+[ext_resource type="Resource" path="res://config/training_3v3.tres" id="2"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/training_startup.gd" id="3"]
+
+[ext_resource type="Script" path="res://addons/touchplan_training/qa/native_touchplan_training.gd" id="4"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/turf_roll_ab.gd" id="20"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/audio_ab.gd" id="22"]
+
+[node name="Training3v3" type="Node3D"]
+script = ExtResource("1")
+training_configuration = ExtResource("2")
+
+[node name="PublisherStartupCheck" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="TouchPlanExperimentCheck" type="Node" parent="."]
+script = ExtResource("4")
+
+[node name="TurfRollAB" type="Node" parent="."]
+script = ExtResource("20")
+
+[node name="AudioAB" type="Node" parent="."]
+script = ExtResource("22")

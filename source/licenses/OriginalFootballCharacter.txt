@@ -1,0 +1,11 @@
+Original Football Character - generated for the user's football project, 2026-10-02.
+
+All character geometry, rig structure, skin weights, contact sockets and animation
+curves were authored from original code in this task. No purchased or downloaded
+model, character texture, motion-capture clip or third-party artwork was used.
+
+The user may use, modify and distribute these original assets and their source
+scripts in their project without an asset fee or an attribution requirement.
+
+The installed Python, Pillow and official Godot 4.6.3 are execution tools, not
+bundled assets. No software executable is distributed in this delivery.

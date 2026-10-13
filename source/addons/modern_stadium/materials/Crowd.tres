@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "Crowd"
+albedo_color = Color(1.0, 1.0, 1.0, 1)
+roughness = 0.94
+metallic_specular = 0.10
+vertex_color_use_as_albedo = true

@@ -1,0 +1,17 @@
+{
+  "license": "CC0-1.0",
+  "generator": "tools/generate_grass_texture_hd.py",
+  "seed": 51042026,
+  "size": [
+    512,
+    512
+  ],
+  "channels": {
+    "R": "fine blade albedo variation",
+    "G": "tileable clump/macro variation",
+    "B": "blade normal x (0.5 = flat)",
+    "A": "blade normal z (0.5 = flat)"
+  },
+  "color_space": "linear data (not source_color)",
+  "external_sources": []
+}

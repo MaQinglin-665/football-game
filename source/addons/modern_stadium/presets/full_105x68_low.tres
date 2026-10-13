@@ -1,0 +1,11 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/modern_stadium/stadium_dimensions.gd" id="1"]
+
+[resource]
+resource_name = "FullSize_105x68_LowDetail"
+script = ExtResource("1")
+tier_rows = PackedInt32Array(14, 10, 16)
+seat_spacing = 0.68
+crowd_density = 0.0
+quality_label = "low"

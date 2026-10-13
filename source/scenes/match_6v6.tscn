@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/match.gd" id="1"]
+[node name="Match6v6" type="Node3D"]
+script = ExtResource("1")
+match_players_per_team = 6

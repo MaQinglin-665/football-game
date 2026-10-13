@@ -1,0 +1,5 @@
+当前：0.6.39-match-intelligence（2026-10-09）
+基线：dribble039_sim_review，旧入口保留。
+最新生产代码为射门质量/最终三区内收修正后的版本，勿退回verification/trial1。
+新旧各跑完正式1200秒比赛至FULL_TIME；单场机会质量改善，整体实力和用户手感待验收。
+先读上级交付说明_整场攻防判断.txt及verification/final_summary.json。

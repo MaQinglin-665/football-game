@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "Flag"
+albedo_color = Color(0.956863, 0.784314, 0.270588, 1)
+roughness = 0.94
+metallic_specular = 0.10
+cull_mode = 2

@@ -1,0 +1,245 @@
+{
+  "creator": "Original procedural synthesis for this project, 2026-10-02",
+  "license": "CC0-1.0",
+  "sample_rate": 24000,
+  "files": [
+    {
+      "file": "touch_0.wav",
+      "seconds": 0.1168,
+      "peak": 0.2625,
+      "rms": 0.0605,
+      "loop": false
+    },
+    {
+      "file": "touch_soft_0.wav",
+      "seconds": 0.1127,
+      "peak": 0.2498,
+      "rms": 0.0573,
+      "loop": false
+    },
+    {
+      "file": "touch_1.wav",
+      "seconds": 0.1168,
+      "peak": 0.2697,
+      "rms": 0.0609,
+      "loop": false
+    },
+    {
+      "file": "touch_soft_1.wav",
+      "seconds": 0.1127,
+      "peak": 0.2328,
+      "rms": 0.0566,
+      "loop": false
+    },
+    {
+      "file": "touch_2.wav",
+      "seconds": 0.1168,
+      "peak": 0.2893,
+      "rms": 0.061,
+      "loop": false
+    },
+    {
+      "file": "touch_soft_2.wav",
+      "seconds": 0.1127,
+      "peak": 0.2345,
+      "rms": 0.0569,
+      "loop": false
+    },
+    {
+      "file": "dribble_0.wav",
+      "seconds": 0.1226,
+      "peak": 0.3124,
+      "rms": 0.0659,
+      "loop": false
+    },
+    {
+      "file": "dribble_soft_0.wav",
+      "seconds": 0.115,
+      "peak": 0.2466,
+      "rms": 0.0583,
+      "loop": false
+    },
+    {
+      "file": "dribble_1.wav",
+      "seconds": 0.1226,
+      "peak": 0.2801,
+      "rms": 0.0651,
+      "loop": false
+    },
+    {
+      "file": "dribble_soft_1.wav",
+      "seconds": 0.115,
+      "peak": 0.2705,
+      "rms": 0.0582,
+      "loop": false
+    },
+    {
+      "file": "dribble_2.wav",
+      "seconds": 0.1226,
+      "peak": 0.3239,
+      "rms": 0.0669,
+      "loop": false
+    },
+    {
+      "file": "dribble_soft_2.wav",
+      "seconds": 0.115,
+      "peak": 0.2379,
+      "rms": 0.0582,
+      "loop": false
+    },
+    {
+      "file": "pass_0.wav",
+      "seconds": 0.1392,
+      "peak": 0.3741,
+      "rms": 0.0811,
+      "loop": false
+    },
+    {
+      "file": "pass_soft_0.wav",
+      "seconds": 0.1217,
+      "peak": 0.2843,
+      "rms": 0.0651,
+      "loop": false
+    },
+    {
+      "file": "pass_1.wav",
+      "seconds": 0.1392,
+      "peak": 0.3744,
+      "rms": 0.0809,
+      "loop": false
+    },
+    {
+      "file": "pass_soft_1.wav",
+      "seconds": 0.1217,
+      "peak": 0.2955,
+      "rms": 0.0644,
+      "loop": false
+    },
+    {
+      "file": "pass_2.wav",
+      "seconds": 0.1392,
+      "peak": 0.395,
+      "rms": 0.0801,
+      "loop": false
+    },
+    {
+      "file": "pass_soft_2.wav",
+      "seconds": 0.1217,
+      "peak": 0.2872,
+      "rms": 0.0644,
+      "loop": false
+    },
+    {
+      "file": "shot_0.wav",
+      "seconds": 0.155,
+      "peak": 0.5159,
+      "rms": 0.096,
+      "loop": false
+    },
+    {
+      "file": "shot_soft_0.wav",
+      "seconds": 0.128,
+      "peak": 0.2849,
+      "rms": 0.0697,
+      "loop": false
+    },
+    {
+      "file": "shot_1.wav",
+      "seconds": 0.155,
+      "peak": 0.4393,
+      "rms": 0.0964,
+      "loop": false
+    },
+    {
+      "file": "shot_soft_1.wav",
+      "seconds": 0.128,
+      "peak": 0.3009,
+      "rms": 0.0707,
+      "loop": false
+    },
+    {
+      "file": "shot_2.wav",
+      "seconds": 0.155,
+      "peak": 0.5154,
+      "rms": 0.0987,
+      "loop": false
+    },
+    {
+      "file": "shot_soft_2.wav",
+      "seconds": 0.128,
+      "peak": 0.2786,
+      "rms": 0.0699,
+      "loop": false
+    },
+    {
+      "file": "step_0.wav",
+      "seconds": 0.15,
+      "peak": 0.2212,
+      "rms": 0.0291,
+      "loop": false
+    },
+    {
+      "file": "step_1.wav",
+      "seconds": 0.15,
+      "peak": 0.1976,
+      "rms": 0.0278,
+      "loop": false
+    },
+    {
+      "file": "step_2.wav",
+      "seconds": 0.15,
+      "peak": 0.1903,
+      "rms": 0.0271,
+      "loop": false
+    },
+    {
+      "file": "step_3.wav",
+      "seconds": 0.15,
+      "peak": 0.1422,
+      "rms": 0.0248,
+      "loop": false
+    },
+    {
+      "file": "whistle_short.wav",
+      "seconds": 0.33,
+      "peak": 0.3101,
+      "rms": 0.1311,
+      "loop": false
+    },
+    {
+      "file": "whistle_ready.wav",
+      "seconds": 0.26,
+      "peak": 0.3101,
+      "rms": 0.1192,
+      "loop": false
+    },
+    {
+      "file": "whistle_period.wav",
+      "seconds": 1.04,
+      "peak": 0.3106,
+      "rms": 0.128,
+      "loop": false
+    },
+    {
+      "file": "goal.wav",
+      "seconds": 1.3,
+      "peak": 0.2051,
+      "rms": 0.0474,
+      "loop": false
+    },
+    {
+      "file": "music_loop.wav",
+      "seconds": 8.0,
+      "peak": 0.117,
+      "rms": 0.0374,
+      "loop": true
+    },
+    {
+      "file": "stadium_loop.wav",
+      "seconds": 4.0,
+      "peak": 0.07,
+      "rms": 0.0169,
+      "loop": true
+    }
+  ]
+}

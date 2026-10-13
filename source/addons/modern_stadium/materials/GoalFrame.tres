@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "GoalFrame"
+albedo_color = Color(0.952941, 0.956863, 0.933333, 1)
+roughness = 0.94
+metallic_specular = 0.10

@@ -1,0 +1,16 @@
+{
+  "license": "CC0-1.0",
+  "generator": "tools/generate_grass_texture.py",
+  "seed": 51032026,
+  "size": [
+    256,
+    256
+  ],
+  "channels": {
+    "R": "small short fibres",
+    "G": "periodic low-contrast variation",
+    "B": "reserved constant"
+  },
+  "color_space": "linear data (not source_color)",
+  "external_sources": []
+}

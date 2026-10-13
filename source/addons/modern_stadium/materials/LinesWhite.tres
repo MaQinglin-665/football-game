@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "LinesWhite"
+albedo_color = Color(0.92549, 0.933333, 0.905882, 1)
+roughness = 0.94
+metallic_specular = 0.10

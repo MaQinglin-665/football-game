@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/modern_stadium/stadium_dimensions.gd" id="1"]
+
+[resource]
+resource_name = "CustomTraining_60x40_NotRegulation"
+script = ExtResource("1")
+pitch_length = 60.0
+pitch_width = 40.0
+goal_width = 6.0
+goal_height = 2.40
+goal_area_depth = 3.2
+penalty_area_depth = 8.0
+penalty_distance = 6.0
+circle_radius = 4.0
+tier_rows = PackedInt32Array(8, 6, 8)
+regulation_markings = false
+quality_label = "custom_training"

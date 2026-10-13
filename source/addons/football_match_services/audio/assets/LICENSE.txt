@@ -1,0 +1,11 @@
+Original football audio assets created for this project on 2026-10-02.
+
+To the extent possible under law, the creator has waived all copyright and
+related or neighbouring rights to these original procedural audio assets
+under the CC0 1.0 Universal public domain dedication.
+
+CC0 legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+No commercial recordings, speech recordings, copyrighted music samples,
+soundfonts or third-party downloaded audio were used. Reproducible source:
+the delivery package's tools/generate_audio.py. See audio_manifest.json.

@@ -1,0 +1,58 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/match.gd" id="1"]
+[ext_resource type="Resource" path="res://config/training_3v3.tres" id="2"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/training_startup.gd" id="3"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/turf_roll_ab.gd" id="20"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/role_test_native.gd" id="21"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/audio_ab.gd" id="22"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/motion06_native.gd" id="23"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/interaction_minimal.gd" id="25"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/slide031_check.gd" id="31"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/dominant032_shot_check.gd" id="32"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/receivepass034_chain.gd" id="34"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/tacticshd037_entry.gd" id="37"]
+
+[node name="Training3v3" type="Node3D"]
+script = ExtResource("1")
+training_configuration = ExtResource("2")
+
+[node name="PublisherStartupCheck" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="TurfRollAB" type="Node" parent="."]
+script = ExtResource("20")
+
+[node name="RoleTest" type="Node" parent="."]
+script = ExtResource("21")
+
+[node name="AudioAB" type="Node" parent="."]
+script = ExtResource("22")
+
+[node name="Motion06QA" type="Node" parent="."]
+script = ExtResource("23")
+
+[node name="InteractionQA" type="Node" parent="."]
+script = ExtResource("25")
+
+[node name="Slide031QA" type="Node" parent="."]
+script = ExtResource("31")
+
+[node name="Dominant032ShotQA" type="Node" parent="."]
+script = ExtResource("32")
+
+[node name="ReceivePass034QA" type="Node" parent="."]
+script = ExtResource("34")
+
+[node name="TacticsHD037Entry" type="Node" parent="."]
+script = ExtResource("37")

@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/match.gd" id="1"]
+
+[ext_resource type="Script" path="res://addons/publisher_checks/tacticshd037_entry.gd" id="37"]
+
+[ext_resource type="Script" path="res://art/integration.gd" id="art"]
+
+[node name="SmallSideMatch" type="Node3D"]
+script = ExtResource("1")
+
+[node name="TacticsHD037Entry" type="Node" parent="."]
+script = ExtResource("37")
+
+[node name="IndependentArt" type="Node3D" parent="."]
+script = ExtResource("art")

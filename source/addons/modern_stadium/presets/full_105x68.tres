@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/modern_stadium/stadium_dimensions.gd" id="1"]
+
+[resource]
+resource_name = "FullSize_105x68_SelectedCommonDimensions"
+script = ExtResource("1")
+pitch_length = 105.0
+pitch_width = 68.0
+crowd_density = 0.0

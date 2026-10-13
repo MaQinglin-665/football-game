@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "GoalNet"
+albedo_color = Color(0.760784, 0.784314, 0.756863, 1)
+roughness = 0.94
+metallic_specular = 0.10
+cull_mode = 2
