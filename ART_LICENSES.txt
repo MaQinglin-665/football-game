@@ -71,3 +71,12 @@ https://www.realmadrid.com/en-US/news/club/latest-news/el-santiago-bernabeu-estr
 
 
 2026-10-13 / 11v11 R7 更新：Concrete034 Roughness现已使用（此前“未采样”记录为历史状态）。从本机原CC0文件制作颜色、法线及粗糙度mipmap缓存；粗糙度重映射约0.72—0.95以适配场馆混凝土。来源、作者、许可不变。新增远景观众简模为本工程程序生成，没有新的第三方资产。
+
+7. R004（2026-10-13）天空 HDR 升级为 2K
+Kloofendal 48d Partly Cloudy (Pure Sky) 2K 版本，替换 art/assets/sky.hdr（原 1024×512 → 2048×1024）。
+作者：Greg Zaal（原作），Jarod Guest（天空处理）。
+来源：https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky
+下载：https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloofendal_48d_partly_cloudy_puresky_2k.hdr
+许可：https://polyhaven.com/license — CC0 1.0；可商用、修改、再分发，无需署名。
+大小 5,451,493 字节（原 1,435,119）；SHA-256 5244534e9cf5b606f2ff513aa00ddb161b0a4826ffd88a0d3bd03ac29247d198。
+同一资产、同一许可；未新增其他第三方素材。草皮仍为原创程序纹理（第5条），未换成公园草皮照片。
