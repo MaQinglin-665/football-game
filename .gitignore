@@ -1,0 +1,6 @@
+.godot/
+__pycache__/
+*.pyc
+*.tmp
+verification/
+*.log
