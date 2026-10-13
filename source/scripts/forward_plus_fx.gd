@@ -45,7 +45,8 @@ static func apply(environment: Environment, viewport: Viewport, tier: String, ef
 	RenderingServer.directional_soft_shadow_filter_set_quality(SHADOW_FILTER.get(tier, RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM))
 	if viewport != null:
 		var fsr: bool = viewport.scaling_3d_mode == Viewport.SCALING_3D_MODE_FSR2
-		viewport.use_taa = bool(p.get("taa", false)) and not fsr
+		# R006: AA comes from RenderQuality.TIER_AA (one method per tier); no stacking here.
+		viewport.use_taa = bool(viewport.get_meta("r006_taa", p.get("taa", false))) and not fsr and viewport.msaa_3d == Viewport.MSAA_DISABLED
 		report["taa"] = viewport.use_taa
 		report["fsr2"] = fsr
 	report["ssao"] = environment.ssao_enabled

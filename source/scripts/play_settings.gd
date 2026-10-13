@@ -34,7 +34,7 @@ func load_values()->void:
 	if loaded==OK:
 		for key in DEFAULTS:values[key]=cfg.get_value("play",key,DEFAULTS[key])
 	for key in ["quality","aa","shadows","grass","lighting","effects"]:
-		values[key]=clampi(int(values[key]),0,3 if key in ["quality","aa"] else 2 if key in ["shadows","grass","effects"] else 1)
+		values[key]=clampi(int(values[key]),0,2 if key in ["quality","shadows","grass","effects"] else 1) # R006: 3 tiers; aa = off/tier
 	values.upscale=clampi(int(values.upscale),0,2)
 	values.inertia=clampi(int(values.inertia),0,1)
 	values.fps_limit=clampi(int(values.fps_limit),0,2)
@@ -55,9 +55,9 @@ func _build()->void:
 	var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(570,550);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;stack.add_child(scroll)
 	var column:=VBoxContainer.new();column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;column.add_theme_constant_override("separation",9);scroll.add_child(column)
 	var title:=Label.new();title.text="游戏设置";title.add_theme_font_size_override("font_size",28);column.add_child(title)
-	_option(column,"quality","画质 / 显示",["流畅 · 720p 窗口","均衡 · 原生全屏","清晰 · 原生全屏","极清 · 原生全屏"])
+	_option(column,"quality","画质 / 显示",["流畅 · 720p 窗口","均衡 · 原生全屏","高画质 · 原生全屏"])
 	_option(column,"fps_limit","帧率上限",["60 FPS · 稳定优先","120 FPS · 需要性能余量","不限制"])
-	_option(column,"aa","边缘抗锯齿",["关闭","2x MSAA","4x MSAA","8x MSAA"])
+	_option(column,"aa","边缘抗锯齿",["关闭","随画质 · 流畅 FXAA / 均衡 2x MSAA / 高 TAA"])
 	_option(column,"upscale","超分辨率",["原生 · 默认","FSR 2 · 质量","FSR 2 · 均衡"])
 	_option(column,"shadows","人物 / 场地阴影",["关闭","标准 · 75 米","精细 · 100 米"])
 	_option(column,"grass","草地细节",["简洁","标准 · 近景草叶","精细 · 更远细节"])
@@ -75,9 +75,8 @@ func _build()->void:
 	for item in [["应用并保存",_commit],["恢复默认",_defaults],["返回  Esc",close_menu]]:
 		var button:=Button.new();button.text=item[0];button.custom_minimum_size=Vector2(170,40);button.pressed.connect(item[1]);row.add_child(button)
 	widgets.quality.item_selected.connect(func(index:int):
-		widgets.aa.select(1 if index<2 else index)
 		widgets.shadows.select(1 if index<2 else 2)
-		widgets.grass.select(0 if index==0 else 2 if index==3 else 1))
+		widgets.grass.select(0 if index==0 else 2 if index==2 else 1))
 	panel.hide()
 func _row(parent:Node,text:String)->HBoxContainer:
 	var row:=HBoxContainer.new();parent.add_child(row)
@@ -118,7 +117,6 @@ func apply_values(save:bool)->void:
 	viewport.scaling_3d_mode=Viewport.SCALING_3D_MODE_FSR2 if use_fsr else Viewport.SCALING_3D_MODE_BILINEAR
 	viewport.scaling_3d_scale=([1.0,.77,.667][int(values.upscale)]) if use_fsr else 1.0
 	viewport.fsr_sharpness=.65
-	viewport.msaa_3d=Viewport.MSAA_DISABLED if use_fsr else int(values.aa)
 	var lod:Dictionary=preload("res://addons/modern_stadium/stadium_quality.gd").PROFILES["low" if int(values.quality)==0 else "balanced"]
 	game.stadium.seat_lod_near_distance=lod.seat_near;game.stadium.seat_lod_mid_distance=lod.seat_mid;game.stadium.net_lod_distance=lod.net_near
 	var turf:ShaderMaterial=game.services.materials.slots.pitch_grass
@@ -131,6 +129,7 @@ func apply_values(save:bool)->void:
 	turf.set_shader_parameter("detail_fade_end_m",38.0 if int(values.grass)==2 else 23.0)
 	preload("res://scripts/stadium_finish.gd").apply(game.stadium,"low" if int(values.quality)==0 else "detail" if int(values.quality)>1 else "balanced")
 	lighting_fx.apply(int(values.effects),mode=="night",int(values.shadows)>0,int(values.quality),int(values.shadows))
+	Quality.apply_tier_aa(viewport,int(values.quality),int(values.aa)>0) # R006: after FX so it wins
 	for actor in game.players:actor.profile.set_meta("movement_inertia",int(values.inertia))
 	Engine.max_fps=[60,120,0][int(values.fps_limit)]
 	game.player.camera_bob_enabled=bool(values.camera_bob)
@@ -163,7 +162,7 @@ func close_menu()->void:
 	game.sync_input_context()
 func cycle_quality()->void:
 	if opened:return
-	values.quality=(int(values.quality)+1)%4;values.aa=1 if int(values.quality)<2 else int(values.quality)
+	values.quality=(int(values.quality)+1)%3
 	apply_values(true)
 	game.message("画质："+Quality.label(game.render_quality)+" · F3 设置",2.5)
 func cycle_lighting()->void:

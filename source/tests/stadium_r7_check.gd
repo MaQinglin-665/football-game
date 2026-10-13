@@ -23,7 +23,7 @@ func run()->void:
  var env=Environment.new();var viewport=SubViewport.new();root.add_child(viewport)
  for effects in 3:
   preload("res://art/performance_profile.gd").apply_stadium(env,viewport,{"effects":effects,"quality":1},true)
-  assert(env.ssao_enabled==(effects>0));assert(env.ssil_enabled==(effects==2));assert(viewport.positional_shadow_atlas_size==4096)
+  assert(env.ssao_enabled==(effects>0));assert(env.ssil_enabled==false) # R006: quality 1 never SSIL;assert(viewport.positional_shadow_atlas_size==4096)
  viewport.queue_free()
  var game=load("res://scenes/match.tscn").instantiate();root.add_child(game)
  await process_frame

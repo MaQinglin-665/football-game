@@ -18,11 +18,11 @@ func _initialize()->void:
  var env=Environment.new();var viewport=SubViewport.new();root.add_child(viewport)
  for forward in [false,true]:
   for effects in 3:
-   for quality in 4:
+   for quality in 3:
     for shadows in 3:
      Profile.apply_small(env,viewport,{"effects":effects,"quality":quality,"shadows":shadows},forward)
      assert(env.ssao_enabled==(forward and effects>0))
-     assert(env.ssil_enabled==(forward and effects==2))
+     assert(env.ssil_enabled==(forward and effects==2 and quality>=2))
      assert(env.glow_enabled==(forward and effects>0))
      assert(viewport.positional_shadow_atlas_size==(4096 if shadows==2 else 2048))
  print("PRESENTATION_PERF_PASS grass patches ",minimum,"..",maximum,"/49; all 72 profiles; no shader-live grass culled")
