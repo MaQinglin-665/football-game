@@ -60,6 +60,23 @@ var _fp_cut_previous:=-1.0
 var _view_head_bone := -1
 var _view_comfort045=ViewEyeComfort045.new()
 var first_touch_timing:=FirstTouchTiming.new() # R004
+var human_motion:=HumanMotion.new() # R004 human locomotion curve
+var human_motion_enabled:=true
+## R004 camera comfort constants
+const CAMERA_BASE_FOV:=90.0
+const SPRINT_FOV_MULTIPLIER:=1.06
+const SPRINT_FOV_RATE:=4.0
+const BOB_LIMIT_M:=0.015
+const BOB_SPRINT_SCALE:=0.5
+const BOB_BASELINE_RATE:=2.0
+const DRIBBLE_DOWN_BIAS_DEG:=6.0 # 5–8°, only while the human owns the ball
+const DOWN_BIAS_RATE:=3.0
+var base_fov:=CAMERA_BASE_FOV
+var _bob_baseline:=-1.0
+var _down_bias:=0.0
+static func limit_bob(visual_y:float,baseline:float,sprint:bool)->float:
+	var limit:=BOB_LIMIT_M*(BOB_SPRINT_SCALE if sprint else 1.0)
+	return baseline+clampf(visual_y-baseline,-limit,limit)
 var first_touch_clock_override:=-1.0 # tests only; <0 uses active-play clock
 var first_touch_clock:=0.0
 @onready var head: Node3D = $Head
@@ -76,7 +93,7 @@ func _ready() -> void:
 	$Sprint.set_physics_process(false)
 	head.position = Vector3(0,1.60,-.11)
 	camera.position = Vector3.ZERO # Fixed body-frame eye; pitch rotates only the view.
-	camera.fov = 96
+	camera.fov = CAMERA_BASE_FOV
 	camera.top_level=true
 	camera.physics_interpolation_mode=Node.PHYSICS_INTERPOLATION_MODE_OFF
 	foot = FootScript.new(self,match_controller)
@@ -233,6 +250,10 @@ func _refresh_view_anchor(delta:float=0.0) -> void:
 		_eye_horizontal=horizontal
 	elif tick!=_eye_tick and delta>0:
 		_eye_horizontal=_eye_horizontal.lerp(horizontal,1.0-exp(-18.0*minf(delta,.05)))
+	# R004: bob = deviation from a slow baseline, clamped to 1.5 cm (half while sprinting).
+	if _bob_baseline<0:_bob_baseline=visual_y
+	_bob_baseline=lerpf(_bob_baseline,visual_y,1.0-exp(-BOB_BASELINE_RATE*maxf(delta,0)))
+	visual_y=limit_bob(visual_y,_bob_baseline,sprinting)
 	var eye:Vector3=_eye_horizontal+Vector3(0,visual_y if camera_bob_enabled else 1.60,0)
 	if _eye_tick<0 or global_position.distance_squared_to(_eye_root)>1.0:
 		_eye_previous=eye;_eye_current=eye;reset_physics_interpolation()
@@ -246,6 +267,11 @@ func _process(_delta:float)->void:
 	camera.global_position=get_global_transform_interpolated().origin+_eye_previous.lerp(_eye_current,alpha)
 	# No smoothing or physics interpolation on mouse rotation.
 	camera.global_basis=head.global_basis
+	# R004: small automatic down-bias only while dribbling; sprint FOV kick.
+	var owns:bool=is_instance_valid(match_controller) and match_controller.ball.carrier==self
+	_down_bias=lerpf(_down_bias,deg_to_rad(DRIBBLE_DOWN_BIAS_DEG) if owns else 0.0,1.0-exp(-DOWN_BIAS_RATE*_delta))
+	if absf(_down_bias)>.0001:camera.global_basis=camera.global_basis*Basis(Vector3.RIGHT,-_down_bias)
+	camera.fov=lerpf(camera.fov,base_fov*(SPRINT_FOV_MULTIPLIER if sprinting else 1.0),clampf(_delta*SPRINT_FOV_RATE,0,1))
 	# Turning behind must not expose the inside of the first-person torso subset.
 	# This trims the first-person subset; anatomy, collision and contacts stay live.
 	var look_error:float=absf(angle_difference(avatar.visual.global_rotation.y,rotation.y)) if camera.current else 0.0

@@ -8,7 +8,7 @@ extends Node
 @onready var cam: Camera3D = get_node(head_path).cam
 
 @export var sprint_speed := 9.8
-@export var fov_multiplier := 1.0
+@export var fov_multiplier := 1.06
 @onready var normal_speed: float = controller.speed
 @onready var normal_fov: float = cam.fov
 
@@ -17,10 +17,10 @@ extends Node
 func _physics_process(delta: float) -> void:
 	if can_sprint():
 		controller.speed = sprint_speed
-		cam.set_fov(lerp(cam.fov, normal_fov * fov_multiplier, delta * 8))
+		cam.set_fov(lerp(cam.fov, normal_fov * fov_multiplier, delta * 4))
 	else:
 		controller.speed = normal_speed
-		cam.set_fov(lerp(cam.fov, normal_fov, delta * 8))
+		cam.set_fov(lerp(cam.fov, normal_fov, delta * 4))
 
 
 func can_sprint() -> bool:

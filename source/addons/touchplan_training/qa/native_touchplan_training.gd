@@ -104,7 +104,7 @@ func run() -> void:
 	check("default small scene has six actors and one fixed human",game.players.size()==6 and game.agents.size()==5 and game.players.filter(func(p):return p.is_human).size()==1)
 	check("120Hz and same real-contact World",Engine.physics_ticks_per_second==120 and game.physics_world.actors.size()==6 and not game.ball.auto_step)
 	check("training dimensions36x24 and small goals",game.field_half_length==18.0 and game.field_half_width==12.0 and game.goal_width==3.0 and game.goal_height==1.5)
-	check("normal camera and player implementation",game.player.camera.fov==96.0 and game.player.get_script().resource_path=="res://scripts/football_shared_player.gd")
+	check("normal camera and player implementation",game.player.camera.fov==90.0 and game.player.get_script().resource_path=="res://scripts/football_shared_player.gd")
 	await capture("touchplan3v3_menu")
 	game.contact_hub.contact_resolved.connect(func(event: Dictionary):
 		if event.actor!=game.player: return

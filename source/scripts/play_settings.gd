@@ -2,7 +2,7 @@ extends CanvasLayer
 # One persistent presentation owner. No physics/rules parameters exposed.
 const Quality=preload("res://scripts/render_quality.gd")
 const Night=preload("res://addons/stadium_night/night_profile.gd")
-const DEFAULTS={"quality":1,"aa":1,"upscale":0,"shadows":1,"grass":1,"lighting":1,"fov":96.0,"sensitivity":1.6,"volume":85.0,"assist":true,"low_pressure":false,"effects":1,"camera_bob":true,"fps_limit":0,"inertia":0}
+const DEFAULTS={"quality":1,"aa":1,"upscale":0,"shadows":1,"grass":1,"lighting":1,"fov":90.0,"sensitivity":1.6,"volume":85.0,"assist":true,"low_pressure":false,"effects":1,"camera_bob":true,"fps_limit":0,"inertia":0}
 var game:Node
 var lighting_fx:Node
 var values:Dictionary=DEFAULTS.duplicate()
@@ -135,6 +135,7 @@ func apply_values(save:bool)->void:
 	Engine.max_fps=[60,120,0][int(values.fps_limit)]
 	game.player.camera_bob_enabled=bool(values.camera_bob)
 	game.player.camera.fov=float(values.fov)
+	game.player.base_fov=float(values.fov)
 	game.player.head.mouse_sensitivity=float(values.sensitivity)/1000.0
 	AudioServer.set_bus_volume_db(0,linear_to_db(maxf(.0001,float(values.volume)/100)))
 	AudioServer.set_bus_mute(0,float(values.volume)<=0)

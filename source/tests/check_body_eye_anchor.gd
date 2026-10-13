@@ -34,7 +34,7 @@ func run() -> void:
 				eye_rows.append({"yaw":yaw,"relative_body_yaw":relative_yaw,"pitch":pitch,"camera":player.camera.global_position,"body":player.avatar.visual.global_transform})
 	check("60 camera samples fixed through pitch in actual animated head frame",max_pitch_orbit<.000001 and max_body_anchor_error<.000001,{"samples":eye_rows.size(),"pitch_orbit_m":max_pitch_orbit,"body_anchor_error_m":max_body_anchor_error})
 	check("camera has zero pitch-rotating local offset",player.camera.position==Vector3.ZERO)
-	check("original lens and down/up limits retained",player.camera.fov==96 and is_equal_approx(player.camera.near,.05) and is_equal_approx(player.head.y_limit,deg_to_rad(75.0)),{"fov":player.camera.fov,"near":player.camera.near,"down_limit":player.head.y_limit,"upper_limit_deg":38})
+	check("original lens and down/up limits retained",player.camera.fov==90 and is_equal_approx(player.camera.near,.05) and is_equal_approx(player.head.y_limit,deg_to_rad(55.0)),{"fov":player.camera.fov,"near":player.camera.near,"down_limit":player.head.y_limit,"upper_limit_deg":38})
 	player.reset_view(0)
 	check("original reset pitch42 retained",is_equal_approx(player.head.rot.x,deg_to_rad(-42.0)))
 	var after := {"ball":game.ball.position,"velocity":game.ball.velocity,"spin":game.ball.spin_rads,"owner":game.ball.carrier,"sequence":player.foot.sequence,"phase":player.foot.phase}

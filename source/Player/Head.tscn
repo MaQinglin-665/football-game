@@ -6,9 +6,9 @@
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.64, 0)
 script = ExtResource( "1_enjfg" )
 mouse_sensitivity = 1.6
-y_limit = 75.0
+y_limit = 55.0
 
 [node name="Camera" type="Camera3D" parent="."]
 current = true
-fov = 86.0
+fov = 90.0
 near = 0.05

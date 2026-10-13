@@ -191,11 +191,39 @@ func _update_markers(on_field: bool) -> void:
 				pass_marker.text = "Q  传给 #%d" % target.jersey
 				pass_marker.show()
 	ball_indicator.text = ""
-	if not on_field: return
+	if not on_field:
+		_update_ball_arrow(false,camera,m.ball.position,false)
+		return
 	var screen := camera.unproject_position(m.ball.position)
 	if camera.is_position_behind(m.ball.position) or screen.x<80 or screen.x>1200 or screen.y>665 or screen.y<100:
 		var relative: Vector3 = m.player.global_basis.inverse()*(m.ball.position-m.player.position)
 		ball_indicator.text = "%s  足球 %.1f m" % ["←" if relative.x<-.3 else "→" if relative.x>.3 else "↓" if relative.z>0 else "↑",m.flat_distance(m.player.position,m.ball.position)]
+	_update_ball_arrow(on_field,camera,m.ball.position,ball_indicator.text!="")
+
+## R004 off-screen ball edge arrow (points from screen centre toward the ball).
+const BALL_ARROW_MARGIN := 48.0
+const BALL_ARROW_SIZE := 18.0
+var ball_arrow: Polygon2D
+static func edge_arrow(view_dir: Vector3, size: Vector2, margin: float) -> Dictionary:
+	# view_dir in camera space (-Z forward). Behind the camera folds to the bottom edge.
+	var d := Vector2(view_dir.x, -view_dir.y)
+	if view_dir.z > 0.0: d = Vector2(view_dir.x, absf(view_dir.z)) # behind: side + bottom
+	if d.length() < .0001: d = Vector2(0, 1)
+	d = d.normalized()
+	var half := size * .5 - Vector2(margin, margin)
+	var t := minf(half.x / maxf(absf(d.x), .0001), half.y / maxf(absf(d.y), .0001))
+	return {"position": size * .5 + d * t, "angle": d.angle()}
+func _update_ball_arrow(on_field: bool, camera: Camera3D, ball: Vector3, off_screen: bool) -> void:
+	if ball_arrow == null:
+		ball_arrow = Polygon2D.new()
+		ball_arrow.polygon = PackedVector2Array([Vector2(BALL_ARROW_SIZE, 0), Vector2(-BALL_ARROW_SIZE*.6, -BALL_ARROW_SIZE*.6), Vector2(-BALL_ARROW_SIZE*.6, BALL_ARROW_SIZE*.6)])
+		ball_arrow.color = Color(1, 1, 1, .85)
+		add_child(ball_arrow)
+	ball_arrow.visible = on_field and off_screen
+	if not ball_arrow.visible: return
+	var r := edge_arrow(camera.global_basis.inverse() * (ball - camera.global_position), get_viewport().get_visible_rect().size, BALL_ARROW_MARGIN)
+	ball_arrow.position = r.position
+	ball_arrow.rotation = r.angle
 
 func toggle_help() -> void:
 	help.visible = not help.visible

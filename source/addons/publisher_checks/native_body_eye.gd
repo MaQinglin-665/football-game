@@ -51,7 +51,7 @@ func run() -> void:
 	for _i in 45: await tick()
 	check("acquires through actual RECEIVE",game.ball.carrier==game.player and touch_events.any(func(e):return e.action=="RECEIVE" and e.success))
 	check("production firstperson body visible opaque one surface",body_mesh.visible and body_mesh.mesh.get_surface_count()==1 and (body_mesh.get_active_material(0) as StandardMaterial3D).transparency==BaseMaterial3D.TRANSPARENCY_DISABLED)
-	check("original22 roster120hz time1 lens unchanged",game.players.size()==22 and Engine.physics_ticks_per_second==120 and Engine.time_scale==1 and game.player.camera.fov==96 and is_equal_approx(game.player.camera.near,.05))
+	check("original22 roster120hz time1 lens unchanged",game.players.size()==22 and Engine.physics_ticks_per_second==120 and Engine.time_scale==1 and game.player.camera.fov==90 and is_equal_approx(game.player.camera.near,.05))
 	game.set_process(false);game.set_physics_process(false)
 	game.physics_world.set_physics_process(false);game.ball.set_physics_process(false)
 	for actor in game.players:actor.set_physics_process(false)
