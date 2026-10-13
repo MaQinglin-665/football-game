@@ -1,11 +1,3 @@
-当前：0.6.39-contact-flow，动作、拦截与 AI 控球候选；2026-10-13T13:27:14.753590+08:00
-项目：D:\足球游戏\候选\fc_contact_flow\source
-实际基线：2026-10-13/fc_tactical_flow/source，初始指纹 baseline.json，后续合并 tactical_sync.json。
-本轮因 C 盘写满，将本轮独立目录迁至 D 盘；旧项目和入口未覆盖。
-入口：D:\足球游戏\启动11v11动作与拦截候选版.cmd（同名3v3、6v6、9v9入口）。
-沿用最新可玩入口的 Forward+ 参数；没有更换渲染器。
-修改：有限自动伸脚、主动抢断静止球修正、收腿与步态连续、AI手臂单一控制、AI触球可达领先量和边线制动。
-真人盘带、Q扣球、右键传球、Shift切换加速、多部位传球、球物理配置与战术系统保留。
-未新增模型训练或晋升；默认入口仍沿用规则执行器。
-短验证和限制见上级“动作与拦截交付说明.txt”、verification/delivery_summary.json。
-完整手感待用户试玩；70ms尖峰、接球反复调整、高球失控和退出资源警告仍在未完成项。
+0.6.39-dribble-rhythm。开发分支dev/gameplay；待冻结新R002候选。
+本轮Shift关闭加速修复、现有按键盘带节奏、真实重心与近身防守衔接。
+详情../SHIFT_DRIBBLE_PROGRESS.txt、../R002_GAMEPLAY_CHECKS.json。旧R001和main未获本轮验收。

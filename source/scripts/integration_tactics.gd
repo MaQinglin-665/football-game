@@ -160,6 +160,7 @@ func _refresh_now_impl(delta:float) -> void:
 		var actor=game.players[i]
 		actors[i].merge(preload("res://scripts/player_abilities.gd").observation(actor))
 		actors[i].can_pass=game.ball.can_pass(actor)
+		actors[i].visible_weight_cue=canonical(actor.dribble_balance.cue)
 		actors[i].ball_offset=canonical(game.ball.position-actor.position)
 		actors[i].ball_relative_speed=(game.ball.velocity-actor.velocity).length()
 		actors[i].ball_velocity=canonical(game.ball.velocity)

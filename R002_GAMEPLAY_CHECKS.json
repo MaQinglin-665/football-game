@@ -1,0 +1,124 @@
+{
+  "contact_flow_check": {
+    "passed": 26,
+    "failed": 0,
+    "errors": 0
+  },
+  "cut_pull_check": {
+    "passed": 20,
+    "failed": 0,
+    "errors": 0
+  },
+  "pass_contact_checks": {
+    "passed": 24,
+    "failed": 0,
+    "errors": 0
+  },
+  "tactical_flow_checks": {
+    "passed": 19,
+    "failed": 0,
+    "errors": 0
+  },
+  "combo": [
+    {
+      "check": "actual left and right steps produce opposite visible weight transfer",
+      "passed": true
+    },
+    {
+      "check": "visible shoulder cue stays bounded",
+      "passed": true
+    },
+    {
+      "check": "Q after probing resolves one real directional cut",
+      "passed": true
+    },
+    {
+      "check": "no duplicate ordinary contact after combination",
+      "passed": true
+    },
+    {
+      "check": "probe combination has no height explosion",
+      "passed": true
+    },
+    {
+      "check": "release assistance does not keep forward intent on reverse",
+      "passed": true
+    },
+    {
+      "check": "no input still stops the actor",
+      "passed": true
+    },
+    {
+      "check": "balance settles without perpetual fake motion",
+      "passed": true
+    }
+  ],
+  "shift": {
+    "before": {
+      "single_on": {
+        "max_gap_m": 0.6876272334389129,
+        "lost_frames": 0,
+        "peak_ball_height_m": 0.111000001430511,
+        "heavy_contacts": 0
+      },
+      "single_off": {
+        "max_gap_m": 2.409443469390223,
+        "lost_frames": 123,
+        "peak_ball_height_m": 0.111000001430511,
+        "heavy_contacts": 0
+      },
+      "rapid_pair": {
+        "max_gap_m": 1.4731732702673608,
+        "lost_frames": 152,
+        "peak_ball_height_m": 0.111063897609711,
+        "heavy_contacts": 1
+      }
+    },
+    "after2": {
+      "single_on": {
+        "max_gap_m": 0.6876272334389129,
+        "lost_frames": 0,
+        "peak_ball_height_m": 0.111000001430511,
+        "heavy_contacts": 0
+      },
+      "single_off": {
+        "max_gap_m": 0.6604776440071807,
+        "lost_frames": 0,
+        "peak_ball_height_m": 0.111000001430511,
+        "heavy_contacts": 0
+      },
+      "rapid_pair": {
+        "max_gap_m": 1.4731732702673608,
+        "lost_frames": 152,
+        "peak_ball_height_m": 0.111063897609711,
+        "heavy_contacts": 1
+      }
+    }
+  },
+  "3v3": {
+    "sim_seconds": 20.0083333333328,
+    "live_seconds": 20.0083333333328,
+    "stats": {
+      "ai_passes": 7,
+      "ai_shots": 0,
+      "ai_tackles": 6,
+      "outs": 0,
+      "passes": 0,
+      "shots": 0,
+      "tackles": 0
+    }
+  },
+  "11v11": {
+    "sim_seconds": 30.0083333333323,
+    "live_seconds": 17.508333333333,
+    "stats": {
+      "ai_passes": 5,
+      "ai_shots": 0,
+      "ai_tackles": 0,
+      "outs": 1,
+      "passes": 0,
+      "shots": 0,
+      "tackles": 0
+    }
+  }
+}

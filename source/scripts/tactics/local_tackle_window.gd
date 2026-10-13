@@ -124,6 +124,14 @@ func try_due(game: Node) -> void:
 		# carrier gap or root-facing cone is the sole permit for a real side poke.
 		if not exposed and owner_gap>.24 and relative.length()>.35 and relative.dot(toward.normalized())>.20:
 			exposed = true
+		# Brake before a covered poke when momentum is carrying the defender
+		# across the line. Exposed balls retain the same legal contact window.
+		var across:Vector3=actor.velocity;across.y=0
+		var to_ball:Vector3=known.position-actor.position;to_ball.y=0
+		var rush_miss:bool=across.length()>2.8 and across.normalized().dot(to_ball.normalized())<.55
+		if not exposed and rush_miss:
+			last_decision={"started":false,"reason":"brake_before_covered_poke","actor_slot":int(permission.actor_slot)}
+			continue
 		# Exposure is a preference, not a veto. Actual boot/leg ordering decides legality.
 		# A tucked ball is contestable from a legal shoe path, including a side poke.
 		last_decision = {"actor_slot":int(permission.actor_slot),"sample_time_s":float(sample.sample_time_s),"age_s":age,"known_position":seen_ball,"known_velocity":sample.velocity,"prediction":plan.tackle_center,"owner_shoe_gap_m":shoe_gap,"started":false}

@@ -873,6 +873,11 @@ func _press(p: Dictionary, intent: Dictionary, owner: Dictionary, snapshot: Dict
 		intent.pace=clampf(_distance(p.position,ball_side)*3.0+.65,1.1,4.2)
 		intent.reason="track_touch_window"
 	intent.move_target = _world(_clip_pitch(target,snapshot,0.6),team)
+	# The nearby presser reads completed visible balance, never future inputs.
+	if intent.action=="NONE" and _distance(p.position,owner.position)<3.0 and not exposed:
+		var visible_cue:Vector3=owner.get("visible_weight_cue",Vector3.ZERO)
+		intent.move_target+=visible_cue.limit_length(.16)
+		intent.move_target=_world(_clip_pitch(_local(intent.move_target,team),snapshot,.6),team)
 
 func _receiving_point(p: Dictionary, snapshot: Dictionary) -> Vector3:
 	var ball: Vector3 = snapshot.ball_position

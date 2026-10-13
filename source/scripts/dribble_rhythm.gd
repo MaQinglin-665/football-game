@@ -80,6 +80,7 @@ static func needs_touch(actor:Node3D,ball:Node3D,aim:Vector3)->bool:
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var relative:Vector3=ball.velocity-actor.velocity;relative.y=0
 	var prediction:Vector3=offset+relative*.09
+	if actor.is_human and actor.sprint_release_carry_remaining>0 and prediction.dot(aim)>.45 and relative.dot(aim)>.1:return true
 	var sideways:bool=absf(aim.dot(actor.body_facing))<.5
 	var intercept:float=.08 if sideways else .36 if actor.sprinting else .25
 	return prediction.dot(aim)<intercept or prediction.slide(aim).length()>.52 or offset.length()>.95 or TurnControl.needs_low_repair(actor,ball,aim)
