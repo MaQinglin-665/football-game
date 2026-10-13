@@ -653,6 +653,7 @@ func advance(delta: float) -> void:
 		if not hit:
 			misses += 1
 			last_result = "missed_contact"
+			if kind=="TACKLE" and "tackle_miss_slow_left" in actor:actor.tackle_miss_slow_left=AiAwareness.MISS_SLOW_S # R004 commitment cost
 			if kind=="PASS" and actor.is_human:
 				trace_stage("pass_missed",contact_failure)
 				match_controller.message("传球挥空：球未进入这一步的触球位置，请重新按传球",1.3)

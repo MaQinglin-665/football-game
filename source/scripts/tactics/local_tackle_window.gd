@@ -5,6 +5,8 @@ const LOCAL_PERIOD_S := .075
 const TACTICAL_PERIOD_S := .20
 const PERMISSION_LIFETIME_S := .30
 const MAX_SAMPLE_AGE_S := .35
+const COMMIT_GATE_ENABLED := true # R004
+var contained := 0
 var simulation_time := 0.0
 var next_check_time := 0.0
 var sample: Dictionary = {}
@@ -129,6 +131,14 @@ func try_due(game: Node) -> void:
 		var across:Vector3=actor.velocity;across.y=0
 		var to_ball:Vector3=known.position-actor.position;to_ball.y=0
 		var rush_miss:bool=across.length()>2.8 and across.normalized().dot(to_ball.normalized())<.55
+		# R004 contain-first: AI jockeys unless the touch is heavy, the carrier is
+		# cornered, or an exposed ball is reachable from the front/side.
+		var behind:bool=AiAwareness.tackler_behind(actor.position,owner_position,sample.owner_velocity)
+		var is_cornered:bool=AiAwareness.cornered(owner_position,game.field_half_width,game.field_half_length)
+		if COMMIT_GATE_ENABLED and not AiAwareness.should_commit(owner_gap,exposed,behind,is_cornered):
+			last_decision={"started":false,"reason":"contain_not_commit","actor_slot":int(permission.actor_slot),"behind":behind}
+			contained+=1
+			continue
 		if not exposed and rush_miss:
 			last_decision={"started":false,"reason":"brake_before_covered_poke","actor_slot":int(permission.actor_slot)}
 			continue

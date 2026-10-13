@@ -5,6 +5,7 @@ var invalid_normal_contacts := 0
 var origin_ground_frame := -1
 var origin_ground_y := 0.0
 var origin_ground_supported := false
+var tackle_miss_slow_left := 0.0 # R004: failed lunge slows the tackler (human + AI)
 
 func _ready() -> void:
 	super._ready()
@@ -21,6 +22,9 @@ func _ready() -> void:
 	collision_mask = 3 # Environment + other torsos; ball sweeps contacts itself.
 
 func advance_motor(dt: float) -> void:
+	if tackle_miss_slow_left>0.0:
+		tackle_miss_slow_left=maxf(0.0,tackle_miss_slow_left-dt)
+		move_intent=move_intent.limit_length(AiAwareness.MISS_SPEED_SCALE)
 	super.advance_motor(dt)
 	_apply_origin_ground_support(dt)
 
