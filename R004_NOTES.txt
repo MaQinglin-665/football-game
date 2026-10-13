@@ -13,3 +13,22 @@ R004 候选（本地分支 candidate/r004，待试玩；未合入main，未推�
 4. 着色器预热（scripts/shader_warmup.gd，match.gd）：菜单阶段把全部材质在相机前画3帧后释放；无窗口模式跳过。
 测试：tests/first_touch_r004.gd（17项通过）；tests/bench_r004_11v11.gd（无窗口CPU基准）。
 未验证：真机试玩手感、图形窗口下预热效果与GPU帧率。
+
+R004 第二批（同分支，仅人类球员）
+5. 移动曲线与假动作（scripts/human_motion.gd，player_motor.gd 接入，football_player.gd 开关 human_motion_enabled）
+   - 加速12 m/s²（冲刺6），减速18；航向转速 2m/s以下720°/s → 7.5m/s以上180°/s。
+   - 速度≥6.5且冲刺时急停/>60°变向：0.15–0.25s 踩停（只减速不转向）。
+   - 0.1s内速度跌破近期峰值60%后变向：0.2s +15% 爆发（每次减速只给一次）。
+   - AI 仍走 movement_inertia.gd；接球预测（dribble_turn_control/receive_motion）仍用旧积分器。
+6. 传射蓄力与误差（scripts/kick_error_model.gd，intent_router.gd，foot_action.gd）
+   - 0.6s蓄满，超出部分为过蓄（0.4s 过蓄 +1 倍误差项）。
+   - 辅助锥：<20m ±12°，≥20m ±6°（落在锥内吸附接球人）。
+   - σ = 基础(传1.5°/射2.5°)×(1+速度/8+身体夹角/90°+压迫(3m内)+过蓄)；背身>120°×2；弱脚÷0.7；上限25°；±2σ截断。
+   - 误差在真实触球时作用于最终方向（地面传球求解之后）。AI 不计算。
+7. 相机（Head.gd/Head.tscn/Sprint.gd/football_player.gd/play_settings.gd/hud.gd）
+   - FOV统一90（Head.tscn、代码、设置默认；QA断言96→90，俯视上限75→55的断言同步）。
+   - 冲刺FOV×1.06，delta*4平滑；带球时自动下俯6°。
+   - 手柄视角移到 _process：死区0.12＋二次曲线。
+   - 头部起伏相对慢基线限幅1.5cm，冲刺0.75cm；设置里“轻微跑动视角起伏”开关原已接好。
+   - HUD：球在屏幕外时边缘三角箭头（原文字提示保留）。
+测试：tests/controls_r004.gd（全部通过）。
