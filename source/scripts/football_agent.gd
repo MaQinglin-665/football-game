@@ -47,6 +47,7 @@ var locomotion := "idle"
 var pending_pose_delta := 0.0
 var pose_updates_enabled := true # External profiler only; normal play stays true.
 var motion_acceleration := Vector3.ZERO
+var dribble_balance=preload("res://scripts/dribble_balance.gd").new()
 var last_motion_velocity := Vector3.ZERO
 var control_arc_side := 0.0
 var _ai_rhythm_feature := true
@@ -263,6 +264,7 @@ func _physics_process(delta: float) -> void:
 	var axis := toward.normalized() if move_requested else Vector3.ZERO
 	set_move_intent(axis*pace/lerpf(profile.jog_speed_mps,profile.sprint_speed_mps,sprint_value),sprint_value)
 	var backwards := axis.dot(facing)<-.3
+	dribble_balance.step(self,delta,owned)
 	locomotion = "shield" if shielding else "retreat" if guarding_lane and backwards else "strafe" if guarding_lane and absf(axis.dot(facing))<.65 else "jockey" if guarding_lane or tactical_intent.get("press",false) and not running_to_target and velocity.length()<3.5 else "retreat" if backwards else "dribble" if owned and move_requested else "run" if velocity.length()>3.5 else "walk" if velocity.length()>.12 else "idle"
 	pending_pose_delta += delta
 

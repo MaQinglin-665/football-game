@@ -19,6 +19,8 @@ static func apply(avatar,state:Dictionary,action:Dictionary)->void:
 		if actor.call_weight>.001:
 			avatar.ai_body_presentation._raise_call_arm(avatar,actor.call_weight)
 	if kind in ["PASS","SHOT","TACKLE"]:return
+	if kind in ["","CARRY","CLOSE","SHIELD","TURN","SPRINT"] and String(action.get("cut_style","")).is_empty():
+		preload("res://scripts/dribble_balance.gd").apply(avatar,actor.dribble_balance.load)
 	if actor.is_human and kind in ["","CARRY","CLOSE","SHIELD","TURN","SPRINT"]:
 		var velocity:Vector3=state.get("velocity",Vector3.ZERO)
 		var speed:float=Vector2(velocity.x,velocity.z).length()

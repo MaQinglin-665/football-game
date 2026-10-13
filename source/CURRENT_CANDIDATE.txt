@@ -1,1 +1,2 @@
-R001：美术 R8 + AI 动作与拦截。待用户试玩，未进入 main。
+R002：保留R001整合美术，加入Shift关闭加速收球与现有按键盘带节奏。
+待用户试玩，未进入main。详见../SHIFT_DRIBBLE_PROGRESS.txt、../R002_GAMEPLAY_CHECKS.json。

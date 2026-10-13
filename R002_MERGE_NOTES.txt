@@ -1,0 +1,3 @@
+R002从冻结R001构建，合并dev/gameplay 1ab8cf36584b45ef77a2879363038ea75a8eb242。
+冲突：project.godot只统一候选版本名和标题，保留R001主场景/渲染参数；CURRENT_CANDIDATE更新；.gitignore取并集；6份已有测试UID保留R001值。玩法脚本自动合并，未整目录覆盖。
+R001原提交0be0e908949f0bc80782701ccc46576f5634844f；来源美术799dc94e1d9fe01611afc566080d26f0b6dd3118。main未更改。

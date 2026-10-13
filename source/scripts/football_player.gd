@@ -26,6 +26,7 @@ var stop_requested := 0.0
 var move_requested := false
 var sole_stopped := false
 var sprinting := false
+var sprint_release_carry_remaining := 0.0
 var long_touch := false
 var match_controller: Node
 var interaction: Node
@@ -42,6 +43,7 @@ var previous_yaw := 0.0
 var pending_pose_delta := 0.0
 var pose_updates_enabled := true # External profiler only; normal play stays true.
 var motion_acceleration := Vector3.ZERO
+var dribble_balance=preload("res://scripts/dribble_balance.gd").new()
 var last_motion_velocity := Vector3.ZERO
 var _eye_previous:=Vector3(0,1.6,-.11)
 var _eye_current:=Vector3(0,1.6,-.11)
@@ -129,17 +131,29 @@ func _physics_process(delta: float) -> void:
 	stop_requested = maxf(0,stop_requested-delta)
 	if move_requested and stop_requested<=0: sole_stopped = false
 	big_chase_remaining = maxf(0,big_chase_remaining-delta)
+	var was_sprinting:bool=sprinting
 	sprinting = input_enabled and movement_tier=="run" and can_sprint_for_match() and not backwards
+	sprint_release_carry_remaining=maxf(0,sprint_release_carry_remaining-delta)
+	if was_sprinting and not sprinting and owned:sprint_release_carry_remaining=.40
 	speed = cfg.sprint_ball_speed if owned and sprinting else cfg.normal_ball_speed if owned else (cfg.big_chase_speed if big_chase_remaining>0 else cfg.running_move_speed) if sprinting else cfg.normal_move_speed
 	if shielding: speed = cfg.shield_speed
 	elif close_control or semantic_move_style=="walk": speed = cfg.close_speed
 	if backwards:
 		var retreat:float=cfg.retreat_close_speed if close_control or shielding or semantic_move_style=="walk" else cfg.retreat_fast_speed if movement_tier=="run" and can_sprint_for_match() else cfg.retreat_speed
 		speed=minf(speed,retreat if owned else 3.1)
+	# On sprint release let the next reachable touch brake the rolling ball.
+	# Follow only forward input and a recent free roll; never alter ball velocity
+	# here, extend reach, override a stop/reversal, or retain an acceleration latch.
+	if owned and sprint_release_carry_remaining>0 and stop_requested<=0 and not shielding and intended.length()>.05 and intended.normalized().dot(body_facing)>.7 and (foot.idle() or foot.planned_dribble()):
+		var roll:Vector3=match_controller.ball.velocity;roll.y=0
+		var offset:Vector3=match_controller.ball.position-position;offset.y=0
+		var aim:Vector3=intended.normalized()
+		if offset.dot(aim)>.2 and offset.slide(aim).length()<.45 and offset.length()<1.15:
+			speed=maxf(speed,minf(Vector2(velocity.x,velocity.z).length(),roll.dot(aim)))
 	if owned and stop_requested>0: speed = 0
 	if owned:
 		var gap: float = match_controller.flat_distance(match_controller.ball.position,position)
-		if gap>.80: speed = minf(speed,1.6)
+		if gap>.80 and not preload("res://scripts/dribble_rhythm.gd").may_chase(self,match_controller.ball,intended): speed = minf(speed,1.6)
 	speed = minf(speed,foot.movement_cap())
 	if is_instance_valid(interaction): speed = minf(speed,interaction.movement_cap())
 	var motion := intended*speed
@@ -147,6 +161,8 @@ func _physics_process(delta: float) -> void:
 		motion = match_controller.ball.human_dribble_motion(self,intended,speed)
 	set_meta("motor_guard",not owned and semantic_policies.get("pressure",false) and not sprinting)
 	var sprint_value := 1.0 if sprinting else 0.0
+	if sprint_release_carry_remaining>0 and owned and not sprinting:
+		sprint_value=clampf((motion.length()-profile.jog_speed_mps)/maxf(.01,profile.sprint_speed_mps-profile.jog_speed_mps),0,1)
 	set_move_intent(motion/lerpf(profile.jog_speed_mps,profile.sprint_speed_mps,sprint_value),sprint_value)
 	body_facing = facing
 	if shielding and absf(intended.dot(global_basis.x))>.1: shield_side = signf(intended.dot(global_basis.x))
@@ -157,6 +173,7 @@ func _physics_process(delta: float) -> void:
 	elif stamina>26: sprint_locked = false
 	tackle_cooldown = maxf(0,tackle_cooldown-delta)
 	action_cooldown = maxf(0,action_cooldown-delta)
+	dribble_balance.step(self,delta,owned)
 	locomotion = "retreat" if backwards else "shield" if shielding else "jockey" if semantic_policies.get("pressure",false) else "dribble" if owned and move_requested else "sprint" if sprinting else "run" if velocity.length()>3.5 else "walk" if velocity.length()>.12 else "idle"
 	pending_pose_delta += delta
 
