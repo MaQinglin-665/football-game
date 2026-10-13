@@ -1,0 +1,15 @@
+R004 候选（本地分支 candidate/r004，待试玩；未合入main，未推送）
+来源：main 2d3b287（R003）。本轮仅 gameplay 侧改动，未改渲染器/美术。
+
+1. 定向第一脚（scripts/first_touch_timing.gd，foot_action.gd，receive_contact.gd，football_player.gd）
+   - 方向键“确定方向”的时刻到真实接球触脚的间隔分档：<0.06s LATE（大1.35倍、偏10°）、0.06–0.25s ON_TIME（0.80倍贴脚）、>0.25s EARLY（1.15倍）、无方向=原缓冲不变。
+   - 方向变化>25°重新计时。仅人类球员；AI接球路径不变。参数均为常量。
+2. 接球点锁定（tactics/receive_plan.gd _apply_lock）
+   - 可达且0.7s内到达时锁定接球点；预测漂移>0.6m或不可达才解锁，减少反复调整。
+3. 帧尖峰（integration_tactics.gd）
+   - 定时战术刷新拆两拍：第1拍建快照，第2拍跑导演+下发意图；接触触发的刷新仍同步。
+   - REFRESH_INTERVAL_S=0.20（原5Hz）；0.10=10Hz实测总成本翻倍，默认未开。
+   - receive_plan._intercept 循环内重复取数组改为外提。
+4. 着色器预热（scripts/shader_warmup.gd，match.gd）：菜单阶段把全部材质在相机前画3帧后释放；无窗口模式跳过。
+测试：tests/first_touch_r004.gd（17项通过）；tests/bench_r004_11v11.gd（无窗口CPU基准）。
+未验证：真机试玩手感、图形窗口下预热效果与GPU帧率。
