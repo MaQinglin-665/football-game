@@ -45,12 +45,18 @@ func install()->void:
   for i in 2:
    var m=game.ball.visual.mesh.surface_get_material(i);m.shader=load("res://art/scripts/ball_surface.gdshader")
   concrete=StandardMaterial3D.new();concrete.albedo_color=Color("a4aaa5");concrete.roughness=.91
-  concrete.albedo_texture=load("res://art/assets/Concrete034/Concrete034_1K-JPG_Color.jpg");concrete.normal_enabled=true;concrete.normal_texture=load("res://art/assets/Concrete034/Concrete034_1K-JPG_NormalGL.jpg");concrete.normal_scale=.4
+  concrete.albedo_texture=ImageTexture.create_from_image(load("res://art/assets/concrete_cache/Color.res"));concrete.normal_enabled=true;concrete.normal_texture=ImageTexture.create_from_image(load("res://art/assets/concrete_cache/NormalGL.res"));concrete.normal_scale=.4
+  concrete.roughness=1.0;concrete.roughness_texture=ImageTexture.create_from_image(load("res://art/assets/concrete_cache/Roughness.res"));concrete.roughness_texture_channel=BaseMaterial3D.TEXTURE_CHANNEL_RED
   concrete.uv1_triplanar=true;concrete.uv1_scale=Vector3(1./1.1,1./.55,1./1.1);concrete.texture_filter=BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
   turf=ShaderMaterial.new();turf.shader=load("res://art/v1_scripts/turf.gdshader" if legacy else "res://art/scripts/turf_pbr.gdshader")
-  for pair in [["grass","Color"],["grass_normal","NormalGL"],["grass_roughness","Roughness"],["grass_ao","AmbientOcclusion"]]:
-   var texture_image=Image.load_from_file(ProjectSettings.globalize_path("res://art/assets/Grass005/Grass005_2K-JPG_"+pair[1]+".jpg"))
-   texture_image.generate_mipmaps();turf.set_shader_parameter(pair[0],ImageTexture.create_from_image(texture_image))
+  if legacy:
+   var texture_image=Image.load_from_file(ProjectSettings.globalize_path("res://art/assets/Grass005/Grass005_2K-JPG_Color.jpg"))
+   texture_image.generate_mipmaps();turf.set_shader_parameter("grass",ImageTexture.create_from_image(texture_image))
+  else:
+   # Mips and packed linear data are built offline; no JPG decode/mip generation at kickoff.
+   for pair in [["grass","Color"],["grass_normal","NormalGL"],["grass_surface","roughness_ao"]]:
+    var texture_image:Image=load("res://art/assets/turf_cache/"+pair[1]+".res")
+    turf.set_shader_parameter(pair[0],ImageTexture.create_from_image(texture_image))
   sky=ShaderMaterial.new();sky.shader=load("res://art/scripts/sky.gdshader");sky.set_shader_parameter("panorama",load("res://art/assets/sky.hdr"))
   var im:Image=load("res://art/assets/sky.hdr").get_image();var peak=0.;var pixel=Vector2i.ZERO
   for y in range(0,im.get_height()/2,2):
@@ -114,7 +120,7 @@ func finish()->void:
   var old=preload("res://art/v1_integration.gd").new();old.game=game;old.turf=turf;old.sky=sky;old.concrete=concrete;old.source_sun=source_sun;old.finish();old.free();return
  game.stadium.replace_material("Turf",turf)
  game.stadium.replace_material("Concrete",concrete)
- var seat_material=StandardMaterial3D.new();seat_material.albedo_color=Color("233b4b");seat_material.roughness=.92;seat_material.metallic_specular=.08
+ var seat_material=StandardMaterial3D.new();seat_material.albedo_color=Color("233b4b");seat_material.roughness=.68;seat_material.metallic_specular=.25
  game.stadium.replace_material("SeatNavy",seat_material);game.stadium.replace_material("SeatBlue",seat_material)
  var night=int(game.settings_menu.values.lighting)==1
  var environment:Environment=game.get_node("MatchEnvironment").environment
@@ -140,10 +146,15 @@ func finish()->void:
  sun.light_energy=.015 if night else 1.02
  if night:sun.look_at_from_position(Vector3.ZERO,Vector3(.20,-.83,.52),Vector3.UP)
  if game.team_size==5 or game.small_training_pitch:
+  preload("res://art/performance_profile.gd").apply_small(environment,get_viewport(),game.settings_menu.values,forward)
+  turf.set_shader_parameter("stripe_width",3.0)
+  if architecture==null:
+   architecture=preload("res://art/training_finish.gd").new();add_child(architecture)
   # Keep the actual 3v3 training ground: no full-size stadium bowl/roof injection.
   sun.light_energy=.35 if night else 1.02
   environment.ambient_light_energy=.35 if night else .48
   return
+ preload("res://art/performance_profile.gd").apply_stadium(environment,get_viewport(),game.settings_menu.values,forward)
  if stand_rig==null:
   stand_rig=preload("res://art/stand_lighting.gd").new();add_child(stand_rig);stand_rig.build(game.stadium)
  stand_rig.set_night(night)
@@ -164,7 +175,7 @@ func finish()->void:
   banks[i].spot_angle=67.;banks[i].spot_range=125.;banks[i].spot_attenuation=.20;banks[i].light_energy=([1.95,1.0,1.0,1.95][i]) if night else 0.
   banks[i].light_color=Color("e5edff") if i<2 else Color("fff4e4")
   banks[i].light_specular=.75;banks[i].shadow_normal_bias=.18;banks[i].shadow_bias=.015
-  banks[i].shadow_enabled=night and i in [0,3];banks[i].shadow_opacity=.72
+  banks[i].shadow_enabled=night and int(game.settings_menu.values.shadows)>0 and i in [0,3];banks[i].shadow_opacity=.72
   banks[i].light_size=.45 if forward else 0.
   banks[i].shadow_blur=1.2
 

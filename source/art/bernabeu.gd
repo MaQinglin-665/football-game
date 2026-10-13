@@ -4,6 +4,7 @@ const Batch=preload("res://addons/modern_stadium/geometry_batch.gd")
 var crowd_count=0
 var crowd_lods:Array=[]
 var crowd_lod_elapsed:float=0.0
+var last_lod_eye=Vector3(INF,INF,INF)
 var roof_lights:Array[Light3D]=[]
 func material(hex:String,rough:float=.8)->StandardMaterial3D:
  var m=StandardMaterial3D.new();m.albedo_color=Color(hex);m.roughness=rough;return m
@@ -86,10 +87,11 @@ func build(stadium:Node3D)->void:
  print("BERNABEU_READY crowd=",crowd_count," roof_closed=true")
 func build_crowd(stadium:Node3D)->void:
  preload("res://art/seat_spacing.gd").repair(stadium)
- var near_models:Array=[];var far_models:Array=[]
+ var near_models:Array=[];var far_models:Array=[];var distant_models:Array=[]
  for i in 8:
   near_models.append(preload("res://art/crowd_body.gd").new().make(i,true))
   far_models.append(preload("res://art/crowd_body.gd").new().make(i,false))
+  distant_models.append(preload("res://art/crowd_body.gd").new().make(i,false,true))
  var mat=ShaderMaterial.new();mat.shader=load("res://art/crowd_surface.gdshader")
  var rng=RandomNumberGenerator.new();rng.seed=81375
  for seats in stadium.find_children("Seats_*","MultiMeshInstance3D",true,false):
@@ -116,7 +118,7 @@ func build_crowd(stadium:Node3D)->void:
    bounds=bounds.grow(1.5);mm.custom_aabb=bounds
    crowd_count+=variants[v].size()
    var n=MultiMeshInstance3D.new();n.name="Spectators_"+str(seats.get_parent().name)+"_"+str(seats.name)+"_"+str(v);n.multimesh=mm;n.material_override=mat;n.layers=8;n.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(n)
-   crowd_lods.append([n,near_models[v],far_models[v],bounds,false])
+   crowd_lods.append([n,near_models[v],far_models[v],bounds,1,distant_models[v]])
  update_crowd_detail()
 func _process(delta:float)->void:
  crowd_lod_elapsed+=delta
@@ -126,9 +128,15 @@ func update_crowd_detail()->void:
  var camera:Camera3D=get_viewport().get_camera_3d()
  if camera==null:return
  var eye:Vector3=to_local(camera.global_position)
+ if eye.distance_squared_to(last_lod_eye)<.25:return
+ last_lod_eye=eye
  for entry in crowd_lods:
   var bounds:AABB=entry[3]
-  var distance:float=eye.distance_to(eye.clamp(bounds.position,bounds.end))
-  var detailed:bool=distance<(32. if entry[4] else 24.)
-  if detailed!=entry[4]:
-   entry[0].multimesh.mesh=entry[1] if detailed else entry[2];entry[4]=detailed
+  var distance_squared:float=eye.distance_squared_to(eye.clamp(bounds.position,bounds.end))
+  var level:int=crowd_level(distance_squared,int(entry[4]))
+  if level!=entry[4]:
+   entry[0].multimesh.mesh=entry[1] if level==0 else entry[2] if level==1 else entry[5];entry[4]=level
+static func crowd_level(distance_squared:float,previous:int)->int:
+ if distance_squared<(1024. if previous==0 else 576.):return 0
+ if distance_squared>(4624. if previous==2 else 6084.):return 2
+ return 1

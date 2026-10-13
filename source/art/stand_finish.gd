@@ -13,7 +13,7 @@ func build(stadium:Node3D,parent:Node3D)->void:
  var old_aisle=stadium.get_node_or_null("PitchFinishDetails/AisleHandrails")
  if old_aisle:old_aisle.visible=false
  # The match loads a saved stadium, so replace its meshes explicitly.
- var seat_material=StandardMaterial3D.new();seat_material.albedo_color=Color("233b4b");seat_material.roughness=.92;seat_material.metallic_specular=.08
+ var seat_material=StandardMaterial3D.new();seat_material.albedo_color=Color("233b4b");seat_material.roughness=.68;seat_material.metallic_specular=.25
  stadium.replace_material("SeatNavy",seat_material);stadium.replace_material("SeatBlue",seat_material)
  var seat:Mesh=preload("res://art/seat.gd").make()
  var simplified=Batch.new()

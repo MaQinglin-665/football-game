@@ -4,6 +4,7 @@ extends RefCounted
 var st:SurfaceTool
 var segments:int
 var standing:bool=false
+var distant:bool=false
 func vertex(p:Vector3,n:Vector3,part:float)->void:
  if standing and (part==0. or part==1. or part==3. or part==4.):p.y+=.38
  st.set_normal(n);st.set_uv(Vector2(part,p.y));st.add_vertex(p)
@@ -31,6 +32,7 @@ func limb(a:Vector3,b:Vector3,ra:float,rb:float,part:float)->void:
 func torso(lean:float,width:float)->void:
  # Hem, waist, ribs, chest, sloping shoulder and neckline, not a single oval.
  var rings:Array=[Vector4(.43,.157,.112,-.006),Vector4(.49,.166,.117,-.007),Vector4(.64,.145,.105,lean*.35),Vector4(.82,.182,.119,lean*.75),Vector4(.94,.207,.106,lean),Vector4(1.015,.115,.078,lean),Vector4(1.033,.059,.053,lean)]
+ if distant:rings=[rings[0],rings[2],rings[4],rings[6]]
  for j in rings.size()-1:
   for i in segments:
    var ps:Array=[];var ns:Array=[]
@@ -43,20 +45,21 @@ func torso(lean:float,width:float)->void:
     ns.append(Vector3(sin(a)/width,-slope,cos(a)).normalized())
    # Rings run clockwise when viewed from above.
    quad(ps,ns,0.)
-func make(variant:int,detail:bool)->ArrayMesh:
+func make(variant:int,detail:bool,far_detail:bool=false)->ArrayMesh:
+ distant=far_detail
  standing=variant==7
  st=SurfaceTool.new();st.begin(Mesh.PRIMITIVE_TRIANGLES)
- segments=12 if detail else 6
+ segments=4 if distant else 12 if detail else 6
  var lean:float=[-.04,.015,-.07,.035,-.025,.01,-.055,.025][variant%8]
  var width:float=[1.,.90,1.02,.95,.92,1.01,.96,.91][variant%8]
  torso(lean,width)
  if detail:ellipsoid(Vector3(0,.779 if standing else .399,.015),Vector3(.157*width,.10,.134),2.,segments,4)
  limb(Vector3(0,1.015,lean),Vector3(0,1.08,lean),.047,.044,1.)
  # Separate collar sits around the neck, with an open skin centre.
- limb(Vector3(0,1.023,lean),Vector3(0,1.047,lean),.060,.054,4.)
+ if not distant:limb(Vector3(0,1.023,lean),Vector3(0,1.047,lean),.060,.054,4.)
  var head:Vector3=Vector3(.008*sin(variant*1.7),1.172,lean-.01)
- ellipsoid(head,Vector3(.080,.115,.083),1.,segments,6 if detail else 4)
- ellipsoid(head+Vector3(0,.055,.013),Vector3(.081,.069,.079),3.,segments,4)
+ ellipsoid(head,Vector3(.080,.115,.083),1.,segments,3 if distant else 6 if detail else 4)
+ ellipsoid(head+Vector3(0,.055,.013),Vector3(.081,.069,.079),3.,segments,2 if distant else 4)
  if detail and variant%3==1:
   ellipsoid(head+Vector3(0,-.018,.065),Vector3(.087,.096,.043),3.,segments,4)
  if detail:

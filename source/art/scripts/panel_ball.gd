@@ -51,6 +51,7 @@ static func make(radius: float) -> ArrayMesh:
 	var seam_material:=StandardMaterial3D.new()
 	seam_material.albedo_color=Color("373c40");seam_material.roughness=.94
 	black.set_material(black_material);white.set_material(white_material);seams.set_material(seam_material)
+	black.index();white.index();seams.index()
 	black.generate_tangents();white.generate_tangents();seams.generate_tangents()
 	var mesh := black.commit()
 	white.commit(mesh);seams.commit(mesh)
@@ -68,7 +69,7 @@ static func face(surface:SurfaceTool,seams:SurfaceTool,points:Array[Vector3],rad
 		var a:Vector3=points[i];var b:Vector3=points[(i+1)%points.size()]
 		var ia:Vector3=center.lerp(a,.982).normalized()*radius
 		var ib:Vector3=center.lerp(b,.982).normalized()*radius
-		patch(surface,center.normalized()*radius,ia,ib,radius,bx,by,center,4)
+		patch(surface,center.normalized()*radius,ia,ib,radius,bx,by,center,3)
 		patch(seams,ia,a.normalized()*(radius-.0012),b.normalized()*(radius-.0012),radius-.0009,bx,by,center,2)
 		patch(seams,ia,b.normalized()*(radius-.0012),ib,radius-.0009,bx,by,center,2)
 static func patch(surface:SurfaceTool,a:Vector3,b:Vector3,c:Vector3,radius:float,bx:Vector3,by:Vector3,center:Vector3,depth:int)->void:

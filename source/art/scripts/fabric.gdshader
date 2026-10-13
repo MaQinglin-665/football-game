@@ -10,15 +10,24 @@ void vertex(){rest=vec3(UV2.x,UV.y*.5,UV2.y);}
 void fragment(){
  vec3 c=color.rgb;float rough=.83;
  if(kind==0){
-   float side=smoothstep(.15,.20,abs(rest.x)); c=mix(c,c*.86,side*.35);
-   float pin=1.-smoothstep(.001,.0025,abs(mod(rest.x+.018,.036)-.018));
-   c=mix(c,c*1.04,pin*.15);
+   // Tailored side ventilation panels and a tonal woven chevron, filtered in screen space.
+   float side=smoothstep(.135,.172,abs(rest.x))*(1.-smoothstep(.21,.25,abs(rest.x)));
+   c=mix(c,c*.48,side*.8);
+   float weave=abs(fract((rest.y+abs(rest.x)*.65)*35.)-.5);
+   float feather=max(fwidth(rest.y)*35.,.08);
+   float jacquard=1.-smoothstep(.12,.12+feather,weave);
+   c*=1.+jacquard*.022;
    float edge=max(fwidth(rest.y),.0005);
-   float stripe=smoothstep(1.29-edge,1.29+edge,rest.y)*(1.-smoothstep(1.34-edge,1.34+edge,rest.y))*(1.-smoothstep(-.073,-.067,rest.z));
-   c=mix(c,vec3(.64,.67,.65),stripe*.92);
-   // Small original shield on the chest; no licensed team marks.
-   vec2 badge=vec2((rest.x+.093)/.021,(rest.y-1.402)/.027);
-   if(dot(badge,badge)<1.&&rest.z<-.08)c=vec3(.96,.77,.27);
+   float chest_y=rest.y+abs(rest.x)*.20;
+   float stripe=smoothstep(1.347-edge,1.347+edge,chest_y)*(1.-smoothstep(1.354-edge,1.354+edge,chest_y))*(1.-smoothstep(-.073,-.067,rest.z));
+   c=mix(c,vec3(.80,.83,.81),stripe*.75);
+   // Original shield: border, two fields and a central stripe; no commercial club logo.
+   vec2 badge=vec2((rest.x+.093)/.019,(rest.y-1.403)/.026);
+   float shield=max(abs(badge.x),-badge.y+abs(badge.x)*.50);
+   if(shield<1.&&badge.y<1.&&rest.z<-.08){
+     c=vec3(.78,.68,.38);
+     if(shield<.78&&badge.y<.78)c=abs(badge.x)<.13?vec3(.86,.87,.81):color.rgb*.35;
+   }
    if(rest.z>.07&&rest.y>1.15&&rest.y<1.38&&abs(rest.x)<.07){
       vec2 q=vec2((rest.x+.07)/.14,(1.38-rest.y)/.23);
       float digit=number;
