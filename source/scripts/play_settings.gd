@@ -2,7 +2,7 @@ extends CanvasLayer
 # One persistent presentation owner. No physics/rules parameters exposed.
 const Quality=preload("res://scripts/render_quality.gd")
 const Night=preload("res://addons/stadium_night/night_profile.gd")
-const DEFAULTS={"quality":1,"aa":1,"shadows":1,"grass":1,"lighting":1,"fov":96.0,"sensitivity":1.6,"volume":85.0,"assist":true,"low_pressure":false,"effects":1,"camera_bob":true,"fps_limit":0,"inertia":0}
+const DEFAULTS={"quality":1,"aa":1,"upscale":0,"shadows":1,"grass":1,"lighting":1,"fov":96.0,"sensitivity":1.6,"volume":85.0,"assist":true,"low_pressure":false,"effects":1,"camera_bob":true,"fps_limit":0,"inertia":0}
 var game:Node
 var lighting_fx:Node
 var values:Dictionary=DEFAULTS.duplicate()
@@ -35,6 +35,7 @@ func load_values()->void:
 		for key in DEFAULTS:values[key]=cfg.get_value("play",key,DEFAULTS[key])
 	for key in ["quality","aa","shadows","grass","lighting","effects"]:
 		values[key]=clampi(int(values[key]),0,3 if key in ["quality","aa"] else 2 if key in ["shadows","grass","effects"] else 1)
+	values.upscale=clampi(int(values.upscale),0,2)
 	values.inertia=clampi(int(values.inertia),0,1)
 	values.fps_limit=clampi(int(values.fps_limit),0,2)
 	values.fov=clampf(float(values.fov),76,104)
@@ -57,6 +58,7 @@ func _build()->void:
 	_option(column,"quality","画质 / 显示",["流畅 · 720p 窗口","均衡 · 原生全屏","清晰 · 原生全屏","极清 · 原生全屏"])
 	_option(column,"fps_limit","帧率上限",["60 FPS · 稳定优先","120 FPS · 需要性能余量","不限制"])
 	_option(column,"aa","边缘抗锯齿",["关闭","2x MSAA","4x MSAA","8x MSAA"])
+	_option(column,"upscale","超分辨率",["原生 · 默认","FSR 2 · 质量","FSR 2 · 均衡"])
 	_option(column,"shadows","人物 / 场地阴影",["关闭","标准 · 75 米","精细 · 100 米"])
 	_option(column,"grass","草地细节",["简洁","标准 · 近景草叶","精细 · 更远细节"])
 	_option(column,"effects","光影效果",["关闭 · 原有光照","标准 · 立体补光 / 接触阴影","增强 · 环境光 / 接触层次"])
@@ -111,7 +113,12 @@ func apply_values(save:bool)->void:
 	var mode:String="daylight" if int(values.lighting)==0 else "night"
 	game.render_quality=Quality.LEVELS[int(values.quality)]
 	Quality.apply(game.get_window(),game.render_quality)
-	game.get_window().msaa_3d=int(values.aa)
+	var viewport=game.get_window()
+	var use_fsr=RenderingServer.get_current_rendering_method()=="forward_plus" and int(values.upscale)>0
+	viewport.scaling_3d_mode=Viewport.SCALING_3D_MODE_FSR2 if use_fsr else Viewport.SCALING_3D_MODE_BILINEAR
+	viewport.scaling_3d_scale=([1.0,.77,.667][int(values.upscale)]) if use_fsr else 1.0
+	viewport.fsr_sharpness=.65
+	viewport.msaa_3d=Viewport.MSAA_DISABLED if use_fsr else int(values.aa)
 	var lod:Dictionary=preload("res://addons/modern_stadium/stadium_quality.gd").PROFILES["low" if int(values.quality)==0 else "balanced"]
 	game.stadium.seat_lod_near_distance=lod.seat_near;game.stadium.seat_lod_mid_distance=lod.seat_mid;game.stadium.net_lod_distance=lod.net_near
 	var turf:ShaderMaterial=game.services.materials.slots.pitch_grass

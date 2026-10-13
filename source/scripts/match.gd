@@ -221,9 +221,13 @@ func _ready() -> void:
 		services.referee_enabled = false
 		services.restart_marker_enabled = false
 	if team_size==5 or small_training_pitch:services.rules_factory=preload("res://scripts/five_side_rules.gd")
+	elif team_size==11 and training_configuration==null:services.rules_factory=preload("res://scripts/offside_rules.gd")
 	services.overlay_enabled = false
 	services.auto_ai_restart = false
 	add_child(services)
+	if services.rules.has_method("refresh_contact_roster"):
+		services.rules.live_roster_provider=Callable(self,"offside_roster")
+		var officials=preload("res://art/match_officials.gd").new();officials.game=self;add_child(officials)
 	services.audio.local_actor_id = player.get_instance_id()
 	services.ball_command.connect(_on_ball_command)
 	services.rules_event.connect(_on_rules_event)
@@ -528,6 +532,7 @@ func _on_rules_event(event: Dictionary) -> void:
 		restart_message = "蓝队进球" if int(event.team)==0 else "红队进球"
 		contact_hub.publish({"kind":"GOAL","point":event.position,"team":int(event.team),"sequence":int(contact_hub.serial)+1})
 	elif type=="restart_awarded":
+		if event.restart.get("reason","")=="offside":message("越位 · "+("蓝队" if int(event.restart.team)==0 else "红队")+"间接任意球",3.)
 		stats.outs += 1 if event.restart.get("reason","") in ["touchline","goal_line"] else 0
 		contact_hub.publish({"kind":"RESTART","point":event.restart.point,"team":int(event.restart.team),"sequence":int(contact_hub.serial)+1})
 	elif type=="half_time": restart_message = "半场休息 · 换边后继续"
@@ -542,7 +547,17 @@ func _on_rules_event(event: Dictionary) -> void:
 func rule_roster() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for actor in players:
-		result.append({"id":actor.get_instance_id(),"team":actor.team,"position":actor.position,"human":actor.is_human,"active":actor.visible,"goalkeeper":actor.is_goalkeeper,"jersey":actor.jersey,"display_name":("蓝队" if actor.team==0 else "红队")+" #%d" % actor.jersey})
+		result.append({"id":actor.get_instance_id(),"team":actor.team,"position":actor.position,"velocity":actor.velocity,"action":str(actor.foot.kind) if actor.foot!=null and not actor.foot.idle() else "","human":actor.is_human,"active":actor.visible,"goalkeeper":actor.is_goalkeeper,"jersey":actor.jersey,"display_name":("蓝队" if actor.team==0 else "红队")+" #%d" % actor.jersey})
+	return result
+
+func offside_roster()->Array[Dictionary]:
+	var result=rule_roster()
+	for i in players.size():
+		var avatar=players[i].avatar;var sk:Skeleton3D=avatar.skeleton;var points:Array[Vector3]=[]
+		for bone in ["head","chest","foot.L","foot.R"]:
+			var index:int=sk.find_bone(bone)
+			if index>=0:points.append(to_local(sk.global_transform*sk.get_bone_global_pose(index).origin))
+		result[i]["offside_points"]=points
 	return result
 
 func ball_snapshot() -> Dictionary:

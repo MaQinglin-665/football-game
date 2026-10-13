@@ -92,13 +92,17 @@ func _process(delta: float) -> void:
 	if not enabled:
 		return
 	_gesture_age = maxf(0.0, _gesture_age - delta)
+	var host=get_parent().get_parent()
+	if "phase" in host and host.phase in [host.Phase.MENU,host.Phase.PAUSED]:return
 	var old := global_position
 	global_position = global_position.move_toward(_target, follow_speed * delta)
 	global_position.y = 0.0
 	var toward := _ball_point - global_position
+	if is_instance_valid(_external_avatar) and global_position.distance_to(old)>.001:toward=global_position-old
 	toward.y = 0
 	if toward.length() > 0.05:
 		rotation.y = lerp_angle(rotation.y, atan2(-toward.x, -toward.z), minf(delta * 6, 1))
+	if is_instance_valid(_external_avatar):return # Replacement owns its skeleton.
 	var walking := global_position.distance_to(old) > 0.001
 	_walk_time += delta * 8.0
 	for i in range(_legs.size()):

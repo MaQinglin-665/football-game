@@ -6,11 +6,10 @@ uniform bool linear_render=false;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1)),f.x),f.y);}
 float cloud(vec2 p){
- vec2 q=p+vec2(sin(p.y*1.7+p.x*.3),cos(p.x*1.3-p.y*.4))*.45;
- float low=sin(q.x*2.1+sin(q.y*1.2))*cos(q.y*1.7-q.x*.35);
- float mid=sin(q.x*4.3+q.y*2.2)*cos(q.y*3.8-q.x*1.1);
- float fine=sin(q.x*9.2-q.y*3.4)*sin(q.y*7.8+q.x*2.3);
- return .5+low*.25+mid*.11+fine*.065+sin(q.x*21.+sin(q.y*15.))*cos(q.y*19.)*.025;
+ float sum=0.;float amplitude=.55;
+ mat2 turn=mat2(vec2(.8,.6),vec2(-.6,.8));
+ for(int i=0;i<5;i++){sum+=noise2(p)*amplitude;p=turn*p*2.07+vec2(9.1,3.7);amplitude*=.48;}
+ return sum;
 }
 void sky(){
  vec3 d=normalize(source_rotation*EYEDIR);
@@ -23,7 +22,7 @@ void sky(){
   float disc=1.-smoothstep(.010,.011,angle);
   float halo=exp(-angle*angle/ .0035);
   vec2 cp=ray.xz/max(ray.y+.22,.08)*2.3+vec2(3.7,1.2);
-  float density=smoothstep(.43,.69,cloud(cp))*smoothstep(-.04,.24,ray.y);
+  float density=smoothstep(.39,.70,cloud(cp))*smoothstep(-.04,.24,ray.y);
   vec3 base=mix(vec3(.045,.070,.12),vec3(.11,.15,.21),pow(1.-max(ray.y,0.),3.));
   vec3 clouds=mix(vec3(.15,.19,.25),vec3(.26,.29,.34),clamp(dot(ray,moon_dir),0.,1.));
   vec3 c=mix(base,clouds,density*.86);

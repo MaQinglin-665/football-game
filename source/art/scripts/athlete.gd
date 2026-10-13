@@ -111,12 +111,17 @@ func loft(key:String,rings:Array,b1:String,b2:String,fold:float=0.,segments:int=
 func continuous_jersey()->void:
  var data=JSON.parse_string(FileAccess.get_file_as_string("res://art/assets/jersey_shell.json"))
  for face in data.faces:
+  var cuff=true
+  for index in face:
+   if absf(data.vertices[index][0])<=.24 or data.vertices[index][1]>=1.278:cuff=false
   for i in face:
    var a=data.vertices[i];var v=Vector3(a[0],a[1],a[2]);var b=data.normals[i];var n=Vector3(b[0],b[1],b[2])
    var b1="hips";var b2="chest";var w=smoothstep(1.06,1.39,v.y)
    if absf(v.x)>.16 and v.y>1.18:
     b1="chest";b2="upper_arm."+("L" if v.x<0 else "R");w=smoothstep(.17,.255,absf(v.x))
    emit("jersey",v,n,Vector2(atan2(v.z,v.x)/TAU+.5,v.y*2.),b1,b2,w)
+   if cuff:
+    emit("trim",v+n*.0012,n,Vector2(atan2(v.z,v.x)/TAU+.5,v.y*2.),b1,b2,w)
 
 func anatomical_limbs()->void:
  var data=JSON.parse_string(FileAccess.get_file_as_string("res://art/assets/anatomy.json"))
@@ -149,9 +154,9 @@ func make_body()->void:
   var x=.145*signx
   loft("shorts",[[.725,x,0.,.095,.102,1.],[.733,x,0.,.099,.106,1.],[.75,x,0.,.100,.107,1.],[.80,x,0.,.102,.11,.95],[.89,x*.85,.003,.106,.114,.65],[1.018,x*.65,0.,.093,.112,.12]],"hips",thigh,.005)
   loft("trim",[[.731,x,0.,.101,.108,1.],[.744,x,0.,.101,.108,1.]],"hips",thigh)
-  loft("sock",[[.10,x,0.,.036,.040,1.],[.18,x,-.005,.041,.045,1.],[.28,x,-.012,.056,.066,1.],[.39,x,-.025,.062,.068,1.],[.438,x,-.030,.055,.061,1.],[.447,x,-.031,.058,.063,1.],[.458,x,-.031,.056,.061,1.],[.459,x,-.031,.050,.055,1.]],thigh,shin)
+  loft("sock",[[.10,x,0.,.036,.040,1.],[.18,x,-.005,.041,.045,1.],[.28,x,-.012,.056,.066,1.],[.39,x,-.025,.062,.068,1.],[.438,x,-.030,.061,.067,1.],[.447,x,-.031,.064,.069,1.],[.458,x,-.031,.062,.067,1.],[.459,x,-.031,.050,.055,1.]],thigh,shin)
   loft("jersey",[[.420,x,-.028,.059,.065,1.],[.432,x,-.030,.058,.064,1.]],thigh,shin)
   # Blended shoulder yoke bridges the animated upper arm to chest, beneath the sleeve rim.
-  loft("trim",[[1.256,.310*signx,0.,.080,.075,0.],[1.271,.310*signx,0.,.080,.075,0.],[1.273,.310*signx,0.,.070,.065,0.]],upper,upper)
+  # Sleeve trim follows the actual shell and its weights above.
  for key in surfaces:
-  var st:SurfaceTool=surfaces[key];st.generate_tangents();var m=MeshInstance3D.new();m.name="Authored_"+key;m.mesh=st.commit();m.skin=skin;skeleton.add_child(m);m.skeleton=NodePath("..");m.extra_cull_margin=1.
+  var st:SurfaceTool=surfaces[key];st.index();st.generate_tangents();var m=MeshInstance3D.new();m.name="Authored_"+key;m.mesh=st.commit();m.skin=skin;skeleton.add_child(m);m.skeleton=NodePath("..");m.extra_cull_margin=1.
