@@ -1,0 +1,3 @@
+主干启动：PLAY_3v3.cmd、PLAY_5v5.cmd、PLAY_6v6.cmd、PLAY_9v9.cmd、PLAY_11v11.cmd。
+6v6 使用36×24小场。启动会先无窗口导入资源并建立脚本类型索引，再打开游戏。首次导入稍慢，失败时保留错误提示与 verification 日志，不再直接进入缺失资源的灰屏。
+GitHub 下载后需安装 Godot 4.6.3，并将 GODOT_EXE 环境变量指向引擎程序，或将 godot 加入 PATH。资源缓存由每个工作目录自行生成，不上传 .godot。
