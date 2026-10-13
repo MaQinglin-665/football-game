@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-13",
+  "source_gameplay": "9e1255b2edb4c7ccab31dd622bcad40f5da8a96e",
+  "source_candidate": "5bfeff1292212f3f84ec0f2afe90cc3295de5c8a",
+  "original_art": "799dc94e1d9fe01611afc566080d26f0b6dd3118",
+  "final_import": "passed",
+  "shape_checks": 17,
+  "shift": {
+    "single_on": {
+      "max_gap_m": 0.6789331436157298,
+      "unowned_frames": 0
+    },
+    "single_off": {
+      "max_gap_m": 0.65345239639282,
+      "unowned_frames": 0
+    },
+    "rapid_pair": {
+      "max_gap_m": 1.46913528442383,
+      "unowned_frames": 152
+    }
+  },
+  "11v11_start": {
+    "actors": 22,
+    "all_ai_test_harness_only": true,
+    "live_seconds": 3.99166666666666
+  },
+  "3v3_start": "shift fixture scene started",
+  "graphical_test": false,
+  "performance_verified": false,
+  "known_issues": "See DEFENSE_PROGRESS.txt and R003_GAMEPLAY_CHECKS.json",
+  "launchers": "Normal first-person entries; no test roster or headless flags."
+}

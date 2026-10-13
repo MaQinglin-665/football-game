@@ -1,2 +1,2 @@
-R002：保留R001整合美术，加入Shift关闭加速收球与现有按键盘带节奏。
-待用户试玩，未进入main。详见../SHIFT_DRIBBLE_PROGRESS.txt、../R002_GAMEPLAY_CHECKS.json。
+R003：沿用R002，加入区域防守、封内线、侧身卡位与伸脚破坏改进。
+待用户试玩；未合入main。详见../DEFENSE_PROGRESS.txt 与 ../R003试玩说明.txt。

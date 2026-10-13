@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/version="integration-r002-dribble-rhythm"
+config/version="integration-r003-zonal-defense"
 
-config/name="Football Integration R002"
+config/name="Football Integration R003"
 run/main_scene="res://scenes/match.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
