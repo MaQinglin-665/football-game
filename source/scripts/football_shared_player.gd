@@ -3,6 +3,10 @@ extends "res://scripts/football_player.gd"
 const SharedMovement := preload("res://scripts/football_shared_movement.gd")
 var shared_last_result: Dictionary = {}
 func _physics_process(delta: float) -> void:
+	var _w:int=Time.get_ticks_usec()
+	_physics_process_body(delta)
+	preload("res://scripts/frame_spike_watch.gd").human_us+=Time.get_ticks_usec()-_w # R006 CPU breakdown
+func _physics_process_body(delta: float) -> void:
 	var before := {"stamina":stamina,"sprint_locked":sprint_locked}
 	# Released view, permission, cooldown, stop and pose bookkeeping stays live.
 	super._physics_process(delta)

@@ -301,6 +301,10 @@ var shader_warmup:ShaderWarmup
 const DistantPoseQueue:=preload("res://scripts/distant_pose_queue.gd")
 var distant_pose_queue:=DistantPoseQueue.new()
 func _process(delta: float) -> void:
+	var _w:int=Time.get_ticks_usec()
+	_process_body(delta)
+	preload("res://scripts/frame_spike_watch.gd").match_process_us+=Time.get_ticks_usec()-_w # R006 CPU breakdown
+func _process_body(delta: float) -> void:
 	distant_pose_queue.advance(self)
 	detail_update_clock -= delta
 	if detail_update_clock<=0 and is_instance_valid(stadium) and is_instance_valid(player):
@@ -308,6 +312,10 @@ func _process(delta: float) -> void:
 		stadium.update_detail_for_camera(player.camera.global_position)
 
 func _physics_process(delta: float) -> void:
+	var _w:int=Time.get_ticks_usec()
+	_physics_process_body(delta)
+	preload("res://scripts/frame_spike_watch.gd").match_us+=Time.get_ticks_usec()-_w # R006 CPU breakdown
+func _physics_process_body(delta: float) -> void:
 	status_timer = maxf(0,status_timer-delta)
 	if phase in [Phase.MENU,Phase.PAUSED,Phase.FINISHED]: return
 	call_timer = maxf(0,call_timer-delta)

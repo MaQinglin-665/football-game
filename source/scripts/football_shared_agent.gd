@@ -14,6 +14,10 @@ func set_move_intent(axis: Vector3, sprint_amount: float = 0.0, shield_amount: f
 	_prepared_motion = axis*lerpf(profile.jog_speed_mps,profile.sprint_speed_mps,sprint_amount)
 	super.set_move_intent(axis,sprint_amount,shield_amount)
 func _physics_process(delta: float) -> void:
+	var _w:int=Time.get_ticks_usec()
+	_physics_process_body(delta)
+	preload("res://scripts/frame_spike_watch.gd").agents_us+=Time.get_ticks_usec()-_w # R006 CPU breakdown
+func _physics_process_body(delta: float) -> void:
 	var before := {"stamina":stamina,"sprint_locked":sprint_locked}
 	super._physics_process(delta)
 	if is_instance_valid(down_state) and down_state.blocked():

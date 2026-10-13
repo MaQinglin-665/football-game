@@ -56,6 +56,10 @@ func _ready() -> void:
 	set_held(true)
 
 func _physics_process(delta: float) -> void:
+	var _w:int=Time.get_ticks_usec()
+	_physics_process_body(delta)
+	preload("res://scripts/frame_spike_watch.gd").ball_us+=Time.get_ticks_usec()-_w # R006 CPU breakdown
+func _physics_process_body(delta: float) -> void:
 	if match_controller.phase in [match_controller.Phase.MENU,match_controller.Phase.PAUSED,match_controller.Phase.FINISHED]: return
 	pickup_block = maxf(0,pickup_block-delta)
 	touch_timer = maxf(0,touch_timer-delta)
