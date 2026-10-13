@@ -4,6 +4,11 @@ extends RefCounted
 ## A confirmed foot pass starts one shared plan; real control contact completes it.
 const Motion=preload("res://scripts/tactics/receive_motion.gd")
 const MAX_LIFE := 6.0
+## R004 intercept lock: once a reachable meet point is close in time, keep it so
+## the receiver stops re-adjusting every refresh. Unlock on real divergence.
+const LOCK_HORIZON_S := 0.70
+const LOCK_TOLERANCE_M := 0.60
+const LOCK_ENABLED := true
 var roster: Dictionary = {}
 var active: Dictionary = {}
 var last_plan: Dictionary = {}
@@ -121,6 +126,8 @@ func tick(snapshot: Dictionary, now: float, _delta: float) -> Dictionary:
 	active.sample_time=now
 	active.live_ball_position = ball
 	active.live_ball_velocity = velocity
+	if LOCK_ENABLED:
+		prediction = _apply_lock(prediction)
 	active.receive_point = prediction.ball_point
 	active.approach_point = prediction.body_point
 	active.arrival_time = now+float(prediction.horizon)
@@ -137,6 +144,28 @@ func tick(snapshot: Dictionary, now: float, _delta: float) -> Dictionary:
 		opponent_eta = minf(opponent_eta,float(_eta(p,prediction.body_point,prediction.face_direction,snapshot).ready_time))
 	active.opponent_margin = opponent_eta-float(prediction.receiver_eta) if is_finite(opponent_eta) else null
 	return active.duplicate(true)
+
+func _apply_lock(prediction: Dictionary) -> Dictionary:
+	var locked: bool = active.get("intercept_locked",false)
+	var point: Vector3 = prediction.ball_point
+	if locked:
+		var held: Vector3 = active.locked_ball_point
+		var drift := Vector2(point.x-held.x,point.z-held.z).length()
+		if not prediction.reachable or drift>LOCK_TOLERANCE_M:
+			active.intercept_locked=false
+			active.lock_releases=int(active.get("lock_releases",0))+1
+			return prediction
+		var kept := prediction.duplicate()
+		kept.ball_point = held
+		kept.body_point = active.locked_body_point
+		kept.face_direction = active.locked_face
+		return kept
+	if prediction.reachable and float(prediction.horizon)<=LOCK_HORIZON_S and not prediction.get("await_settle",false):
+		active.intercept_locked=true
+		active.locked_ball_point=point
+		active.locked_body_point=prediction.body_point
+		active.locked_face=prediction.face_direction
+	return prediction
 
 func _intercept(receiver: Dictionary, snapshot: Dictionary) -> Dictionary:
 	var cap: Dictionary = snapshot.get("capabilities",{})
@@ -161,7 +190,7 @@ func _intercept(receiver: Dictionary, snapshot: Dictionary) -> Dictionary:
 		point.y = maxf(.11,ball.y+velocity.y*horizon-.5*gravity*horizon*horizon)
 		var predicted_speed:float=maxf(0,speed-decel*moving_time)
 		var unsettled:bool=false
-		var samples:Array=snapshot.get("roll_samples",[])
+		var samples:Array=live_samples # R004: hoisted lookup, same array
 		if samples.size()>=i:
 			point=samples[i-1].point
 			horizon=float(samples[i-1].get("time",horizon))

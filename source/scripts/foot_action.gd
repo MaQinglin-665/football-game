@@ -773,7 +773,15 @@ func _try_contact(delta: float) -> void:
 				var receive_direction: Vector3 = planned_outlet if planned_outlet.length_squared()>.01 else actor.get_ball_direction()
 				receive_direction.y = 0
 				if receive_direction.length()>.05:
-					target_velocity=preload("res://scripts/receive_contact.gd").lead_velocity(ball,actor,receive_direction)
+					var lead_scale:=1.0
+					if actor.is_human and actor.get("first_touch_timing")!=null:
+						# R004: graded by how early the direction was committed.
+						var ft:Dictionary=actor.first_touch_timing.grade(Time.get_ticks_msec()/1000.0 if actor.first_touch_clock_override<0 else actor.first_touch_clock_override)
+						lead_scale=float(ft.lead_scale)
+						var lateral:float=(ball.position-actor.position).dot(actor.facing.cross(Vector3.UP))
+						receive_direction=FirstTouchTiming.apply_aim_error(receive_direction.normalized(),float(ft.aim_error_deg),lateral)
+						touch_plan["first_touch_grade"]=ft
+					target_velocity=preload("res://scripts/receive_contact.gd").lead_velocity(ball,actor,receive_direction,lead_scale)
 			# One bounded impulse at this real shoe contact, using actual dt.
 			# Compensate relaxation; buffer_contact still enforces its force cap.
 			receive_outlet=target_velocity

@@ -30,7 +30,7 @@ static func settle(ball:Node3D,actor:Node3D,point:Vector3,normal:Vector3,outlet:
 	return {"accepted":true,"impulse_ns":impulse}
 
 # Finite first-touch result, calculated only at the actual shoe contact.
-static func lead_velocity(ball:Node3D,actor:Node3D,aim:Vector3)->Vector3:
+static func lead_velocity(ball:Node3D,actor:Node3D,aim:Vector3,lead_scale:float=1.0)->Vector3:
 	var run:=Vector3(actor.velocity.x,0,actor.velocity.z)
 	var incoming:=Vector3(ball.velocity.x,0,ball.velocity.z)-run
 	aim=Vector3(aim.x,0,aim.z).normalized()
@@ -41,7 +41,8 @@ static func lead_velocity(ball:Node3D,actor:Node3D,aim:Vector3)->Vector3:
 	var lead:float=lerpf(.38,.56,smoothstep(1.0,4.5,run.length()))
 	# Harder incoming balls and large cuts remain close enough for the next reachable step.
 	lead*=1.0-.22*smoothstep(5.0,10.5,incoming.length())-.18*smoothstep(.8,2.5,turn)
+	lead*=lead_scale # R004 first-touch timing (1.0 = unchanged)
 	var pocket:Vector3=actor.position+predicted.displacement+aim*lead-ball.position;pocket.y=0
-	var desired:Vector3=(pocket/horizon).limit_length(4.8)
+	var desired:Vector3=(pocket/horizon).limit_length(4.8*maxf(1.0,lead_scale))
 	if desired.dot(aim)<.65:desired+=aim*(.65-desired.dot(aim))
-	return run+(desired-run).limit_length(3.2)
+	return run+(desired-run).limit_length(3.2*maxf(1.0,lead_scale))
