@@ -70,7 +70,7 @@ func _substep(dt: float) -> void:
 	move_swept(dt)
 
 func advance_motor(dt: float) -> void:
-	var max_speed := lerpf(profile.jog_speed_mps, profile.sprint_speed_mps, sprint_intent)
+	var max_speed := motor_speed_limit(sprint_intent)
 	max_speed = lerpf(max_speed, profile.shield_move_speed_mps, shield_intent)
 	var desired := move_intent * max_speed
 	var flat := Vector3(velocity.x, 0.0, velocity.z)
@@ -80,15 +80,22 @@ func advance_motor(dt: float) -> void:
 	if foot_action!=null and foot_action.kind=="TACKLE" and not foot_action.idle() and foot_action.phase!=foot_action.Phase.RECOVER and not bool(foot_action.touch_plan.get("automatic",false)):
 		var axis:Vector3=foot_action.direction
 		desired=axis*maxf(0,desired.dot(axis))
+	var after:=integrate_horizontal(flat,desired,dt,guard)
+	velocity.x = after.x
+	velocity.z = after.z
+	velocity.y -= profile.gravity_mps2 * dt
+
+func motor_speed_limit(sprint:float)->float:
+	return lerpf(profile.jog_speed_mps,profile.sprint_speed_mps,sprint)
+
+func integrate_horizontal(flat:Vector3,desired:Vector3,dt:float,guard:bool)->Vector3:
 	var after:Vector3
 	var hm=get("human_motion")
 	if hm!=null and bool(get("is_human")) and bool(get("human_motion_enabled")) and not guard:
 		after=hm.step(flat,desired,sprint_intent,dt) # R004 human-only curve
 	else:
 		after=preload("res://scripts/movement_inertia.gd").step(flat,desired,profile,sprint_intent,dt,guard)
-	velocity.x = after.x
-	velocity.z = after.z
-	velocity.y -= profile.gravity_mps2 * dt
+	return after
 
 func move_swept(dt: float, resolved_pairs: Dictionary = {}) -> void:
 	var motion := velocity * dt

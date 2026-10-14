@@ -124,6 +124,9 @@ func _physics_process(delta: float) -> void:
 	var owned: bool = match_controller.ball.carrier == self
 	var flat_speed:float=Vector2(velocity.x,velocity.z).length()
 	var body_target_yaw:float=rotation.y
+	if controller_v07_enabled and flat_speed>2.0 and semantic_motion.length()>.05 and semantic_motion.dot(-global_basis.z)>=-.2:
+		# High-speed hips follow momentum, independently of immediate mouse look.
+		body_target_yaw=atan2(-velocity.x,-velocity.z)
 	var pressure:RefCounted=match_controller.input_bridge.pressure
 	if pressure.active:body_target_yaw=atan2(-pressure.direction.x,-pressure.direction.z)
 	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):
@@ -131,7 +134,8 @@ func _physics_process(delta: float) -> void:
 	var view_delta:float=angle_difference(hip_yaw,body_target_yaw)
 	var follow:float=smoothstep(.12,.60,absf(view_delta))
 	var turn_rate:float=preload("res://scripts/movement_inertia.gd").yaw_rate(flat_speed)
-	hip_yaw+=clampf(view_delta,-turn_rate*delta*follow,turn_rate*delta*follow)
+	if controller_v07_enabled:hip_yaw=movement_motor.turn_body(hip_yaw,body_target_yaw,flat_speed,delta)
+	else:hip_yaw+=clampf(view_delta,-turn_rate*delta*follow,turn_rate*delta*follow)
 	facing = Vector3(-sin(hip_yaw),0,-cos(hip_yaw))
 	call_age+=delta
 	var call_target:float=smoothstep(0,.16,call_age)*(1-smoothstep(.70,1.05,call_age))
@@ -157,9 +161,27 @@ func _physics_process(delta: float) -> void:
 	sprinting = input_enabled and movement_tier=="run" and can_sprint_for_match() and not backwards
 	sprint_release_carry_remaining=maxf(0,sprint_release_carry_remaining-delta)
 	if was_sprinting and not sprinting and owned:sprint_release_carry_remaining=.40
+	body_facing = facing
+	if shielding and absf(intended.dot(global_basis.x))>.1: shield_side = signf(intended.dot(global_basis.x))
+	if not uses_shared_movement() or is_instance_valid(interaction) and not interaction.accepts_mobility_input():_apply_base_movement(intended,owned,backwards,delta)
+	tackle_cooldown = maxf(0,tackle_cooldown-delta)
+	action_cooldown = maxf(0,action_cooldown-delta)
+	dribble_balance.step(self,delta,owned)
+	locomotion = "idle" if flat_speed<.12 else "retreat" if backwards else "shield" if shielding else "jockey" if semantic_policies.get("pressure",false) else "dribble" if owned and move_requested else "sprint" if sprinting else "run" if velocity.length()>3.5 else "walk" if velocity.length()>.12 else "idle"
+	pending_pose_delta += delta
+
+func uses_shared_movement()->bool:
+	return false
+
+func _apply_base_movement(intended:Vector3,owned:bool,backwards:bool,delta:float)->void:
+	var cfg:FootballControlTuning=match_controller.tuning
+	var flat_speed:=Vector2(velocity.x,velocity.z).length()
 	speed = cfg.sprint_ball_speed if owned and sprinting else cfg.normal_ball_speed if owned else (cfg.big_chase_speed if big_chase_remaining>0 else cfg.running_move_speed) if sprinting else cfg.normal_move_speed
+	if controller_v07_enabled:
+		movement_motor.controlled=owned
+		if not owned:speed=movement_motor.sprint_speed if sprinting else movement_motor.jog_speed
 	if shielding: speed = cfg.shield_speed
-	elif close_control or semantic_move_style=="walk": speed = cfg.close_speed
+	elif close_control or semantic_move_style=="walk": speed = cfg.close_speed if owned or not controller_v07_enabled else movement_motor.walk_speed
 	if backwards:
 		var retreat:float=cfg.retreat_close_speed if close_control or shielding or semantic_move_style=="walk" else cfg.retreat_fast_speed if movement_tier=="run" and can_sprint_for_match() else cfg.retreat_speed
 		speed=minf(speed,retreat if owned else 3.1)
@@ -186,18 +208,8 @@ func _physics_process(delta: float) -> void:
 	if sprint_release_carry_remaining>0 and owned and not sprinting:
 		sprint_value=clampf((motion.length()-profile.jog_speed_mps)/maxf(.01,profile.sprint_speed_mps-profile.jog_speed_mps),0,1)
 	set_move_intent(motion/lerpf(profile.jog_speed_mps,profile.sprint_speed_mps,sprint_value),sprint_value)
-	body_facing = facing
-	if shielding and absf(intended.dot(global_basis.x))>.1: shield_side = signf(intended.dot(global_basis.x))
-	if shielding: stamina = maxf(0,stamina-delta*4)
-	elif sprinting and velocity.length()>5.5: stamina = maxf(0,stamina-delta*15)
-	elif not is_instance_valid(interaction) or interaction.accepts_mobility_input(): stamina = minf(100,stamina+delta*12)
-	if stamina<2: sprint_locked = true
-	elif stamina>26: sprint_locked = false
-	tackle_cooldown = maxf(0,tackle_cooldown-delta)
-	action_cooldown = maxf(0,action_cooldown-delta)
-	dribble_balance.step(self,delta,owned)
-	locomotion = "retreat" if backwards else "shield" if shielding else "jockey" if semantic_policies.get("pressure",false) else "dribble" if owned and move_requested else "sprint" if sprinting else "run" if velocity.length()>3.5 else "walk" if velocity.length()>.12 else "idle"
-	pending_pose_delta += delta
+	var energy:Dictionary=$Sprint.update_state(sprinting,flat_speed,shielding,stamina,sprint_locked,not is_instance_valid(interaction) or interaction.accepts_mobility_input(),delta)
+	stamina=energy.stamina;sprint_locked=energy.locked
 
 func refresh_pose(delta := 0.0) -> void:
 	if not is_instance_valid(avatar): return
@@ -209,6 +221,9 @@ func refresh_pose(delta := 0.0) -> void:
 	if foot != null and not foot.idle(): avatar.set_foot_action(foot.pose_request())
 	else: avatar.clear_foot_action()
 	var pose_state := {"velocity":velocity,"acceleration":motion_acceleration,"move_direction":semantic_motion,"forward":interaction.pose_forward(body_facing) if is_instance_valid(interaction) else body_facing,"grounded":interaction.pose_grounded() if is_instance_valid(interaction) else position.y<.025,"locomotion":locomotion,"interaction":interaction.pose_state() if is_instance_valid(interaction) else {}}
+	if controller_v07_enabled:
+		movement_motor.observe_velocity(velocity)
+		pose_state["controller_motion"]=movement_motor.animation_state()
 	var owned: bool = is_instance_valid(match_controller.ball) and match_controller.ball.carrier == self
 	var active_kind := String(foot.kind) if foot != null and not foot.idle() else ""
 	if avatar.has_method("set_lateral_support_request09"):
@@ -327,6 +342,7 @@ func turn_view(yaw: float) -> void:
 
 func reset_view(yaw: float) -> void:
 	human_motion.reset()
+	if is_instance_valid(movement_motor):movement_motor.reset()
 	_bob_baseline=-1.0;_down_bias=0.0
 	_eye_tick=-1
 	hip_yaw=yaw

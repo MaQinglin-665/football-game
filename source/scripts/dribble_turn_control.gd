@@ -76,7 +76,7 @@ static func result(actor:Node3D,ball:Node3D,aim:Vector3,original:Vector3,horizon
 	var maximum:float=lerpf(profile.jog_speed_mps,profile.sprint_speed_mps,sprint)
 	maximum=lerpf(maximum,profile.shield_move_speed_mps,actor.shield_intent)
 	var desired:Vector3=actor.foot.ordinary_scheduler.stable_direction(actor)*actor.move_intent.length()*maximum;desired.y=0
-	var prediction:Dictionary=predict_motor(initial,desired,profile,sprint,horizon)
+	var prediction:Dictionary=predict_motor(initial,desired,profile,sprint,horizon,actor if actor.is_human and actor.get("controller_v07_enabled")==true else null)
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var low:bool=not actor.foot.ordinary_scheduler.high_gear(actor) or actor.close_control or actor.shielding
 	var outgoing:Vector3=original
@@ -114,14 +114,14 @@ static func result(actor:Node3D,ball:Node3D,aim:Vector3,original:Vector3,horizon
 	actor.foot.touch_plan["turn_prediction"]={"revision":"three_speed_turn036_01","mode":mode,"angle_deg":rad_to_deg(angle(actor,aim)),"weight":w,"initial_velocity":initial,"motor_desired":desired,"end_velocity":prediction.velocity,"displacement":prediction.displacement,"old_exit":original,"new_exit":outgoing,"collision_free_estimate":true}
 	return outgoing
 
-static func predict_motor(initial:Vector3,desired:Vector3,profile:Variant,sprint:float,horizon:float)->Dictionary:
+static func predict_motor(initial:Vector3,desired:Vector3,profile:Variant,sprint:float,horizon:float,controller:Node=null)->Dictionary:
 	# Mirrors 036 horizontal motor integration. No collision or support promise.
 	var count:int=maxi(1,int(ceil(horizon/maxf(profile.internal_step_seconds,.001))))
 	var dt:float=horizon/float(count)
 	var velocity:Vector3=initial
 	var displacement:=Vector3.ZERO
 	for i in count:
-		velocity=preload("res://scripts/movement_inertia.gd").step(velocity,desired,profile,sprint,dt)
+		velocity=controller.predict_controller_velocity(velocity,desired,sprint,dt) if controller!=null else preload("res://scripts/movement_inertia.gd").step(velocity,desired,profile,sprint,dt)
 		displacement+=velocity*dt
 	return {"velocity":velocity,"displacement":displacement}
 

@@ -1,32 +1,15 @@
 extends Node
+## State only: semantic input owns the Shift toggle; motor owns speed, camera owns FOV.
+enum State { NORMAL, RUN, SPRINT }
+@export var drain_per_second:=10.0
+@export var recovery_per_second:=12.0
+var state:=State.NORMAL
 
-
-@export_node_path("MovementController") var controller_path := NodePath("../")
-@onready var controller: MovementController = get_node(controller_path)
-
-@export_node_path("Node3D") var head_path := NodePath("../Head")
-@onready var cam: Camera3D = get_node(head_path).cam
-
-@export var sprint_speed := 9.8
-@export var fov_multiplier := 1.06
-@onready var normal_speed: float = controller.speed
-@onready var normal_fov: float = cam.fov
-
-
-# Called every physics tick. 'delta' is constant
-func _physics_process(delta: float) -> void:
-	if can_sprint():
-		controller.speed = sprint_speed
-		cam.set_fov(lerp(cam.fov, normal_fov * fov_multiplier, delta * 4))
-	else:
-		controller.speed = normal_speed
-		cam.set_fov(lerp(cam.fov, normal_fov, delta * 4))
-
-
-func can_sprint() -> bool:
-	if not controller.input_enabled:
-		return false
-	if controller.has_method("can_sprint_for_match") and not controller.can_sprint_for_match():
-		return false
-	return (controller.is_on_floor() and Input.is_action_pressed(&"sprint") 
-			and controller.input_axis.x >= 0.5)
+func update_state(requested:bool,moving_speed:float,shielding:bool,stamina:float,locked:bool,can_recover:bool,dt:float)->Dictionary:
+ state=State.SPRINT if requested and moving_speed>.25 and not locked else State.RUN if moving_speed>2.5 else State.NORMAL
+ if shielding:stamina=maxf(0,stamina-dt*4.0)
+ elif state==State.SPRINT:stamina=maxf(0,stamina-dt*drain_per_second)
+ elif can_recover:stamina=minf(100,stamina+dt*recovery_per_second)
+ if stamina<2:locked=true
+ elif stamina>26:locked=false
+ return {"stamina":stamina,"locked":locked,"state":state}

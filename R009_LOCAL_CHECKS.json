@@ -1,0 +1,266 @@
+{
+  "date": "2026-10-14",
+  "candidate": "candidate/r009",
+  "base_candidate": "candidate/r008",
+  "base_commit": "d46c76e84f79bb0992c068f9fe00e0ec3912e8b1",
+  "main_commit": "d6106b52443a53739f78e566578c2a4a0a250420",
+  "scope": "Player Controller V0.7 Sprint 1; no AI decisions/assets/render settings changed",
+  "checks": [
+    {
+      "log": "verification\\r009-final-import.log",
+      "pass_count": 0,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r009-final-controller_v07_checks.log",
+      "pass_count": 10,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r009-final-pass_contact_checks.log",
+      "pass_count": 24,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r009-final-contact_flow_check.log",
+      "pass_count": 26,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r009-final-shift_carry_transition.log",
+      "pass_count": 0,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r009-native11.log",
+      "pass_count": 2,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r009-native-final3.log",
+      "pass_count": 2,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "log": "verification\\r009-final-realinput.log",
+      "pass_count": 2,
+      "fail_count": 0,
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "runs": {
+    "v07_baseline_r008": {
+      "native": false,
+      "scope": "Actual keyboard input and swept movement; isolated fixture. Native captures when enabled, not human feel acceptance or natural AI evidence.",
+      "summary": {
+        "start": {
+          "at_half_second_mps": 3.20000004768372,
+          "max_mps": 3.20000004768372,
+          "min_mps": 0.100000001490116,
+          "end_mps": 3.20000004768372,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "stop": {
+          "at_half_second_mps": 0.0,
+          "max_mps": 7.55000114440918,
+          "min_mps": 0.0,
+          "end_mps": 0.0,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0,
+          "first_stop_s_after_fixture_settle": 0.425
+        },
+        "turn90": {
+          "at_half_second_mps": 3.20000004768372,
+          "max_mps": 7.55000114440918,
+          "min_mps": 3.20000004768372,
+          "end_mps": 3.20000004768372,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0747468369204373,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "reverse": {
+          "at_half_second_mps": 3.09999990463257,
+          "max_mps": 7.55000114440918,
+          "min_mps": 3.09999990463257,
+          "end_mps": 3.09999990463257,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0749969893778067,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "turn180": {
+          "at_half_second_mps": 3.20000004768372,
+          "max_mps": 7.55000114440918,
+          "min_mps": 3.20000004768372,
+          "end_mps": 3.20000004768372,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0749965177592729,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "sprint": {
+          "at_half_second_mps": 3.05000257492065,
+          "max_mps": 5.59999990463257,
+          "min_mps": 0.0,
+          "end_mps": 0.0,
+          "sprint_samples": 280,
+          "max_bank_rad": 3.5767720784e-09,
+          "first_stop_s_after_fixture_settle": 1.8083333333333333
+        }
+      }
+    },
+    "v07_native_11": {
+      "native": true,
+      "scope": "Actual keyboard input and swept movement; isolated fixture. Native captures when enabled, not human feel acceptance or natural AI evidence.",
+      "summary": {
+        "start": {
+          "at_half_second_mps": 3.99999761581421,
+          "max_mps": 5.0,
+          "min_mps": 0.0666666701436043,
+          "end_mps": 5.0,
+          "sprint_samples": 0,
+          "max_bank_rad": 0,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "stop": {
+          "at_half_second_mps": 1.79998707771301,
+          "max_mps": 7.69999885559082,
+          "min_mps": 0.0,
+          "end_mps": 0.0,
+          "sprint_samples": 0,
+          "max_bank_rad": 0,
+          "first_stop_s_after_fixture_settle": 0.6333333333333333
+        },
+        "turn90": {
+          "at_half_second_mps": 3.90276837348938,
+          "max_mps": 7.70007133483887,
+          "min_mps": 3.09610319137573,
+          "end_mps": 4.97818517684937,
+          "sprint_samples": 0,
+          "max_bank_rad": 0,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "reverse": {
+          "at_half_second_mps": 1.79998707771301,
+          "max_mps": 7.69999885559082,
+          "min_mps": 1.23754143714905e-05,
+          "end_mps": 3.09999990463257,
+          "sprint_samples": 0,
+          "max_bank_rad": 0,
+          "first_stop_s_after_fixture_settle": 0.6416666666666667
+        },
+        "turn180": {
+          "at_half_second_mps": 1.79998707771301,
+          "max_mps": 7.69999885559082,
+          "min_mps": 1.2376187441987e-05,
+          "end_mps": 5.0,
+          "sprint_samples": 0,
+          "max_bank_rad": 0,
+          "first_stop_s_after_fixture_settle": 0.6416666666666667
+        },
+        "sprint": {
+          "at_half_second_mps": 4.06666421890259,
+          "max_mps": 8.5,
+          "min_mps": 0.0,
+          "end_mps": 0.0,
+          "sprint_samples": 280,
+          "max_bank_rad": 0,
+          "first_stop_s_after_fixture_settle": 2.191666666666667
+        }
+      }
+    },
+    "v07_native_final3": {
+      "native": true,
+      "scope": "Actual keyboard input and swept movement; isolated fixture. Native captures when enabled, not human feel acceptance or natural AI evidence.",
+      "summary": {
+        "start": {
+          "at_half_second_mps": 3.99999761581421,
+          "max_mps": 5.0,
+          "min_mps": 0.0666666701436043,
+          "end_mps": 5.0,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "stop": {
+          "at_half_second_mps": 1.79998707771301,
+          "max_mps": 7.69999885559082,
+          "min_mps": 0.0,
+          "end_mps": 0.0,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0,
+          "first_stop_s_after_fixture_settle": 0.6333333333333333
+        },
+        "turn90": {
+          "at_half_second_mps": 3.90276837348938,
+          "max_mps": 7.70007133483887,
+          "min_mps": 3.09610319137573,
+          "end_mps": 4.97818517684937,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0749999998562362,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "reverse": {
+          "at_half_second_mps": 1.79998707771301,
+          "max_mps": 7.69999885559082,
+          "min_mps": 1.23754143714905e-05,
+          "end_mps": 3.09999990463257,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0544129022333297,
+          "first_stop_s_after_fixture_settle": 0.6333333333333333
+        },
+        "turn180": {
+          "at_half_second_mps": 1.79998707771301,
+          "max_mps": 7.69999885559082,
+          "min_mps": 1.2376187441987e-05,
+          "end_mps": 5.0,
+          "sprint_samples": 0,
+          "max_bank_rad": 0.0209711717251809,
+          "first_stop_s_after_fixture_settle": 0.6416666666666667
+        },
+        "sprint_turn90": {
+          "at_half_second_mps": 5.22906112670898,
+          "max_mps": 8.20082092285156,
+          "min_mps": 3.82201218605042,
+          "end_mps": 8.20082092285156,
+          "sprint_samples": 120,
+          "max_bank_rad": 0.0749999998152301,
+          "first_stop_s_after_fixture_settle": null
+        },
+        "sprint": {
+          "at_half_second_mps": 4.06666421890259,
+          "max_mps": 8.5,
+          "min_mps": 0.0,
+          "end_mps": 0.0,
+          "sprint_samples": 280,
+          "max_bank_rad": 0.0427073466211538,
+          "first_stop_s_after_fixture_settle": 2.191666666666667
+        }
+      }
+    }
+  },
+  "known_limits": [
+    "Not manual or full-match acceptance; scripted actual inputs and rendered captures",
+    "No new animation assets: reuses existing gait/lean/plant pipeline",
+    "AI unchanged: human free-run speed advantage and teammate timing require match review",
+    "AI/team arrival estimates not migrated; only human dribble short-horizon motor prediction shares new integration",
+    "No frame-rate improvement claimed; 70ms spikes unresolved",
+    "No resource-leak fix claimed",
+    "6v6/9v9/5v5 not rerun this iteration"
+  ]
+}

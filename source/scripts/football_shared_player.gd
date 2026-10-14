@@ -2,6 +2,8 @@ extends "res://scripts/football_player.gd"
 ## Inherits the current player/head/pose/foot files without overwriting them.
 const SharedMovement := preload("res://scripts/football_shared_movement.gd")
 var shared_last_result: Dictionary = {}
+func uses_shared_movement()->bool:
+	return controller_v07_enabled
 func _physics_process(delta: float) -> void:
 	var _w:int=Time.get_ticks_usec()
 	_physics_process_body(delta)

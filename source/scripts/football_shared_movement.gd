@@ -56,7 +56,15 @@ static func apply(actor: Node3D, game: Node, command: Dictionary, before: Dictio
 	var incoming_carry:bool=not command.has("prepared_motion") and owned and bool(command.get("enabled",false)) and not bool(command.get("shield",false)) and not bool(command.get("close_control",false)) and command.get("style","run")!="walk" and scheduler.keep_incoming042(actor,command.get("move",Vector3.ZERO))
 	if incoming_carry:state["incoming_carry_speed"]=Vector2(actor.velocity.x,actor.velocity.z).length()
 	state.endurance=preload("res://scripts/player_abilities.gd").value(actor,"endurance")
-	var result := resolve(command,state,game.tuning,delta)
+	var human_v07:bool=actor.is_human and actor.get("controller_v07_enabled")==true
+	var cfg:Variant=actor.controller_tuning(game.tuning) if human_v07 else game.tuning
+	var result := resolve(command,state,cfg,delta)
+	if human_v07:
+		actor.movement_motor.controlled=owned
+		actor.set_meta("motor_guard",not owned and actor.semantic_policies.get("pressure",false) and not result.sprint)
+		if not owned and (result.close_control or command.get("style","")=="walk"):result.speed=minf(actor.movement_motor.walk_speed,float(state.foot_cap));result.motion=result.move*result.speed
+		var energy:Dictionary=actor.get_node("Sprint").update_state(result.sprint,Vector2(actor.velocity.x,actor.velocity.z).length(),result.shield,before.stamina,before.sprint_locked,true,delta)
+		result.stamina=energy.stamina;result.sprint_locked=energy.locked
 	if bool(command.get("resolved_ai_motion",false)):
 		# AI target arrival, approach, turn and ball follow were already solved once.
 		# This layer retains stamina/action limits without reapplying the player's gap governor.
@@ -87,7 +95,8 @@ static func apply(actor: Node3D, game: Node, command: Dictionary, before: Dictio
 		else:
 			motion = game.ball.human_dribble_motion(actor,result.move,result.speed)
 	var sprint_value := 1.0 if result.sprint else 0.0
-	actor.set_move_intent(motion/lerpf(actor.profile.jog_speed_mps,actor.profile.sprint_speed_mps,sprint_value),sprint_value)
+	var motor_limit:float=actor.motor_speed_limit(sprint_value)
+	actor.set_move_intent(motion/motor_limit,sprint_value)
 	if actor.is_human:_auto_shield(actor,game,owned,delta) # AI tactical shield already owns its body/pace.
 	result.motion = motion
 	return result
