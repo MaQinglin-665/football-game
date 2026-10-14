@@ -1,0 +1,18 @@
+{
+  "base_candidate": "36564586df9040bc4cfbcfd4620d862c82c43977",
+  "status": "native_checked_candidate_pending_user_review",
+  "fps": 65.55,
+  "p95_ms": 23.63,
+  "p99_ms": 28.23,
+  "gpu_render_ms": 9.28,
+  "simulation_seconds": 19.9666666666656,
+  "human_walk_distance_m": 49.1848564185202,
+  "method": "RTX5060 Laptop, Vulkan Forward+,1600x900 windowed native,VSync off, uncapped,balanced effects1,20s 22AI camera-path diagnostic; separate actual-key walk/run/turn smoke; no human feel acceptance",
+  "limitations": [
+    "Short test does not prove stable60FPS",
+    "Near spectators and anatomy remain simplified",
+    "No high-quality refraction/reflection simulation; central glass uses inexpensive sky transmission",
+    "Model-scale motion and shoe-ground contact need longer animation review",
+    "No main merge or push"
+  ]
+}

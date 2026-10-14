@@ -80,3 +80,5 @@ Kloofendal 48d Partly Cloudy (Pure Sky) 2K 版本，替换 art/assets/sky.hdr（
 许可：https://polyhaven.com/license — CC0 1.0；可商用、修改、再分发，无需署名。
 大小 5,451,493 字节（原 1,435,119）；SHA-256 5244534e9cf5b606f2ff513aa00ddb161b0a4826ffd88a0d3bd03ac29247d198。
 同一资产、同一许可；未新增其他第三方素材。草皮仍为原创程序纹理（第5条），未换成公园草皮照片。
+
+2026-10-14 R008：新顶棚/檐口结构、观众配色算法、草叶收敛修正、球衣垂坠修整及头部耳廓为本工程原创修改。已有Grass005/Concrete034/CottonJersey/天空资源来源与许可保持原清单；未新购或下载素材。

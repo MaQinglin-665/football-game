@@ -23,7 +23,7 @@ func build(stadium:Node3D)->void:
  # Keep original supporting stands; replace the featureless canopy with steelwork.
  for n in stadium.get_node("Roof").get_children():n.visible=false
  var metal=material("8c969e",.55);metal.metallic=.05
- var panels=Batch.new();var steel=Batch.new();var dark=Batch.new()
+ var panels=Batch.new();var canopy=Batch.new();var steel=Batch.new();var dark=Batch.new()
  var x:float=d.pitch_width*.5+8.;var z:float=d.pitch_length*.5+10.
  # Closed retractable panels, a central seam and triangulated transverse trusses.
  for row in 22:
@@ -45,7 +45,9 @@ func build(stadium:Node3D)->void:
   var a:float=TAU*i/128.;var b:float=TAU*(i+1)/128.
   var p=outline(x,z,a,h+2.2);var q=outline(x,z,b,h+2.2)
   var po=outline(x+63,z+63,a,h+4.2);var qo=outline(x+63,z+63,b,h+4.2)
-  panels.quad(p,po,qo,q)
+  canopy.quad(p,po,qo,q)
+  # Close the external canopy edge with a real fascia instead of exposing sky slivers.
+  canopy.quad(qo,po,po-Vector3.UP*3.8,qo-Vector3.UP*3.8)
   if i%2==0:
    steel.rod(p-Vector3.UP*1.4,po-Vector3.UP*.5,.17,6)
    steel.rod(p,po,.12,6)
@@ -58,6 +60,8 @@ func build(stadium:Node3D)->void:
   if i%8==0:steel.rod(pa,pa+Vector3.UP*3.,.11,6)
  var roofmat=ShaderMaterial.new();roofmat.shader=load("res://art/scripts/roof_glass.gdshader")
  node_mesh("ArtGlassRoof",panels,roofmat)
+ var canopy_mat=material("65737d",.78);canopy_mat.metallic=.18;canopy_mat.metallic_specular=.22
+ node_mesh("OuterOpaqueCanopy",canopy,canopy_mat)
  node_mesh("RoofTrussesAndSupports",steel,metal)
  node_mesh("HaloHousing",dark,material("11161c"))
  var screen_mat=StandardMaterial3D.new();screen_mat.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -132,6 +136,7 @@ func _process(delta:float)->void:
  if crowd_lod_elapsed<.35:return
  crowd_lod_elapsed=0.;update_crowd_detail()
 func update_crowd_detail()->void:
+ if not is_inside_tree() or get_viewport()==null:return
  var camera:Camera3D=get_viewport().get_camera_3d()
  if camera==null:return
  var eye:Vector3=to_local(camera.global_position)

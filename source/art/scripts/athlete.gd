@@ -39,8 +39,8 @@ func build(c:Color,num:int,before:bool)->void:
    else:
     for s in m.mesh.get_surface_count():
      var source=m.mesh.surface_get_material(s)
-     var mat=StandardMaterial3D.new();mat.albedo_color=Color("14202e");mat.roughness=.39
-     if "Sole" in source.resource_name:mat.albedo_color=Color("dcdcd1");mat.roughness=.69
+     var mat=StandardMaterial3D.new();mat.albedo_color=Color("14202e");mat.roughness=.56;mat.metallic_specular=.24
+     if "Sole" in source.resource_name:mat.albedo_color=Color("dcdcd1");mat.roughness=.78
      if "Stud" in source.resource_name:mat.albedo_color=Color("263442");mat.roughness=.5
      if "Laces" in source.resource_name:mat.albedo_color=Color("f1eee1");mat.roughness=.88
      if "Accent" in source.resource_name:mat.albedo_color=Color("c4f358");mat.roughness=.42
@@ -145,8 +145,10 @@ func make_body()->void:
  loft("skin",[[1.48,0.,0.,.048,.044,0.],[1.55,0.,0.,.044,.044,.7],[1.59,0.,-.008,.045,.046,1.]],"neck","head")
  # Featureless but shaped jaw, cranium and chin. Deliberately no eyes/nose/mouth.
  var head:Array=[]
- for r in [[1.54,.031,.035,-.010],[1.56,.051,.050,-.012],[1.59,.072,.069,-.008],[1.63,.087,.086,0.],[1.69,.094,.091,.003],[1.74,.081,.080,.002],[1.78,.051,.054,.001],[1.795,.002,.002,0.]]:head.append([r[0],0.,r[3],r[1],r[2],0.])
+ for r in [[1.54,.027,.035,-.013],[1.56,.047,.051,-.015],[1.59,.069,.070,-.011],[1.63,.085,.084,0.],[1.69,.091,.090,.006],[1.74,.081,.079,.005],[1.78,.052,.051,.003],[1.795,.002,.002,.002]]:head.append([r[0],0.,r[3],r[1],r[2],0.])
  loft("skin",head,"head","head")
+ for ear_side in [-1.,1.]:
+  loft("skin",[[1.621,ear_side*.086,.010,.003,.008,0.],[1.636,ear_side*.093,.010,.010,.014,0.],[1.657,ear_side*.097,.012,.011,.016,0.],[1.677,ear_side*.093,.014,.008,.013,0.],[1.683,ear_side*.088,.016,.002,.006,0.]],"head","head",0.,16)
  loft("shorts",[[.89,0.,.007,.181,.105,0.],[.98,0.,0.,.181,.112,0.],[1.038,0.,0.,.175,.110,0.]],"hips","hips",.002)
  for side in ["L","R"]:
   var signx=-1. if side=="L" else 1.

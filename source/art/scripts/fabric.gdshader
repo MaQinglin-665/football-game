@@ -9,6 +9,7 @@ varying vec3 rest;
 void vertex(){rest=vec3(UV2.x,UV.y*.5,UV2.y);}
 void fragment(){
  vec3 c=color.rgb;float rough=.83;
+ float micro=sin(rest.x*41.+rest.y*17.)*sin(rest.z*36.-rest.y*11.);
  if(kind==0){
    // Tailored side ventilation panels and a tonal woven chevron, filtered in screen space.
    float side=smoothstep(.135,.172,abs(rest.x))*(1.-smoothstep(.21,.25,abs(rest.x)));
@@ -35,13 +36,20 @@ void fragment(){
       float ink=texture(digits,vec2((digit+q.x)/10.,q.y)).r;
       c=mix(c,vec3(.93,.94,.88),ink);
    }
- }else if(kind==1){rough=.68;}
+ }else if(kind==1){
+  // Low-frequency colour/roughness variation; no facial features or noisy pore speckles.
+  float warmth=.012*sin(rest.y*7.+rest.x*9.);
+  c*=vec3(1.+warmth,1.,1.-warmth*.7);
+  rough=.70+micro*.025;
+ }
  else if(kind==2){rough=.86;}
  else if(kind==3){rough=.38;}
+ if(kind==0){rough=.86+micro*.028;}
  float fade=1.-smoothstep(.001,.006,max(length(dFdx(rest)),length(dFdy(rest))));
  if(kind==0||kind==2){
    vec3 n=texture(fabric,UV*2.5).rgb;
    NORMAL_MAP=mix(vec3(.5,.5,1.),n,.28*fade);NORMAL_MAP_DEPTH=.4;
  }
- ALBEDO=c;ROUGHNESS=rough;SPECULAR=kind==1?.22:.18;
+ ALBEDO=c;ROUGHNESS=rough;SPECULAR=kind==1?.16:.12;
+ if(kind==0||kind==2){RIM=.08;RIM_TINT=.15;}
 }
