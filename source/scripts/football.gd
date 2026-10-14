@@ -255,6 +255,11 @@ func close_touch_velocity(owner: Node3D, aim: Vector3, mode: String) -> Vector3:
 	var offset := Vector3(position.x-owner.position.x,0,position.z-owner.position.z)
 	var gap := offset.length()
 	if mode=="PULL":
+		# R010: cushion a forward roll at the actual sole contact before
+		# asking for a backward roll. Copying forward body momentum made
+		# the ball escape just as the player finished braking.
+		if owner.is_human and owner.get("controller_v07_enabled")==true and aim.dot(owner.body_facing)<-.35 and velocity.dot(owner.body_facing)>1.0:
+			return Vector3.ZERO
 		# A sole roll follows the retreating player's actual pace. Its small
 		# contact-only speed difference brings a forward ball near the hips;
 		# it must not keep accelerating the ball behind the player's heels.

@@ -24,6 +24,12 @@ func predict_velocity(flat:Vector3,desired:Vector3,sprint:float,dt:float,guard:b
  if not flat.is_finite() or not desired.is_finite() or dt<=0:return flat
  desired=Vector3(desired.x,0,desired.z).limit_length(3.0 if guard else sprint_speed)
  var speed:=flat.length()
+ if controlled:
+  # Ball touches already use this same finite acceleration forecast. Do not
+  # impose the free-run stop-before-turn stage on an active dribble.
+  var changing:=flat.length()>.3 and desired.length()>.05 and flat.normalized().dot(desired.normalized())<.90
+  var rate:=22.0 if changing else 18.0 if desired.length()<speed else lerpf(12.0,6.0,sprint)
+  return flat.move_toward(desired,rate*dt)
  var brake:=18.0 if controlled else deceleration
  if guard:brake=18.0
  var accel:=lerpf(12.0,6.0,sprint) if controlled else acceleration

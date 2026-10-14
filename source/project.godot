@@ -12,7 +12,7 @@ config_version=5
 
 config/version="integration-r008-assets"
 
-config/name="Football V0.7 Sprint 1 R009"
+config/name="Football R010 Carry Turn Recovery"
 run/main_scene="res://scenes/match.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"

@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-14",
+  "base": "candidate/r009 3a448ec",
+  "main_unchanged": true,
+  "merged": false,
+  "scope": "3v3 native isolated actual-input fixtures, 11v11 headless startup only. Not natural-match or user acceptance.",
+  "results": {
+    "r008_turn": {
+      "medium90": {
+        "max_gap_m": 0.5612069933378101,
+        "unowned_samples": 0,
+        "end_gap_m": 0.3208506403569479,
+        "end_owned": true
+      },
+      "fast90": {
+        "max_gap_m": 12.528348550053906,
+        "unowned_samples": 210,
+        "end_gap_m": 12.528348550053906,
+        "end_owned": false
+      },
+      "reverse": {
+        "max_gap_m": 5.569465504177429,
+        "unowned_samples": 157,
+        "end_gap_m": 5.569465504177429,
+        "end_owned": false
+      }
+    },
+    "r009_turn": {
+      "medium90": {
+        "max_gap_m": 0.6749316123582849,
+        "unowned_samples": 0,
+        "end_gap_m": 0.2899223715222491,
+        "end_owned": true
+      },
+      "fast90": {
+        "max_gap_m": 1.0048240883521848,
+        "unowned_samples": 0,
+        "end_gap_m": 0.6922949132876054,
+        "end_owned": true
+      },
+      "reverse": {
+        "max_gap_m": 5.651113106681431,
+        "unowned_samples": 162,
+        "end_gap_m": 5.651113106681431,
+        "end_owned": false
+      }
+    },
+    "native_centered_turn": {
+      "medium90": {
+        "max_gap_m": 0.6784564549763248,
+        "unowned_samples": 0,
+        "end_gap_m": 0.28914874398736734,
+        "end_owned": true
+      },
+      "fast90": {
+        "max_gap_m": 0.9984796847424982,
+        "unowned_samples": 0,
+        "end_gap_m": 0.7237552943724934,
+        "end_owned": true
+      },
+      "reverse": {
+        "max_gap_m": 0.7463245504152156,
+        "unowned_samples": 0,
+        "end_gap_m": 0.45033258923594904,
+        "end_owned": true
+      },
+      "fast_mouse90": {
+        "max_gap_m": 0.7488324729467778,
+        "unowned_samples": 0,
+        "end_gap_m": 0.6722644493514796,
+        "end_owned": true
+      },
+      "medium_left90": {
+        "max_gap_m": 0.5718264482917959,
+        "unowned_samples": 0,
+        "end_gap_m": 0.31434499983394737,
+        "end_owned": true
+      }
+    }
+  },
+  "discarded_experiments": [
+    "R008 carry rollback worsened fast90; discarded",
+    "Near-ball movement grace discarded",
+    "Original mouse90 fixture hit touchline; centered initial position for valid native retest"
+  ],
+  "known_limits": [
+    "No full-match/user acceptance",
+    "No 11v11 native retest this iteration",
+    "Original 70ms spikes and exit leaks unresolved"
+  ]
+}
