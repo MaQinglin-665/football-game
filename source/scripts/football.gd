@@ -243,7 +243,7 @@ func _update_human_dribble(owner: Node3D, offset: Vector3, gap: float) -> void:
 		preparation["turn_stage"]=scheduler.turn_stage
 		scheduler.last_decision=preparation
 		if not bool(preparation.get("ready",false)):
-			control_mode = "FREE_ROLL" if preparation.get("reason","")=="roll_sufficient" else "PREPARE_SUPPORT"
+			control_mode = "FREE_ROLL" if preparation.get("reason","") in ["roll_sufficient","follow_free_roll"] else "PREPARE_SUPPORT"
 			return
 	# Direction is distinct from camera/stance heading. A/D selects an inside
 	# or outside foot roll without demanding a turn of the camera/whole body.

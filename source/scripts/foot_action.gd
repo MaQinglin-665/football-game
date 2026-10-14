@@ -120,6 +120,7 @@ func begin(action: String, aim: Vector3, motion_bias := Vector3.ZERO, force := 3
 	var adopt_receive:bool=action=="TACKLE" and kind=="RECEIVE" and not hit
 	if (not idle() and not adopt_receive) or not match_controller.can_foot_action(actor,action): return false
 	if action not in ["CLOSE","TURN","SHIELD"]:ordinary_scheduler.reset_turn(actor,"other_action_priority")
+	if action not in ["CLOSE","TURN","SHIELD"]:ordinary_scheduler.follow_step.clear()
 	var cfg: FootballControlTuning = match_controller.tuning
 	kind = action
 	deliberate_touch = false
@@ -873,6 +874,7 @@ func _try_contact(delta: float) -> void:
 				if not actor.is_human:
 					ordinary_scheduler.note_commit(sequence,side,ball.velocity)
 				if actor.is_human:
+					ordinary_scheduler.follow_step.contacted(actor,ball,before,side)
 					touch_plan["recovery_start_elapsed"]=elapsed
 					release_until[side]=Engine.get_physics_frames()+int(ceil((recovery+.045)*Engine.physics_ticks_per_second))
 				ordinary_scheduler.note_commit(sequence,side,ball.velocity)
@@ -922,6 +924,7 @@ func movement_cap() -> float:
 	return maxf(2.4,minf(4.2,Vector2(actor.velocity.x,actor.velocity.z).length())) if phase!=Phase.RECOVER else 100.0 # Withdraw while chasing; no post-miss crawl.
 
 func cancel(reason := "cancelled") -> void:
+	ordinary_scheduler.follow_step.clear()
 	ordinary_scheduler.reset_turn(actor,reason)
 	ordinary_scheduler._candidate_tick=-1
 	ordinary_scheduler._accepted_direction=Vector3.ZERO

@@ -1,0 +1,202 @@
+{
+  "date": "2026-10-14",
+  "base": "d176786f23e380ee98f58d53ee9ebd84fc81a842",
+  "main_unchanged": true,
+  "merged": false,
+  "native_scope": "3v3 five isolated actual-input cases; opponents moved away; no natural match acceptance",
+  "R010": {
+    "medium90": {
+      "max_gap_m": 0.6784564549763248,
+      "unowned_samples": 0,
+      "follow_wait_samples": 0,
+      "contact_ticks": [
+        204,
+        222,
+        240,
+        258,
+        361
+      ],
+      "duplicate_ordinary_contacts": 0
+    },
+    "fast90": {
+      "max_gap_m": 0.9984796847424982,
+      "unowned_samples": 0,
+      "follow_wait_samples": 0,
+      "contact_ticks": [
+        205,
+        224,
+        255,
+        354
+      ],
+      "duplicate_ordinary_contacts": 0,
+      "first_two_interval_s": 0.15833333333333333,
+      "body_follow_m": 0.16533365271750816,
+      "ball_travel_m": 0.4907172573735097
+    },
+    "reverse": {
+      "max_gap_m": 0.7463245504152156,
+      "unowned_samples": 0,
+      "follow_wait_samples": 0,
+      "contact_ticks": [
+        193,
+        217,
+        241,
+        265,
+        289,
+        313,
+        337,
+        361,
+        385,
+        409
+      ],
+      "duplicate_ordinary_contacts": 0
+    },
+    "fast_mouse90": {
+      "max_gap_m": 0.7488324729467778,
+      "unowned_samples": 0,
+      "follow_wait_samples": 0,
+      "contact_ticks": [
+        198,
+        224,
+        360
+      ],
+      "duplicate_ordinary_contacts": 0
+    },
+    "medium_left90": {
+      "max_gap_m": 0.5718264482917959,
+      "unowned_samples": 0,
+      "follow_wait_samples": 0,
+      "contact_ticks": [
+        200,
+        218,
+        236,
+        388
+      ],
+      "duplicate_ordinary_contacts": 0
+    }
+  },
+  "R011": {
+    "medium90": {
+      "max_gap_m": 0.6784564549763248,
+      "unowned_samples": 0,
+      "follow_wait_samples": 7,
+      "contact_ticks": [
+        204,
+        222,
+        240,
+        258,
+        361
+      ],
+      "duplicate_ordinary_contacts": 0
+    },
+    "fast90": {
+      "max_gap_m": 0.9984796847424982,
+      "unowned_samples": 0,
+      "follow_wait_samples": 39,
+      "contact_ticks": [
+        205,
+        230,
+        316
+      ],
+      "duplicate_ordinary_contacts": 0,
+      "first_two_interval_s": 0.20833333333333334,
+      "body_follow_m": 0.2453987488574969,
+      "ball_travel_m": 0.6647774794331158
+    },
+    "reverse": {
+      "max_gap_m": 0.7463245504152156,
+      "unowned_samples": 0,
+      "follow_wait_samples": 0,
+      "contact_ticks": [
+        193,
+        217,
+        241,
+        265,
+        289,
+        313,
+        337,
+        361,
+        385,
+        409
+      ],
+      "duplicate_ordinary_contacts": 0
+    },
+    "fast_mouse90": {
+      "max_gap_m": 0.7488324729467778,
+      "unowned_samples": 0,
+      "follow_wait_samples": 17,
+      "contact_ticks": [
+        198,
+        224,
+        360
+      ],
+      "duplicate_ordinary_contacts": 0
+    },
+    "medium_left90": {
+      "max_gap_m": 0.5718264482917959,
+      "unowned_samples": 0,
+      "follow_wait_samples": 12,
+      "contact_ticks": [
+        200,
+        218,
+        236,
+        388
+      ],
+      "duplicate_ordinary_contacts": 0
+    }
+  },
+  "shift": {
+    "passes": 0,
+    "errors": []
+  },
+  "import": {
+    "passes": 0,
+    "errors": []
+  },
+  "pass": {
+    "passes": 24,
+    "errors": []
+  },
+  "11-start": {
+    "passes": 0,
+    "errors": []
+  },
+  "follow-contract": {
+    "passes": 8,
+    "errors": []
+  },
+  "native-turn": {
+    "passes": 0,
+    "errors": []
+  },
+  "limitations": [
+    "11v11 startup only, no native match retest",
+    "No natural pressure or full-match acceptance",
+    "AI unchanged",
+    "70ms spikes and texture/resource release issues unresolved",
+    "Support is a preference with geometry rescue, not hard biomechanical landing certification"
+  ],
+  "shift_cases": {
+    "rapid_pair": {
+      "unowned_samples": 34,
+      "end_owned": true,
+      "unowned_modes": [
+        "PUSH"
+      ]
+    },
+    "single_off": {
+      "unowned_samples": 0,
+      "end_owned": true,
+      "unowned_modes": []
+    },
+    "single_on": {
+      "unowned_samples": 0,
+      "end_owned": true,
+      "unowned_modes": []
+    }
+  },
+  "shift_note": "Rapid pair invokes existing SPRINT/PUSH big touch; 34 unowned samples, not counted as no-loss acceptance.",
+  "final_import": {
+    "script_errors": false
+  }
+}

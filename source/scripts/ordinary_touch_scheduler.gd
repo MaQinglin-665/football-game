@@ -13,6 +13,7 @@ var step_serial := 0
 var consumed_support_episode := -1
 var last_exit_velocity := Vector3.ZERO
 var step_intent:Dictionary = {}
+var follow_step := preload("res://scripts/dribble_follow_step.gd").new()
 func _init()->void:
 	for arg in OS.get_cmdline_user_args():
 		if arg=="--dominant-control=A":dominant_control_enabled=false
@@ -542,6 +543,10 @@ static func predict_ball_center(ball:Node3D,seconds:float)->Vector3:
 func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool)->Dictionary:
 	var run:Vector3=actor.velocity;run.y=0
 	var offset:Vector3=ball.position-actor.position;offset.y=0
+	var follow:Dictionary=follow_step.consider(actor,ball,aim)
+	if not follow.is_empty() and not bool(follow.ready):
+		last_decision=follow
+		return follow
 	if Engine.get_physics_frames()<actor.foot.cut_roll_until and ball.carrier==actor and offset.length()<.95:
 		return {"ready":false,"reason":"cut_free_roll"}
 	var ready:bool=changed or DribbleRhythm.needs_touch(actor,ball,aim)
@@ -549,6 +554,10 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	var right:Vector3=Vector3(-actor.body_facing.z,0,actor.body_facing.x)
 	var lateral:float=offset.dot(right)
 	var best:Dictionary={}
+	# During follow-through, prefer the shoe whose opposite support is loaded.
+	# This is a preference, not a hard landing gate for emergency recovery.
+	var support_phases:Dictionary={}
+	if not follow.is_empty():support_phases=actor.avatar.get_control_support_snapshot().get("support_phase",{})
 	for shoe_side in [-1,1]:
 		var surface:String="INSIDE"
 		if aim.dot(right)*shoe_side>.25:surface="OUTSIDE"
@@ -563,7 +572,10 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 		# Do not sweep a far shoe across the stance when the near one can act.
 		if lateral*shoe_side<-.06:cost+=.22
 		if shoe_side==committed_side:cost+=.045
+		var support:Dictionary=support_phases.get(actor.avatar.side_suffix(-shoe_side),{})
+		if support.get("state","")=="PLANTED" and bool(support.get("sole_near_ground",false)):cost-=.10
 		if best.is_empty() or cost<float(best.cost):
 			best={"ready":ready,"cadence_managed":true,"side":shoe_side,"surface":surface,"foot_direction":actor.body_facing,"contact_eta_s":eta,"reserved_center":center,"cost":cost,"window_source":"input_reachable","reason":"ready" if ready else "roll_sufficient","lookahead_s":wait+eta,"intent":"DIRECTIONAL_CONTROL"}
+	if not follow.is_empty():best["follow_step"]=follow
 	last_decision=best
 	return best
