@@ -469,7 +469,7 @@ func request_cut(aim:Vector3)->bool:
 
 func request_nudge(aim: Vector3) -> bool:
 	if idle():
-		var accepted := begin("PULL" if aim.dot(actor.body_facing)<-.35 else "TURN",aim,aim*.85,1.2,match_controller.tuning.turn_interval)
+		var accepted := begin("PULL" if DribbleRhythm.retreating(actor,aim) else "TURN",aim,aim*.85,1.2,match_controller.tuning.turn_interval)
 		if accepted: deliberate_touch = true
 		return accepted
 	if kind in ["PASS","SHOT","TACKLE"]: return false

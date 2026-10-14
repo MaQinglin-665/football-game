@@ -11,7 +11,7 @@ static func resolve(command: Dictionary, state: Dictionary, cfg: Variant, delta:
 	var owned: bool = bool(state.get("owned",false))
 	var stamina: float = float(state.get("stamina",100.0))
 	var locked: bool = bool(state.get("sprint_locked",false))
-	var backwards: bool = move.dot(facing)<-.2
+	var backwards: bool = move.dot(state.get("movement_facing",facing))<-.2
 	var close: bool = enabled and bool(command.get("close_control",false))
 	var shield: bool = enabled and owned and bool(command.get("shield",false)) and stamina>2
 	var sprint: bool = enabled and command.get("tier","walk_jog")=="run" and not locked and stamina>1 and not shield and not close and not backwards
@@ -45,6 +45,7 @@ static func resolve(command: Dictionary, state: Dictionary, cfg: Variant, delta:
 static func apply(actor: Node3D, game: Node, command: Dictionary, before: Dictionary, delta: float) -> Dictionary:
 	var owned: bool = game.ball.carrier==actor
 	var state := {"facing":actor.facing,"owned":owned,"stamina":before.stamina,"sprint_locked":before.sprint_locked,"velocity":actor.velocity,"gap":game.flat_distance(game.ball.position,actor.position),"foot_cap":actor.foot.movement_cap(),"stop_requested":actor.stop_requested,"big_chase_remaining":actor.big_chase_remaining}
+	if actor.is_human and actor.get("controller_v07_enabled")==true:state["movement_facing"]=-actor.global_basis.z
 	if actor.is_human and actor.has_method("interaction_vertical_bounds") and is_instance_valid(actor.interaction):
 		state.foot_cap = minf(float(state.foot_cap),actor.interaction.movement_cap())
 	# Player ordinary carry only; reserved reception/pass motion keeps its caps.

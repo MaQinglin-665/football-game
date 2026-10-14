@@ -124,9 +124,8 @@ func _physics_process(delta: float) -> void:
 	var owned: bool = match_controller.ball.carrier == self
 	var flat_speed:float=Vector2(velocity.x,velocity.z).length()
 	var body_target_yaw:float=rotation.y
-	if controller_v07_enabled and flat_speed>2.0 and semantic_motion.length()>.05 and semantic_motion.dot(-global_basis.z)>=-.2:
-		# High-speed hips follow momentum, independently of immediate mouse look.
-		body_target_yaw=atan2(-velocity.x,-velocity.z)
+	if controller_v07_enabled:
+		body_target_yaw=preload("res://scripts/player_body_direction.gd").target(rotation.y,semantic_motion,velocity,owned,semantic_policies.get("pressure",false))
 	var pressure:RefCounted=match_controller.input_bridge.pressure
 	if pressure.active:body_target_yaw=atan2(-pressure.direction.x,-pressure.direction.z)
 	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):
@@ -148,7 +147,7 @@ func _physics_process(delta: float) -> void:
 	var intended := semantic_motion if input_enabled else Vector3.ZERO
 	if input_enabled: intended = match_controller.constrained_human_intent(intended)
 	move_requested = intended.length()>.05
-	var backwards := intended.dot(facing)<-.2
+	var backwards := intended.dot(-global_basis.z if controller_v07_enabled else facing)<-.2
 	ball_direction = intended.normalized() if move_requested else facing
 	if match_controller.phase==match_controller.Phase.PLAY:first_touch_clock+=delta
 	first_touch_timing.observe(intended if move_requested and input_enabled else Vector3.ZERO,first_touch_clock if first_touch_clock_override<0 else first_touch_clock_override)

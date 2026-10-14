@@ -1,0 +1,32 @@
+extends "res://tests/three_turn043_contact_completion.gd"
+func start()->void:
+ evidence=ProjectSettings.globalize_path("res://../verification")
+ game=load("res://scenes/training_3v3.tscn").instantiate();game.test_mode=true;root.add_child(game);current_scene=game
+ for i in 4:await process_frame
+ for spec in [{"name":"left_right","first":[KEY_A],"next":[KEY_D]},{"name":"fast_left_right","first":[KEY_A,KEY_SHIFT],"next":[KEY_D,KEY_SHIFT]},{"name":"fast_right_left","first":[KEY_D,KEY_SHIFT],"next":[KEY_A,KEY_SHIFT]},{"name":"repeat_left_right","first":[KEY_A,KEY_SHIFT],"next":[KEY_D,KEY_SHIFT],"again":[KEY_A,KEY_SHIFT]},{"name":"mouse_and_keys","first":[KEY_W,KEY_SHIFT],"next":[KEY_W,KEY_D,KEY_SHIFT],"yaw":PI/3}]:
+  await reset_case(spec.name,"B",Vector2(0,.28),true)
+  if true:
+   var dx:float=-game.player.position.x
+   game.player.position.x+=dx;game.ball.position.x+=dx
+   game.player.avatar._plants.clear();game.player.avatar.invalidate_pose_snapshot()
+   for i in 4:await physics_frame
+  set_keys(spec.first);await ticks(180)
+  turn_marks.append({"case":case_name,"tick":case_tick})
+  if spec.has("yaw"):
+   game.player.head.mouse_axis=Vector2(-float(spec.yaw)/game.player.head.mouse_sensitivity,0);game.player.head.camera_rotation()
+  set_keys(spec.next)
+  if spec.has("again"):
+   await ticks(90);set_keys(spec.again);await ticks(90);set_keys(spec.next);await ticks(180)
+  else:await ticks(240)
+  if DisplayServer.get_name()!="headless":
+   await RenderingServer.frame_post_draw
+   root.get_texture().get_image().save_png(ProjectSettings.globalize_path("res://../verification/r012_"+spec.name+".png"))
+ set_keys([])
+ var out:=ProjectSettings.globalize_path("res://../verification/r012_turn.json")
+ for arg in OS.get_cmdline_user_args():
+  if arg.begins_with("--output="):out=arg.trim_prefix("--output=")
+ FileAccess.open(out,FileAccess.WRITE).store_string(JSON.stringify({"marks":turn_marks,"rows":rows,"contacts":contacts}))
+ print("CARRY_TURN_DONE rows=",rows.size())
+ game.shutdown_audio();game.queue_free()
+ for i in 4:await process_frame
+ quit()

@@ -6,6 +6,10 @@ static func enabled(actor:Node3D)->bool:
 	if actor.is_human: return not "--dribble-rhythm=A" in OS.get_cmdline_user_args()
 	return actor.has_method("ai_ordinary_rhythm") and actor.ai_ordinary_rhythm()
 
+static func retreating(actor:Node3D,aim:Vector3)->bool:
+	var reference:Vector3=-actor.global_basis.z if actor.is_human and actor.get("controller_v07_enabled")==true else actor.body_facing
+	return aim.dot(reference)<-.35
+
 static func pace(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Vector3:
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var rolling:Vector3=ball.velocity;rolling.y=0

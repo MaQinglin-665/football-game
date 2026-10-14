@@ -570,7 +570,11 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 		var center:Vector3=predict_ball_center(ball,wait+eta)
 		var cost:float=((socket.point as Vector3)+run*(wait+eta)).distance_to(center-aim*ball.radius)
 		# Do not sweep a far shoe across the stance when the near one can act.
-		if lateral*shoe_side<-.06:cost+=.22
+		if lateral*shoe_side<-.06:
+			# Opposed lateral cuts use the shoe on the ball side, not a far
+			# outside surface swept across both legs while the hips turn away.
+			var rolling:Vector3=Vector3(ball.velocity.x,0,ball.velocity.z)
+			cost+=.75 if actor.is_human and rolling.length()>1.5 and rolling.normalized().dot(aim)<-.5 else .22
 		if shoe_side==committed_side:cost+=.045
 		var support:Dictionary=support_phases.get(actor.avatar.side_suffix(-shoe_side),{})
 		if support.get("state","")=="PLANTED" and bool(support.get("sole_near_ground",false)):cost-=.10

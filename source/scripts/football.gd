@@ -200,7 +200,7 @@ func _update_human_dribble(owner: Node3D, offset: Vector3, gap: float) -> void:
 		return
 	var scheduler=owner.foot.ordinary_scheduler
 	var stable_aim:Vector3=scheduler.stable_direction(owner)
-	if stable_aim.dot(owner.body_facing)<-.35:scheduler.reset_turn(owner,"backward_sole_control")
+	if DribbleRhythm.retreating(owner,stable_aim):scheduler.reset_turn(owner,"backward_sole_control")
 	else:scheduler.update_turn(owner,self,stable_aim)
 	var changed_direction: bool = moving and owner.foot.direction.dot(stable_aim)<.75 and scheduler.turn_stage.is_empty()
 	var keep_prepared_shoe:bool=DribbleRhythm.can_steer(owner,stable_aim)
@@ -228,7 +228,7 @@ func _update_human_dribble(owner: Node3D, offset: Vector3, gap: float) -> void:
 		if owner.foot.begin("STOP" if owner.stop_requested>0 else "SETTLE",owner.body_facing,Vector3.ZERO,0,.10): control_mode = "SETTLE"
 		return
 	var aim: Vector3 = scheduler.turn_incoming if scheduler.turn_stage=="BRAKE" else stable_aim
-	var backward: bool = aim.dot(owner.body_facing)<-.35
+	var backward: bool = DribbleRhythm.retreating(owner,aim)
 	var lateral_axis:Vector3=owner.global_basis.x if owner.is_human else Vector3(-owner.body_facing.z,0,owner.body_facing.x)
 	# Opposed high-speed carry brakes with one ordinary contact before the
 	# released low-speed PULL takes over. No new action/permission type.
@@ -258,7 +258,7 @@ func close_touch_velocity(owner: Node3D, aim: Vector3, mode: String) -> Vector3:
 		# R010: cushion a forward roll at the actual sole contact before
 		# asking for a backward roll. Copying forward body momentum made
 		# the ball escape just as the player finished braking.
-		if owner.is_human and owner.get("controller_v07_enabled")==true and aim.dot(owner.body_facing)<-.35 and velocity.dot(owner.body_facing)>1.0:
+		if owner.is_human and owner.get("controller_v07_enabled")==true and DribbleRhythm.retreating(owner,aim) and velocity.dot(aim)<-1.0:
 			return Vector3.ZERO
 		# A sole roll follows the retreating player's actual pace. Its small
 		# contact-only speed difference brings a forward ball near the hips;
@@ -314,7 +314,7 @@ func human_dribble_motion(owner: Node3D, intended: Vector3, maximum_speed: float
 	# The existing motor still supplies acceleration, braking and collision.
 	if intended.length()<.05 or maximum_speed<=0: return Vector3.ZERO
 	var aim := intended.normalized()
-	if aim.dot(owner.body_facing)<-.35:
+	if DribbleRhythm.retreating(owner,aim):
 		# Move the body backwards while the sole pulls a ball kept in FRONT.
 		# The outgoing ball is never positioned or accelerated from this motor path.
 		var offset:Vector3=position-owner.position;offset.y=0
@@ -333,6 +333,18 @@ func human_dribble_motion(owner: Node3D, intended: Vector3, maximum_speed: float
 		if owner.foot.ordinary_scheduler.turn_stage in ["BRAKE","STEPS","EXIT","CUT90"]:
 			return owner.foot.ordinary_scheduler.turn_motion(owner).limit_length(maximum_speed)
 	if DribbleRhythm.enabled(owner):
+		# A reversal cannot stop the body ahead of its still-outgoing ball.
+		# During this real shoe's preparation only, spend the remaining reach
+		# budget braking alongside the roll. Contact/recovery ends this branch.
+		if owner.is_human and owner.get("controller_v07_enabled")==true and owner.foot.planned_dribble() and not owner.foot.hit and owner.foot.phase in [owner.foot.Phase.PREPARE,owner.foot.Phase.CONTACT]:
+			var rolling:Vector3=Vector3(velocity.x,0,velocity.z)
+			var run:Vector3=Vector3(owner.velocity.x,0,owner.velocity.z)
+			var offset:Vector3=position-owner.position;offset.y=0
+			if rolling.length()>1.5 and rolling.normalized().dot(aim)<.5 and run.dot(rolling.normalized())>1.0 and offset.length()<1.02 and owner.foot.direction.dot(aim)>.75:
+				var axis:Vector3=rolling.normalized()
+				var eta:float=clampf(owner.foot.windup-owner.foot.elapsed+.025,.035,.15)
+				var follow:float=clampf(rolling.length()-(.82-offset.dot(axis))/eta,0.0,minf(maximum_speed,run.length()))
+				return (axis*follow+aim.slide(axis)*minf(.8,maximum_speed)).limit_length(maximum_speed)
 		return DribbleRhythm.pace(owner,self,aim,maximum_speed)*minf(1.0,intended.length())
 	var gap := Vector2(position.x-owner.position.x,position.z-owner.position.z).length()
 	var rolling := Vector3(velocity.x,0,velocity.z)

@@ -1,0 +1,189 @@
+{
+  "date": "2026-10-15",
+  "base": "f234fa17d315fb73bf318952a7afbc4dd880e650",
+  "main": "d6106b52443a53739f78e566578c2a4a0a250420",
+  "merged": false,
+  "results": {
+    "before": {
+      "left_right": {
+        "max_3d_gap_m": 3.422614214513664,
+        "unowned_samples": 79,
+        "pull_samples": 46,
+        "failed_actions": 2,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": false
+      },
+      "fast_left_right": {
+        "max_3d_gap_m": 0.6888261418239606,
+        "unowned_samples": 0,
+        "pull_samples": 46,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "fast_right_left": {
+        "max_3d_gap_m": 0.6749148118367285,
+        "unowned_samples": 0,
+        "pull_samples": 46,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "mouse_and_keys": {
+        "max_3d_gap_m": 0.8284422988479565,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      }
+    },
+    "final_native_direction": {
+      "left_right": {
+        "max_3d_gap_m": 0.5619301415748936,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "fast_left_right": {
+        "max_3d_gap_m": 0.8376358956744456,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 1,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "fast_right_left": {
+        "max_3d_gap_m": 0.7889244432523824,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "repeat_left_right": {
+        "max_3d_gap_m": 0.8376358956744456,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 1,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "mouse_and_keys": {
+        "max_3d_gap_m": 0.8284422988479565,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      }
+    },
+    "final_view": {
+      "look_back_retreat": {
+        "max_3d_gap_m": 0.4586634608113121,
+        "unowned_samples": 0,
+        "pull_samples": 221,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "look_back_forward": {
+        "max_3d_gap_m": 0.9727150101904566,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 1,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "look_side_retreat": {
+        "max_3d_gap_m": 0.7419095665618004,
+        "unowned_samples": 0,
+        "pull_samples": 221,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      }
+    },
+    "carry_final": {
+      "medium90": {
+        "max_3d_gap_m": 0.6821109526444457,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "fast90": {
+        "max_3d_gap_m": 0.8301988093069749,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "reverse": {
+        "max_3d_gap_m": 0.7541371721791622,
+        "unowned_samples": 0,
+        "pull_samples": 221,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "fast_mouse90": {
+        "max_3d_gap_m": 0.7477499311750573,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      },
+      "medium_left90": {
+        "max_3d_gap_m": 0.5549055148827091,
+        "unowned_samples": 0,
+        "pull_samples": 0,
+        "failed_actions": 0,
+        "ordinary_duplicate_sequences": 0,
+        "end_owned": true
+      }
+    }
+  },
+  "checks": {
+    "direction-contract": {
+      "passes": 7,
+      "errors": []
+    },
+    "pass": {
+      "passes": 24,
+      "errors": []
+    },
+    "11-start": {
+      "passes": 0,
+      "errors": []
+    },
+    "final-import": {
+      "passes": 0,
+      "errors": []
+    },
+    "final-native-direction": {
+      "passes": 0,
+      "errors": []
+    },
+    "final-view": {
+      "passes": 0,
+      "errors": []
+    },
+    "carry-final": {
+      "passes": 0,
+      "errors": []
+    }
+  },
+  "scope": "5 native isolated direction cases; 3 view/retreat cases native checked then final headless recheck; 5 old carry cases headless; no natural match/manual acceptance. AI disabled and moved away in fixtures.",
+  "unresolved": [
+    "Some fast turns have missed contact then recover; no claim all swings natural",
+    "11v11 startup only",
+    "70ms spikes and exit texture/resource warnings unresolved",
+    "Repeated toggles, contested turns and full match feel pending user playtest"
+  ]
+}
