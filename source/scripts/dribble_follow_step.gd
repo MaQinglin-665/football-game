@@ -18,7 +18,13 @@ func prepare_inside(actor:Node3D,ball:Node3D,aim:Vector3,side:int)->Dictionary:
 	if offset.length()>.65 or ball.position.y>ball.radius+.18:
 		inside_step.clear();return {}
 	if inside_step.is_empty():
-		inside_step={"root":actor.position,"axis":aim,"required":.06,"side":side}
+		# The completed rolling follow is already a real weight-transfer step.
+		# Reuse its displacement for a same-direction next touch, rather than
+		# asking for another six centimetres beside every ball contact.
+		var origin:Vector3=actor.position
+		if bool(pending.get("ready",false)) and (pending.axis as Vector3).dot(aim)>.85:
+			origin=pending.root
+		inside_step={"root":origin,"axis":aim,"required":.06,"side":side}
 	if (inside_step.axis as Vector3).dot(aim)<.75 or int(inside_step.side)!=side:
 		inside_step.clear();return {}
 	var advance:float=(actor.position-(inside_step.root as Vector3)).dot(inside_step.axis)
@@ -102,7 +108,7 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 		edge_recovery=false;inside_step.clear();return {}
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var roll:Vector3=ball.velocity;roll.y=0
-	if not inside_step.is_empty():
+	if not inside_step.is_empty() and not bool(inside_step.get("ready",false)):
 		if offset.length()>.65 or ball.position.y>ball.radius+.18:
 			inside_step.clear()
 		else:

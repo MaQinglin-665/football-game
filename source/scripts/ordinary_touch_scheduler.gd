@@ -562,7 +562,12 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	if not actor.is_human:requested=minf(requested,maxf(0.0,float(actor.ai_touch_pace)))
 	var roll:=Vector3(ball.velocity.x,0,ball.velocity.z)
 	var advancing:bool=aim.dot(actor.body_facing)>(-.2 if actor.is_human else .65) and roll.length()>.35 and roll.normalized().dot(aim)>.85
-	if not follow.is_empty() and bool(follow.ready) and advancing and requested>(.5 if actor.is_human else 2.1) and roll.dot(aim)<requested-(.30 if actor.is_human else .55) and offset.length()<.75:
+	# Slow lateral carry must budget the turf loss until the shoe can arrive,
+	# not wait for an already-slow ball before beginning that preparation.
+	var arrival_pace:float=roll.dot(aim)
+	if actor.is_human and actor.close_control and not actor.shielding and absf(aim.dot(actor.body_facing))<.5:
+		arrival_pace-=FootballBallForces.rolling_deceleration_mps2(roll.length(),ball.profile)*.10
+	if not follow.is_empty() and bool(follow.ready) and advancing and requested>(.5 if actor.is_human else 2.1) and arrival_pace<requested-(.30 if actor.is_human else .55) and offset.length()<.75:
 		ready=true
 	var collecting:bool=actor.is_human and actor.gather_after_sprint and not actor.sprinting
 	if collecting:ready=offset.length()<.55
