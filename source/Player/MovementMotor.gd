@@ -9,6 +9,10 @@ extends Node
 @export var rotation_speed:=7.0
 @export var fast_rotation_speed:=2.8
 @export var lateral_acceleration:=5.5
+@export var carry_launch_acceleration:=10.0
+@export var carry_fast_lateral_acceleration:=7.0
+@export var carry_fast_turn_braking:=12.0
+@export var free_reverse_braking:=10.5
 var current_speed:=0.0
 var target_speed:=0.0
 var movement_intent:=Vector3.ZERO
@@ -25,10 +29,19 @@ func predict_velocity(flat:Vector3,desired:Vector3,sprint:float,dt:float,guard:b
  desired=Vector3(desired.x,0,desired.z).limit_length(3.0 if guard else sprint_speed)
  var speed:=flat.length()
  if controlled:
-  # Ball touches already use this same finite acceleration forecast. Do not
-  # impose the free-run stop-before-turn stage on an active dribble.
+  # Keep the committed ball-follow target. Only the body's response changes;
+  # the same integration is used by touch prediction. No turn waiting timer.
   var changing:=flat.length()>.3 and desired.length()>.05 and flat.normalized().dot(desired.normalized())<.90
-  var rate:=22.0 if changing else 18.0 if desired.length()<speed else lerpf(12.0,6.0,sprint)
+  var fast:=smoothstep(2.2,4.5,speed)
+  if changing and fast>0:
+   var axis:=flat/speed
+   var along:=desired.dot(axis)
+   var side:=desired-axis*along
+   var braking:=lerpf(22.0,carry_fast_turn_braking,fast)
+   var lateral:=lerpf(22.0,carry_fast_lateral_acceleration,fast)
+   return (axis*move_toward(speed,along,braking*dt)+side.limit_length(lateral*dt)).limit_length(maxf(speed,desired.length()))
+  var launch:=lerpf(carry_launch_acceleration,6.0,smoothstep(.5,2.2,speed))
+  var rate:=22.0 if changing else 18.0 if desired.length()<speed else lerpf(12.0,launch,sprint)
   return flat.move_toward(desired,rate*dt)
  var brake:=18.0 if controlled else deceleration
  if guard:brake=18.0
@@ -39,11 +52,11 @@ func predict_velocity(flat:Vector3,desired:Vector3,sprint:float,dt:float,guard:b
  var axis:=flat/speed
  var alignment:=axis.dot(desired.normalized())
  # A reversal first spends momentum; it never waits for a fixed animation timer.
- if alignment<-.35:return flat.move_toward(Vector3.ZERO,brake*dt)
+ if alignment<-.35:return flat.move_toward(Vector3.ZERO,(brake if guard else free_reverse_braking)*dt)
  var along:=desired.dot(axis)
  var side:=desired-axis*along
  var forward_rate:=brake if along<speed else accel
- var lateral_rate:=lerpf(12.0,lateral_acceleration,smoothstep(1.3,8.5,speed))
+ var lateral_rate:=lerpf(12.0,lateral_acceleration,smoothstep(1.3,sprint_speed,speed))
  if guard:lateral_rate=14.0
  var next:=axis*move_toward(speed,along,forward_rate*dt)+side.limit_length(lateral_rate*dt)
  return next.limit_length(maxf(speed,desired.length()))
