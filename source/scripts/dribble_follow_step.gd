@@ -88,7 +88,10 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	if edge_recovery:
 		if offset.length()>1.15 or ball.position.y>ball.radius+.18:
 			clear();return {}
-		var correction:Vector3=offset.normalized()*maxf(0.0,offset.length()-.40)*4.0
+		# Reposition around a view-facing stance pocket, rather than rotating
+		# the entire body toward a lateral ball. Only the motor moves the root.
+		var pocket:Vector3=actor.body_facing*.32+right*clampf(offset.dot(right),-.22,.22)
+		var correction:Vector3=(offset-pocket)*4.0
 		return {"motion":(roll+correction).limit_length(minf(maximum,1.8))}
 	if pending.is_empty() and not gathering:return {}
 	if offset.length()>1.15 or roll.length()<.35 or ball.position.y>ball.radius+.18:
@@ -96,7 +99,8 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	var axis:Vector3=roll.normalized()
 	# The ball's current path owns the approach; input prepares the next touch.
 	# Input/view select the NEXT touch. Neither steers this committed approach.
-	var follow:Vector3=roll+(offset-axis*.38)*4.0
+	var pocket:Vector3=actor.body_facing*.20 if gathering else axis*.38
+	var follow:Vector3=roll+(offset-pocket)*4.0
 	var along:float=maxf(0.0,follow.dot(axis))
-	var lateral:Vector3=(offset.slide(axis)*3.0).limit_length(.85)
+	var lateral:Vector3=((offset-pocket).slide(axis)*3.0).limit_length(.85)
 	return {"motion":(axis*along+lateral).limit_length(maximum)}

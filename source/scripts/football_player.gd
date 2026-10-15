@@ -127,17 +127,9 @@ func _physics_process(delta: float) -> void:
 	var body_target_yaw:float=rotation.y
 	if controller_v07_enabled:
 		body_target_yaw=preload("res://scripts/player_body_direction.gd").target(rotation.y,semantic_motion,velocity,owned,semantic_policies.get("pressure",false))
-		if owned and (not foot.ordinary_scheduler.follow_step.pending.is_empty() or foot.ordinary_scheduler.follow_step.edge_recovery):
-			var approach:Vector3=match_controller.ball.position-position;approach.y=0
-			if approach.length()>.24:body_target_yaw=atan2(-approach.x,-approach.z)
-		if owned and gather_after_sprint and semantic_motion.length()>.05:
-			var to_ball:Vector3=match_controller.ball.position-position;to_ball.y=0
-			if to_ball.length()>.30:
-				var approach_yaw:float=atan2(-to_ball.x,-to_ball.z)
-				body_target_yaw=approach_yaw+clampf(angle_difference(approach_yaw,body_target_yaw),-.40,.40)
 	var pressure:RefCounted=match_controller.input_bridge.pressure
-	if pressure.active:body_target_yaw=atan2(-pressure.direction.x,-pressure.direction.z)
-	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):
+	if pressure.active and not owned:body_target_yaw=atan2(-pressure.direction.x,-pressure.direction.z)
+	if not owned and foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):
 		body_target_yaw=atan2(-foot.direction.x,-foot.direction.z)
 	var view_delta:float=angle_difference(hip_yaw,body_target_yaw)
 	var follow:float=smoothstep(.12,.60,absf(view_delta))

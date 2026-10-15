@@ -141,7 +141,8 @@ static func _auto_shield(actor:Node3D,game:Node,owned:bool,delta:float)->void:
 	var away:Vector3=-threat.normalized()
 	var desired:Vector3=(ball_side.normalized()*.65+away*.35).normalized()
 	var previous:Vector3=actor.get_meta("shield_body_facing",actor.body_facing)
-	actor.body_facing=previous.slerp(desired,minf(1,delta*5.0)).normalized()
+	if not actor.is_human or actor.get("controller_v07_enabled")!=true:
+		actor.body_facing=previous.slerp(desired,minf(1,delta*5.0)).normalized()
 	actor.set_meta("shield_body_facing",actor.body_facing)
 	actor.shield_side=signf(Vector3(-actor.body_facing.z,0,actor.body_facing.x).dot(threat))
 	actor.locomotion="shield"

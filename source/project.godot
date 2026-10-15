@@ -12,7 +12,7 @@ config_version=5
 
 config/version="integration-r008-assets"
 
-config/name="Football R020 View Driven Facing"
+config/name="Football R021 View Facing While Carrying"
 run/main_scene="res://scenes/match.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
