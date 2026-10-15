@@ -561,8 +561,8 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	if actor.close_control or actor.shielding:requested=ball.tuning.close_speed
 	if not actor.is_human:requested=minf(requested,maxf(0.0,float(actor.ai_touch_pace)))
 	var roll:=Vector3(ball.velocity.x,0,ball.velocity.z)
-	var advancing:bool=aim.dot(actor.body_facing)>.65 and roll.length()>.35 and roll.normalized().dot(aim)>.85
-	if not follow.is_empty() and bool(follow.ready) and advancing and requested>2.1 and roll.dot(aim)<requested-.55 and offset.length()<.75:
+	var advancing:bool=aim.dot(actor.body_facing)>(-.2 if actor.is_human else .65) and roll.length()>.35 and roll.normalized().dot(aim)>.85
+	if not follow.is_empty() and bool(follow.ready) and advancing and requested>(.5 if actor.is_human else 2.1) and roll.dot(aim)<requested-(.30 if actor.is_human else .55) and offset.length()<.75:
 		ready=true
 	var collecting:bool=actor.is_human and actor.gather_after_sprint and not actor.sprinting
 	if collecting:ready=offset.length()<.55
@@ -570,6 +570,7 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	var right:Vector3=Vector3(-actor.body_facing.z,0,actor.body_facing.x)
 	var lateral:float=offset.dot(right)
 	var best:Dictionary={}
+	var dominant:int=-1 if int(actor.get_meta("dominant_foot_side",1))<0 else 1
 	# During follow-through, prefer the shoe whose opposite support is loaded.
 	# This is a preference, not a hard landing gate for emergency recovery.
 	var support_phases:Dictionary={}
@@ -588,6 +589,7 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 		var center:Vector3=predict_ball_center(ball,wait+eta)
 		var point:Vector3=center+Vector3.UP*ball.radius if collecting else center-aim*ball.radius
 		var cost:float=((socket.point as Vector3)+playable_root_delta(actor,run,wait+eta)).distance_to(point)
+		var shoe_travel:float=cost
 		# Do not sweep a far shoe across the stance when the near one can act.
 		if lateral*shoe_side<-.06:
 			# Opposed lateral cuts use the shoe on the ball side, not a far
@@ -597,8 +599,15 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 		if shoe_side==committed_side:cost+=.045
 		var support:Dictionary=support_phases.get(actor.avatar.side_suffix(-shoe_side),{})
 		if support.get("state","")=="PLANTED" and bool(support.get("sole_near_ground",false)):cost-=.10
+		# A preference inside the reachable stance pocket, never a forced cross-
+		# leg reach. Far-side balls and fast opposed cuts keep their near shoe.
+		var preferred:bool=actor.is_human and not collecting and shoe_side==dominant and lateral*dominant>=-.20 and absf(lateral)<.32 and offset.dot(actor.body_facing)>.08 and offset.dot(actor.body_facing)<.60 and shoe_travel<.60 and run.length()<2.6
+		if preferred:cost-=.30 if absf(aim.dot(right))>.5 else .08
 		if best.is_empty() or cost<float(best.cost):
 			best={"ready":ready,"cadence_managed":true,"side":shoe_side,"surface":surface,"foot_direction":actor.body_facing,"contact_eta_s":eta,"reserved_center":center,"cost":cost,"window_source":"input_reachable","reason":"ready" if ready else "roll_sufficient","lookahead_s":wait+eta,"intent":"DIRECTIONAL_CONTROL"}
+			best["preferred_foot_applied"]=preferred
+			best["dominant_side"]=dominant
+			best["requested_pace"]=requested
 	if not follow.is_empty():best["follow_step"]=follow
 	if actor.is_human and actor.gather_after_sprint and not actor.sprinting:
 		best["surface"]="SOLE"

@@ -100,6 +100,10 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	# The ball's current path owns the approach; input prepares the next touch.
 	# Input/view select the NEXT touch. Neither steers this committed approach.
 	var pocket:Vector3=actor.body_facing*.20 if gathering else axis*.38
+	if actor.is_human and not gathering and absf(axis.dot(actor.body_facing))<.5:
+		# Sideways control keeps the ball ahead of the stance, with a short
+		# lateral lead. The actual roll, not next-input aim, owns this step.
+		pocket=actor.body_facing*.40+axis*.12
 	var follow:Vector3=roll+(offset-pocket)*4.0
 	var along:float=maxf(0.0,follow.dot(axis))
 	var lateral:Vector3=((offset-pocket).slide(axis)*3.0).limit_length(.85)

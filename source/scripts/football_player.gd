@@ -11,6 +11,7 @@ var jersey := 10
 var lane := .55
 var is_goalkeeper := false
 var is_human := true
+@export_enum("Left:-1", "Right:1") var preferred_foot:int=1
 var shielding := false
 var close_control := false
 var shield_side := 1.0
@@ -84,6 +85,7 @@ var first_touch_clock:=0.0
 @onready var camera: Camera3D = $Head/Camera
 
 func _ready() -> void:
+	if not has_meta("dominant_foot_side"):set_meta("dominant_foot_side",preferred_foot)
 	for child in get_children():
 		if child is CollisionShape3D:
 			remove_child(child)
