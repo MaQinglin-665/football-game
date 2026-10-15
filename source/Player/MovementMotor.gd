@@ -39,7 +39,13 @@ func predict_velocity(flat:Vector3,desired:Vector3,sprint:float,dt:float,guard:b
    var side:=desired-axis*along
    var braking:=lerpf(22.0,carry_fast_turn_braking,fast)
    var lateral:=lerpf(22.0,carry_fast_lateral_acceleration,fast)
-   return (axis*move_toward(speed,along,braking*dt)+side.limit_length(lateral*dt)).limit_length(maxf(speed,desired.length()))
+   var axial_delta:=move_toward(speed,along,braking*dt)-speed
+   var side_delta:=side.limit_length(lateral*dt)
+   # Braking and steering share grounded traction rather than each receiving
+   # a full independent acceleration budget in the same physics step.
+   var demand:=sqrt(pow(axial_delta/maxf(braking*dt,.000001),2)+pow(side_delta.length()/maxf(lateral*dt,.000001),2))
+   var scale:=lerpf(1.0,1.0/maxf(1.0,demand),fast)
+   return (flat+(axis*axial_delta+side_delta)*scale).limit_length(maxf(speed,desired.length()))
   var launch:=lerpf(carry_launch_acceleration,6.0,smoothstep(.5,2.2,speed))
   var rate:=22.0 if changing else 18.0 if desired.length()<speed else lerpf(12.0,launch,sprint)
   return flat.move_toward(desired,rate*dt)

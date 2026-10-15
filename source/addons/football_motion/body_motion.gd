@@ -29,6 +29,7 @@ var _control_touch:Dictionary={}
 var _control_offset:=Vector3.ZERO
 var _control_info:Dictionary={}
 var _control_restore:Dictionary={}
+var _running_support:String=""
 var _held_control_support:=""
 # These scalar states belong to shared, grounded, FREE locomotion only.
 # The released action branch, target IK and leg safety code remain in use.
@@ -394,12 +395,21 @@ func should_hold_control_support(avatar,side:String,clip:String)->bool:
 func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 	var clip:String=String(avatar._base_clip)
 	_control_info={"revision":"ordinary_support_body_06","eligible":false,"held_support":_held_control_support,"bone_writes":false}
-	if not _ordinary_low_control(avatar,clip):
+	var running_transfer:bool=bool(avatar._carry039.direction_eligible) and (speed>1.1 or not _running_support.is_empty()) and bool(avatar._grounded) and state.get("interaction",{}).is_empty() and String(avatar._action.get("kind","")) in ["","CARRY","CLOSE","TURN","SHIELD","SPRINT"] and not avatar._action.has("cut_style")
+	if not _ordinary_low_control(avatar,clip) and not running_transfer:
 		_control_offset=Vector3.ZERO
+		_running_support=""
 		return
 	var sk:Skeleton3D=avatar.skeleton
 	var active:String=avatar.side_suffix(int(avatar._action.get("side",1)))
 	var support:String="R" if active=="L" else "L"
+	if running_transfer and avatar._action.is_empty():
+		# Keep the current real plant until release; do not swap support because
+		# a tactical target or rendered frame changed.
+		if _planted_ankle(avatar,_running_support).is_empty():
+			_running_support="L" if not _planted_ankle(avatar,"L").is_empty() else "R"
+		support=_running_support
+	elif running_transfer:_running_support=support
 	var anchor:Dictionary=_planted_ankle(avatar,support)
 	var ready:bool=not anchor.is_empty()
 	if ready:
@@ -408,6 +418,13 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 		var sole_y:float=sk.to_global(support_pose.origin).y+avatar._minimum_offset(support,support_rotation)
 		ready=sole_y-float(avatar._ground_y)<=.012
 	var load_weight:float=_control_load(avatar) if ready else 0.0
+	var compression:float=0.0
+	if running_transfer:
+		var plant:Dictionary=avatar._plants.get(support,{})
+		var support_seconds:float=float(avatar._carry039.fraction)/maxf(float(avatar._carry039.rate),.8)
+		var phase:float=clampf(float(plant.get("age",0))/maxf(support_seconds,.05),0,1)
+		compression=sin(PI*phase) if ready else 0.0
+		load_weight=(.4+.6*compression)*smoothstep(.5,2.0,speed) if ready else 0.0
 	var wanted:=Vector3.ZERO
 	if ready:
 		var pelvis:Vector3=sk.get_bone_global_pose(int(ids.hips)).origin
@@ -418,7 +435,14 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 		var allowed:float=sqrt(maxf(0,maximum*maximum-horizontal*horizontal))
 		wanted.y=clampf((anchor.point as Vector3).y+allowed-hip.y,-.020,0)
 		wanted*=load_weight
+		if running_transfer:
+			# Compression/rebound belongs to the planted step, not an independent
+			# bob clock. Existing post-IK reach checks below may reduce this offset.
+			wanted.y=maxf(-.040,wanted.y-.026*compression*smoothstep(.8,3.0,speed)-.010*braking)
 	if delta>0:_control_offset=_control_offset.lerp(wanted,1.0-exp(-10.0*delta))
+	if running_transfer:_control_offset*=smoothstep(.08,.8,speed)
+	_control_info["running_transfer"]=running_transfer
+	_control_info["stance_compression"]=compression
 	_control_info.merge({"eligible":true,"support_foot":support,"support_ready":ready,"motion_load_weight":load_weight,"offset_m":_control_offset,"contact_confirmed":bool(avatar._action.get("contact_confirmed",false)),"contact_tick":int(avatar._action.get("contact_tick",-1)),"plan_state":_control_rolling.get("plan_state","UNSPECIFIED"),"contact_age_s":_control_rolling.get("contact_age_s",-1.0),"ball_velocity":_control_rolling.get("velocity",Vector3.ZERO),"committed_exit_velocity":_control_touch.get("exit_velocity",Vector3.ZERO)},true)
 	if _control_offset.length_squared()<.000000001:return
 	# Preserve both completed real ankles/rotations. No foot target or gate edit.
@@ -436,6 +460,7 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 	var roll:float=atan2(_control_offset.x,maxf(torso_length,.10))
 	var forward:Vector3=sk.global_basis.inverse()*(state.get("forward",Vector3.FORWARD) as Vector3)
 	var accepted:=false
+	var preserved_error:float=0.0
 	var strength:=1.0
 	for attempt in 4:
 		sk.set_bone_pose_position(hip_id,initial_hip+local_offset*strength)
@@ -451,6 +476,7 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 			if d>a+b-.0001 or d<absf(a-b)+.025:reachable=false
 		if reachable:
 			accepted=true
+			preserved_error=0.0
 			for side in ["L","R"]:
 				var goal:Transform3D=goals[side]
 				if not avatar._solve_leg(side,goal.origin,goal.basis.get_rotation_quaternion(),forward):accepted=false
@@ -459,6 +485,7 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 			for side in ["L","R"]:
 				var actual:Transform3D=sk.get_bone_global_pose(avatar.cached_bone_id("foot."+side))
 				var goal:Transform3D=goals[side]
+				preserved_error=maxf(preserved_error,actual.origin.distance_to(goal.origin))
 				var q:Quaternion=actual.basis.get_rotation_quaternion();var old_q:Quaternion=goal.basis.get_rotation_quaternion()
 				if q.dot(old_q)<0:old_q=Quaternion(-old_q.x,-old_q.y,-old_q.z,-old_q.w)
 				if actual.origin.distance_to(goal.origin)>.00001 or maxf(maxf(absf(q.x-old_q.x),absf(q.y-old_q.y)),maxf(absf(q.z-old_q.z),absf(q.w-old_q.w)))>.00001:accepted=false
@@ -468,6 +495,7 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 		for id in rotations:sk.set_bone_pose_rotation(int(id),rotations[id])
 		strength*=.5
 	_control_info["bone_writes"]=accepted
+	_control_info["preserved_ankle_error_m"]=preserved_error if accepted else 0.0
 	_control_info["accepted_strength"]=strength if accepted else 0.0
 	_control_info["applied_offset_m"]=_control_offset*strength if accepted else Vector3.ZERO
 	if accepted:_control_restore={"hip_id":hip_id,"hip_position":initial_hip,"rotations":rotations}
