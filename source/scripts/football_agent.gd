@@ -164,7 +164,7 @@ func _physics_process(delta: float) -> void:
 		var offset := Vector3(match_controller.ball.position.x-position.x,0,match_controller.ball.position.z-position.z)
 		var requested_face := face_target.normalized() if face_target.length()>.1 else facing
 		var receiving:bool = foot.kind=="RECEIVE" and not foot.idle() and not foot.hit
-		if not cut_active and (third_setup or receiving or (not ai_ordinary_rhythm() and (offset.dot(requested_face)<.25 or not match_controller.ball.reception_ready(self)))):
+		if not cut_active and not reachable_pass and (third_setup or receiving or (not ai_ordinary_rhythm() and (offset.dot(requested_face)<.25 or not match_controller.ball.reception_ready(self)))):
 			controlled_setup = true
 			# Finish the finite receive action while facing the actual ball. Then
 			# walk around it to the requested heading; never run through/past it.
@@ -229,7 +229,8 @@ func _physics_process(delta: float) -> void:
 			# the player's motion. Keep real reception/reach/foot permission gates;
 			# world speed alone must not leave a ready pending kick waiting forever.
 			var relative_motion: Vector3 = match_controller.ball.velocity-velocity
-			var controlled_motion: bool = owned and match_controller.ball.reception_ready(self) and relative_motion.length()<2.8
+			# A legal side/heel pass does not require a second front-facing reception.
+			var controlled_motion: bool = owned and relative_motion.length()<2.8 and ((reachable_pass and match_controller.ball.can_pass(self)) or match_controller.ball.reception_ready(self))
 			var yielding_touch:bool=foot.phase==foot.Phase.RECOVER and foot.hit and foot.kind in ["CLOSE","TURN","SHIELD","CARRY","RECEIVE"]
 			if yielding_touch and controlled_motion and (reachable_pass or facing.dot(pending_kick.direction)>.84) and gap<.92:
 				foot.cancel("ai_ready_kick_handover")

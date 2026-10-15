@@ -20,7 +20,10 @@ static func target(defender:Vector3,owner:Vector3,velocity:Vector3,ball:Vector3,
 	var reachable_side:bool=Vector2(closest.x-owner.x,closest.z-owner.z).length()>.40 or ball_lane.length()<distance-.16
 	# An actual exposed boot-side ball is a tackle window, not a mandate to
 	# press straight through the carrier's protected central channel.
-	if reachable_side and exposed.length()>.32 and ball_lane.length()<1.3:
+	# Do not abandon inside cover to chase an outside touch from behind.
+	var goal_side:bool=offset.dot(goalward)>.10
+	var outside_chase:bool=exposed.dot(lane)<-.12 and not goal_side
+	if reachable_side and not outside_chase and exposed.length()>.32 and ball_lane.length()<1.3:
 		return ball+(defender-ball).normalized()*.48
 	var desired:Vector3=ahead+lane*STANDOFF
 	# Already alongside and goal-side: take a reachable screening shoulder.

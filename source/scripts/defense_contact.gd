@@ -13,16 +13,22 @@ static func plan(actor:Node3D,ball:Node3D,known:Dictionary)->Dictionary:
 	var automatic:bool=bool(known.get("automatic",false))
 	# A nearby departing pass is not a reason to reach behind or chase it.
 	if automatic and offset.dot(relative)>.02:return {}
-	var eta:float=clampf(-offset.dot(relative)/maxf(relative.length_squared(),.01),.025,.22)
-	var center:Vector3=current+roll*eta
-	var root:Vector3=actor.position+Vector3(actor.velocity.x,0,actor.velocity.z)*eta
-	if Vector2(center.x-root.x,center.z-root.z).length()>ball.tuning.foot_reach+ball.radius+.06:return {}
-	if center.y>.46 or center.y<0:return {}
-	var choice:Dictionary=clear_foot(actor,ball,center)
-	if choice.is_empty():return {}
-	if automatic and float(choice.tackle_travel_s)>eta+.025:return {}
-	choice.merge({"tackle_center":center,"contact_eta_s":eta,"automatic":automatic,"intercept":not is_instance_valid(ball.carrier) and (automatic or Vector2(roll.x,roll.z).length()>.35),"observation_age_s":age})
-	return choice
+	var closest:float=clampf(-offset.dot(relative)/maxf(relative.length_squared(),.01),.025,.22)
+	# Keep the established closest-approach window first. Only if unavailable,
+	# try bounded alternatives; actual sweep/collision still decide the outcome.
+	var windows:Array=[closest,.085,.13,.22]
+	for time in windows:
+		var eta:float=float(time)
+		var center:Vector3=current+roll*eta
+		var root:Vector3=actor.position+Vector3(actor.velocity.x,0,actor.velocity.z)*eta
+		if Vector2(center.x-root.x,center.z-root.z).length()>ball.tuning.foot_reach+ball.radius+.06:continue
+		if center.y>.46 or center.y<0:continue
+		var choice:Dictionary=clear_foot(actor,ball,center)
+		if choice.is_empty():continue
+		if automatic and float(choice.tackle_travel_s)>eta+.025:continue
+		choice.merge({"tackle_center":center,"contact_eta_s":eta,"automatic":automatic,"intercept":not is_instance_valid(ball.carrier) and (automatic or Vector2(roll.x,roll.z).length()>.35),"observation_age_s":age})
+		return choice
+	return {}
 
 static func sample(action:RefCounted,ball:Node3D)->Dictionary:
 	if not action.physical_contact_sample.is_empty():return action.physical_contact_sample

@@ -565,10 +565,10 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 		var eta:float=.045
 		for sample in range(3):
 			var center:Vector3=predict_ball_center(ball,wait+eta)
-			var travel:float=((socket.point as Vector3)+run*(wait+eta)).distance_to(center-aim*ball.radius)
+			var travel:float=((socket.point as Vector3)+playable_root_delta(actor,run,wait+eta)).distance_to(center-aim*ball.radius)
 			eta=clampf(travel/6.5+.018,.045,.125)
 		var center:Vector3=predict_ball_center(ball,wait+eta)
-		var cost:float=((socket.point as Vector3)+run*(wait+eta)).distance_to(center-aim*ball.radius)
+		var cost:float=((socket.point as Vector3)+playable_root_delta(actor,run,wait+eta)).distance_to(center-aim*ball.radius)
 		# Do not sweep a far shoe across the stance when the near one can act.
 		if lateral*shoe_side<-.06:
 			# Opposed lateral cuts use the shoe on the ball side, not a far
@@ -583,3 +583,11 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	if not follow.is_empty():best["follow_step"]=follow
 	last_decision=best
 	return best
+
+static func playable_root_delta(actor:Node3D,run:Vector3,seconds:float)->Vector3:
+	if actor.is_human:return run*seconds
+	# AI reservation used constant velocity while its actual motor was braking
+	# or turning. Use the same integrator already used to budget its exit ball.
+	var maximum:float=actor.motor_speed_limit(actor.sprint_intent)
+	var desired:Vector3=actor.move_intent*maximum;desired.y=0
+	return DribbleRhythm.TurnControl.predict_motor(run,desired,actor.profile,actor.sprint_intent,seconds).displacement

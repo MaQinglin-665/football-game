@@ -1,0 +1,41 @@
+{
+  "candidate": "candidate/r013",
+  "source_commit": "f47ccd2630c02dc9f4f8a92c54a646a02bb35f8d",
+  "main_commit": "d6106b52443a53739f78e566578c2a4a0a250420",
+  "date": "2026-10-15",
+  "merged": false,
+  "graphical_test": false,
+  "intercept_assertions": 32,
+  "pass_assertions": 24,
+  "body_assertions": 6,
+  "human_direction_cases": 5,
+  "human_direction_lost_samples": 0,
+  "pending_heel_ticks_before": 16,
+  "pending_heel_ticks_after": 10,
+  "physics_hz": 120,
+  "natural11_contacts": {
+    "CLOSE": 21,
+    "PASS": 3,
+    "PULL": 1,
+    "RECEIVE": 10,
+    "TACKLE": 5,
+    "TURN": 1
+  },
+  "natural3_contacts": {
+    "CLOSE": 21,
+    "PASS": 5,
+    "PULL": 3,
+    "RECEIVE": 15,
+    "SETTLE": 1,
+    "SHIELD": 1,
+    "TACKLE": 3,
+    "TURN": 6
+  },
+  "limitations": [
+    "Natural contact counts do not prove success-rate improvement",
+    "Reach failures remain",
+    "No graphical or GPU verification",
+    "70ms peaks unresolved",
+    "Exit resource warnings unresolved"
+  ]
+}
