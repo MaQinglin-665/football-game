@@ -127,6 +127,9 @@ func _physics_process(delta: float) -> void:
 	var body_target_yaw:float=rotation.y
 	if controller_v07_enabled:
 		body_target_yaw=preload("res://scripts/player_body_direction.gd").target(rotation.y,semantic_motion,velocity,owned,semantic_policies.get("pressure",false))
+		if owned and not foot.ordinary_scheduler.follow_step.pending.is_empty():
+			var approach:Vector3=match_controller.ball.position-position;approach.y=0
+			if approach.length()>.24:body_target_yaw=atan2(-approach.x,-approach.z)
 		if owned and gather_after_sprint and semantic_motion.length()>.05:
 			var to_ball:Vector3=match_controller.ball.position-position;to_ball.y=0
 			if to_ball.length()>.30:

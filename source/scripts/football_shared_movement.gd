@@ -60,6 +60,15 @@ static func apply(actor: Node3D, game: Node, command: Dictionary, before: Dictio
 	var human_v07:bool=actor.is_human and actor.get("controller_v07_enabled")==true
 	var cfg:Variant=actor.controller_tuning(game.tuning) if human_v07 else game.tuning
 	var result := resolve(command,state,cfg,delta)
+	var committed_follow:Dictionary={}
+	if human_v07 and owned and bool(command.get("enabled",false)) and (result.move_requested or not scheduler.follow_step.pending.is_empty()) and not command.has("prepared_motion"):
+		var follow_budget:float=minf(float(state.foot_cap),maxf(result.speed,minf(float(cfg.sprint_ball_speed),float(scheduler.follow_step.pending.get("speed",0.0)))))
+		committed_follow=scheduler.follow_step.follow_motion(actor,game.ball,result.move,follow_budget)
+		if not committed_follow.is_empty():result.speed=follow_budget
+	if human_v07 and owned and result.move_requested and not command.has("prepared_motion"):
+		var retreat:Dictionary=scheduler.follow_step.retreat_approach(actor,game.ball,result.move)
+		if not retreat.is_empty():
+			result.speed=minf(float(state.foot_cap),maxf(result.speed,minf(float(cfg.sprint_ball_speed),(retreat.motion as Vector3).length())))
 	if human_v07 and owned and actor.gather_after_sprint and result.move_requested and actor.stop_requested<=0:
 		# Stay within reach until the sole can cushion; no ball impulse here.
 		var roll:Vector3=game.ball.velocity;roll.y=0
@@ -89,14 +98,18 @@ static func apply(actor: Node3D, game: Node, command: Dictionary, before: Dictio
 	actor.ball_direction = result.ball_direction
 	actor.speed = result.speed
 	var motion: Vector3 = result.motion
-	if command.has("prepared_motion"):
+	if not committed_follow.is_empty():
+		motion=committed_follow.motion
+	elif command.has("prepared_motion"):
 		# The released reception/kick setup is a finite, action-reserved intent.
 		# Preserve its direction and requested pace, through the same speed caps.
 		if not bool(command.get("resolved_ai_motion",false)) or actor._reserve_recovery:
 			actor.foot.ordinary_scheduler.reset_turn(actor,"prepared_motion_priority")
 		motion = (command.prepared_motion as Vector3).limit_length(result.speed)
 	elif owned and result.move_requested and actor.stop_requested<=0 and actor.foot.movement_cap()>1.4:
-		if incoming_carry and scheduler.turn_stage.is_empty():
+		if not committed_follow.is_empty():
+			motion=committed_follow.motion
+		elif incoming_carry and scheduler.turn_stage.is_empty():
 			# Debounce defers the turn, including its direction-specific speed cap.
 			motion=Vector3(actor.velocity.x,0,actor.velocity.z).limit_length(result.speed)
 		else:

@@ -199,13 +199,23 @@ func _update_human_dribble(owner: Node3D, offset: Vector3, gap: float) -> void:
 		owner.foot.ordinary_scheduler.reset_turn(owner,"queued_action_priority")
 		return
 	var scheduler=owner.foot.ordinary_scheduler
+	# Releasing W on the way to S queues a stop; it must not cancel an
+	# unfinished body step. Once geometrically followed, normal settle applies.
+	if stopping and owner.stop_requested<=0 and not scheduler.follow_step.pending.is_empty():
+		var follow:Dictionary=scheduler.follow_step.consider(owner,self,owner.get_ball_direction())
+		if not follow.is_empty() and not bool(follow.ready):
+			control_mode="FREE_ROLL"
+			return
+		scheduler.follow_step.clear()
 	var stable_aim:Vector3=scheduler.stable_direction(owner)
 	if DribbleRhythm.retreating(owner,stable_aim):scheduler.reset_turn(owner,"backward_sole_control")
-	else:scheduler.update_turn(owner,self,stable_aim)
+	elif scheduler.follow_step.pending.is_empty():scheduler.update_turn(owner,self,stable_aim)
 	var changed_direction: bool = moving and owner.foot.direction.dot(stable_aim)<.75 and scheduler.turn_stage.is_empty()
 	var keep_prepared_shoe:bool=DribbleRhythm.can_steer(owner,stable_aim)
 	if changed_direction and not keep_prepared_shoe and owner.foot.continuous_control() and not owner.foot.hit and owner.foot.phase==FootballFootAction.Phase.PREPARE:
+		var committed_follow:Dictionary=scheduler.follow_step.pending.duplicate(true)
 		owner.foot.cancel()
+		scheduler.follow_step.pending=committed_follow
 		touch_timer = 0.0
 	if stopping and owner.foot.continuous_control() and not owner.foot.hit and owner.foot.phase!=FootballFootAction.Phase.CONTACT:
 		owner.foot.cancel()
@@ -236,6 +246,11 @@ func _update_human_dribble(owner: Node3D, offset: Vector3, gap: float) -> void:
 	if backward:mode="PULL" # Retreat keeps the shoe above a ball in front of the body.
 	var period := tuning.retreat_touch_period if backward else tuning.running_contact_interval if owner.sprinting else tuning.near_contact_interval
 	var preparation: Dictionary = {}
+	if mode=="PULL":
+		var follow:Dictionary=scheduler.follow_step.consider(owner,self,aim)
+		if not follow.is_empty() and not bool(follow.ready):
+			control_mode="FREE_ROLL"
+			return
 	if mode in ["CLOSE","TURN","SHIELD"]:
 		preparation = scheduler.consider(owner,self,aim,mode,changed_direction or not scheduler.turn_stage.is_empty())
 		if bool(preparation.get("ready",false)) or preparation.get("reason","") in ["support_wait","recovery_wait","shoe_outside_next_window"]:
@@ -317,6 +332,8 @@ func human_dribble_motion(owner: Node3D, intended: Vector3, maximum_speed: float
 	if owner.is_human:
 		var follow:Dictionary=owner.foot.ordinary_scheduler.follow_step.follow_motion(owner,self,aim,maximum_speed)
 		if not follow.is_empty():return follow.motion
+		var retreat:Dictionary=owner.foot.ordinary_scheduler.follow_step.retreat_approach(owner,self,aim)
+		if not retreat.is_empty():return (retreat.motion as Vector3).limit_length(maximum_speed)
 	if DribbleRhythm.retreating(owner,aim):
 		# Move the body backwards while the sole pulls a ball kept in FRONT.
 		# The outgoing ball is never positioned or accelerated from this motor path.

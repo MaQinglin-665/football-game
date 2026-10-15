@@ -120,7 +120,7 @@ func begin(action: String, aim: Vector3, motion_bias := Vector3.ZERO, force := 3
 	var adopt_receive:bool=action=="TACKLE" and kind=="RECEIVE" and not hit
 	if (not idle() and not adopt_receive) or not match_controller.can_foot_action(actor,action): return false
 	if action not in ["CLOSE","TURN","SHIELD"]:ordinary_scheduler.reset_turn(actor,"other_action_priority")
-	if action not in ["CLOSE","TURN","SHIELD"]:ordinary_scheduler.follow_step.clear()
+	if action not in ["CLOSE","TURN","SHIELD","PULL"]:ordinary_scheduler.follow_step.clear()
 	var cfg: FootballControlTuning = match_controller.tuning
 	kind = action
 	deliberate_touch = false
@@ -862,6 +862,7 @@ func _try_contact(delta: float) -> void:
 				ball.take(actor)
 				control_claimed = true
 			ball.record_touch(actor,before,interval,kind,toe_world,not continuous_control() or not hit)
+			if kind=="PULL":ordinary_scheduler.follow_step.clear()
 			if kind=="RECEIVE":
 				window=maxf(0,elapsed-windup)
 				touch_plan["receive_exit_velocity"]=ball.velocity
