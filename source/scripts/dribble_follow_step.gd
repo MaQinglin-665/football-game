@@ -5,9 +5,11 @@ const MAX_BODY_ADVANCE := .26
 const RELEASE_CLEARANCE := .035
 var pending:Dictionary = {}
 var last:Dictionary = {}
+var edge_recovery:bool=false
 
 func clear()->void:
 	pending.clear()
+	edge_recovery=false
 
 func contacted(actor:Node3D,ball:Node3D,incoming:Vector3,side:int)->void:
 	if not actor.is_human and not actor.foot.shared_ordinary_control():return
@@ -72,11 +74,23 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	if ball.carrier!=actor or actor.stop_requested>0:
 		clear();return {}
 	var gathering:bool=actor.is_human and actor.gather_after_sprint
-	if pending.is_empty() and not gathering:return {}
-	if actor.foot.has_buffer():return {}
-	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL":return {}
+	if actor.foot.has_buffer():
+		edge_recovery=false;return {}
+	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL":
+		edge_recovery=false;return {}
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var roll:Vector3=ball.velocity;roll.y=0
+	# A slow ball at the side is not a completed directional touch. Reposition
+	# the body before asking the leg to pull across; never move the ball here.
+	var right:=Vector3(-actor.body_facing.z,0,actor.body_facing.x)
+	if actor.is_human and pending.is_empty() and offset.length()<=1.10 and offset.length()>.55 and absf(offset.dot(right))>.45 and roll.length()<.8 and aim.dot(offset)<-.08 and ball.position.y<=ball.radius+.18:
+		edge_recovery=true
+	if edge_recovery:
+		if offset.length()>1.15 or ball.position.y>ball.radius+.18:
+			clear();return {}
+		var correction:Vector3=offset.normalized()*maxf(0.0,offset.length()-.40)*4.0
+		return {"motion":(roll+correction).limit_length(minf(maximum,1.8))}
+	if pending.is_empty() and not gathering:return {}
 	if offset.length()>1.15 or roll.length()<.35 or ball.position.y>ball.radius+.18:
 		clear();return {}
 	var axis:Vector3=roll.normalized()

@@ -12,7 +12,7 @@ config_version=5
 
 config/version="integration-r008-assets"
 
-config/name="Football R018 Carry Traction Weight Transfer"
+config/name="Football R019 Side Ball Recovery"
 run/main_scene="res://scenes/match.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"

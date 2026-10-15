@@ -544,6 +544,9 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	var run:Vector3=actor.velocity;run.y=0
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var follow:Dictionary=follow_step.consider(actor,ball,aim)
+	if follow_step.edge_recovery and offset.length()>.46:
+		last_decision={"ready":false,"reason":"side_ball_body_approach"}
+		return last_decision
 	if not follow.is_empty() and not bool(follow.ready):
 		last_decision=follow
 		return follow
