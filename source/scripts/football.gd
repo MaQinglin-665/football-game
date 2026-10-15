@@ -273,7 +273,8 @@ func close_touch_velocity(owner: Node3D, aim: Vector3, mode: String) -> Vector3:
 		# R010: cushion a forward roll at the actual sole contact before
 		# asking for a backward roll. Copying forward body momentum made
 		# the ball escape just as the player finished braking.
-		if owner.is_human and owner.get("controller_v07_enabled")==true and DribbleRhythm.retreating(owner,aim) and velocity.dot(aim)<-1.0:
+		var following_ai:bool=not owner.is_human and not owner.foot.ordinary_scheduler.follow_step.pending.is_empty()
+		if (following_ai or owner.is_human and owner.get("controller_v07_enabled")==true) and DribbleRhythm.retreating(owner,aim) and velocity.dot(aim)<-1.0:
 			return Vector3.ZERO
 		# A sole roll follows the retreating player's actual pace. Its small
 		# contact-only speed difference brings a forward ball near the hips;

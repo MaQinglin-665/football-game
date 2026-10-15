@@ -876,9 +876,9 @@ func _try_contact(delta: float) -> void:
 				touch_plan["contact_radial_gap_m"] = maxf(0.0,toe_world.distance_to(ball.position)-ball.radius)
 				if not actor.is_human:
 					ordinary_scheduler.note_commit(sequence,side,ball.velocity)
+				ordinary_scheduler.follow_step.contacted(actor,ball,before,side)
 				if actor.is_human:
 					if touch_plan.get("follow_collect",false):actor.gather_after_sprint=false
-					ordinary_scheduler.follow_step.contacted(actor,ball,before,side)
 					touch_plan["recovery_start_elapsed"]=elapsed
 					release_until[side]=Engine.get_physics_frames()+int(ceil((recovery+.045)*Engine.physics_ticks_per_second))
 				ordinary_scheduler.note_commit(sequence,side,ball.velocity)

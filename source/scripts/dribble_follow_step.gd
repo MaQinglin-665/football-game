@@ -10,7 +10,7 @@ func clear()->void:
 	pending.clear()
 
 func contacted(actor:Node3D,ball:Node3D,incoming:Vector3,side:int)->void:
-	if not actor.is_human:return
+	if not actor.is_human and not actor.foot.shared_ordinary_control():return
 	var run:=Vector3(actor.velocity.x,0,actor.velocity.z)
 	var outgoing:=Vector3(ball.velocity.x,0,ball.velocity.z)
 	incoming.y=0
@@ -69,9 +69,10 @@ func retreat_approach(actor:Node3D,ball:Node3D,aim:Vector3)->Dictionary:
 	return {"motion":axis*along+lateral}
 
 func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictionary:
-	if not actor.is_human or ball.carrier!=actor or actor.stop_requested>0:
+	if ball.carrier!=actor or actor.stop_requested>0:
 		clear();return {}
-	if pending.is_empty() and not actor.gather_after_sprint:return {}
+	var gathering:bool=actor.is_human and actor.gather_after_sprint
+	if pending.is_empty() and not gathering:return {}
 	if actor.foot.has_buffer():return {}
 	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL":return {}
 	var offset:Vector3=ball.position-actor.position;offset.y=0

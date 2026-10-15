@@ -28,7 +28,11 @@ func predict_controller_velocity(flat:Vector3,desired:Vector3,sprint:float,dt:fl
 var _controller_tuning:Resource
 func controller_tuning(base:Resource)->Resource:
  if _controller_tuning==null:_controller_tuning=base.duplicate()
- # Gameplay tuning can change at runtime; only override free locomotion targets.
+ # Use the football pace scale for both animation normalization and free run.
+ # The controller prototype's 8.5m/s sprint must not replace match tuning.
+ movement_motor.jog_speed=base.normal_move_speed
+ movement_motor.sprint_speed=base.running_move_speed
+ # Gameplay tuning can change at runtime; preserve the separate carry budget.
  for key in ["normal_ball_speed","sprint_ball_speed","shield_speed","close_speed","retreat_close_speed","retreat_fast_speed","retreat_speed"]:_controller_tuning.set(key,base.get(key))
  _controller_tuning.normal_move_speed=movement_motor.jog_speed
  _controller_tuning.running_move_speed=movement_motor.sprint_speed

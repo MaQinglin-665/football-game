@@ -550,6 +550,16 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	if Engine.get_physics_frames()<actor.foot.cut_roll_until and ball.carrier==actor and offset.length()<.95:
 		return {"ready":false,"reason":"cut_free_roll"}
 	var ready:bool=changed or DribbleRhythm.needs_touch(actor,ball,aim)
+	# A completed follow can preserve the gap while both ball and body coast
+	# to walking speed. Request the next legal touch to maintain intended pace;
+	# never accelerate the ball between contacts or skip the completed step.
+	var requested:float=ball.tuning.sprint_ball_speed if actor.sprinting else ball.tuning.normal_ball_speed
+	if actor.close_control or actor.shielding:requested=ball.tuning.close_speed
+	if not actor.is_human:requested=minf(requested,maxf(0.0,float(actor.ai_touch_pace)))
+	var roll:=Vector3(ball.velocity.x,0,ball.velocity.z)
+	var advancing:bool=aim.dot(actor.body_facing)>.65 and roll.length()>.35 and roll.normalized().dot(aim)>.85
+	if not follow.is_empty() and bool(follow.ready) and advancing and requested>2.1 and roll.dot(aim)<requested-.55 and offset.length()<.75:
+		ready=true
 	var collecting:bool=actor.is_human and actor.gather_after_sprint and not actor.sprinting
 	if collecting:ready=offset.length()<.55
 	var wait:float=maxf(0.0,actor.foot.recovery_start()+actor.foot.recovery-actor.foot.elapsed) if actor.foot.planned_dribble() and actor.foot.hit else 0.0

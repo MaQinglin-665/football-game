@@ -94,19 +94,26 @@ func _physics_process(delta: float) -> void:
 	action_cooldown = maxf(0,action_cooldown-delta)
 	stop_requested = maxf(0,stop_requested-delta)
 	if is_instance_valid(down_state) and down_state.blocked():
+		foot.ordinary_scheduler.follow_step.clear()
 		down_state.clear_action_cache()
 		set_move_intent(Vector3.ZERO)
 		move_requested = false
 		pending_pose_delta += delta
 		return
 	if not active:
+		foot.ordinary_scheduler.follow_step.clear()
 		set_move_intent(Vector3.ZERO)
 		return
 	if match_controller.services.rules.state!=match_controller.Rules.State.LIVE:
+		foot.ordinary_scheduler.follow_step.clear()
 		_restart_motion(delta)
 		return
 	var toward := Vector3(target.x-position.x,0,target.z-position.z)
 	var owned: bool = match_controller.ball.carrier == self
+	# Tactical updates choose the next touch, not a new direction for the
+	# already committed follow step. Kicks and boundary safety may take over.
+	if not owned or not pending_kick.is_empty() or tactical_intent.get("reason","")=="keep_ball_inside_before_line":
+		foot.ordinary_scheduler.follow_step.clear()
 	# Each new reservation may cushion once; only an actual shoe hit confirms it.
 	if pending_kick.is_empty() or pending_age==0.0: pending_receive_confirmed = false
 	if not pending_kick.is_empty() and foot.kind=="RECEIVE" and foot.hit:
@@ -184,6 +191,12 @@ func _physics_process(delta: float) -> void:
 		var elapsed:float=float(Engine.get_physics_frames()-int(reception.get("sample_frame",Engine.get_physics_frames())))/Engine.physics_ticks_per_second
 		var remaining:float=float(reception.get("arrival_time",0))-float(reception.get("sample_time",match_controller.tactical_director.clock))-elapsed
 		desired_facing=preload("res://scripts/tactics/receive_motion.gd").travel_facing(position,target,face_target,remaining)
+	var committed_follow:Dictionary={}
+	if controlled_setup:foot.ordinary_scheduler.follow_step.clear()
+	if owned and not controlled_setup and pending_kick.is_empty() and ai_ordinary_rhythm():
+		var follow_budget:float=minf(foot.movement_cap(),minf(match_controller.tuning.sprint_ball_speed,maxf(tactical_pace,float(foot.ordinary_scheduler.follow_step.pending.get("speed",0.0)))))
+		committed_follow=foot.ordinary_scheduler.follow_step.follow_motion(self,match_controller.ball,ai_carry_aim,follow_budget)
+		if not committed_follow.is_empty() and pocket_offset.length()>.24:desired_facing=pocket_offset.normalized()
 	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):desired_facing=foot.direction
 	var current_yaw := atan2(-facing.x,-facing.z)
 	var wanted_yaw := atan2(-desired_facing.x,-desired_facing.z)
@@ -239,7 +252,11 @@ func _physics_process(delta: float) -> void:
 				if match_controller.request_actor_kick(self,pending_kick): pending_kick.clear()
 			elif not pending_receive_confirmed and foot.idle() and gap<.73 and match_controller.can_reach_ball(self) and not match_controller.ball.reception_ready(self):
 				foot.begin("RECEIVE",facing,Vector3.ZERO,0,.18)
-	if controlled_setup:
+	if not committed_follow.is_empty() and not preparing_kick:
+		toward=committed_follow.motion
+		pace=toward.length()
+		move_requested=pace>.08
+	elif controlled_setup:
 		toward = setup_motion
 		pace = setup_motion.length()
 		move_requested = pace>.08
