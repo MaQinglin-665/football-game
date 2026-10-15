@@ -60,6 +60,12 @@ static func apply(actor: Node3D, game: Node, command: Dictionary, before: Dictio
 	var human_v07:bool=actor.is_human and actor.get("controller_v07_enabled")==true
 	var cfg:Variant=actor.controller_tuning(game.tuning) if human_v07 else game.tuning
 	var result := resolve(command,state,cfg,delta)
+	if human_v07 and owned and actor.gather_after_sprint and result.move_requested and actor.stop_requested<=0:
+		# Stay within reach until the sole can cushion; no ball impulse here.
+		var roll:Vector3=game.ball.velocity;roll.y=0
+		var offset:Vector3=game.ball.position-actor.position;offset.y=0
+		if offset.length()<1.15 and offset.dot(roll)>.05:
+			result.speed=minf(float(state.foot_cap),maxf(result.speed,minf(float(cfg.sprint_ball_speed),roll.length()+clampf((offset.length()-.38)*4.0,0,1.2))))
 	if human_v07:
 		actor.movement_motor.controlled=owned
 		actor.set_meta("motor_guard",not owned and actor.semantic_policies.get("pressure",false) and not result.sprint)

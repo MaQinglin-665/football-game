@@ -27,6 +27,7 @@ var move_requested := false
 var sole_stopped := false
 var sprinting := false
 var sprint_release_carry_remaining := 0.0
+var gather_after_sprint := false
 var long_touch := false
 var match_controller: Node
 var interaction: Node
@@ -126,6 +127,11 @@ func _physics_process(delta: float) -> void:
 	var body_target_yaw:float=rotation.y
 	if controller_v07_enabled:
 		body_target_yaw=preload("res://scripts/player_body_direction.gd").target(rotation.y,semantic_motion,velocity,owned,semantic_policies.get("pressure",false))
+		if owned and gather_after_sprint and semantic_motion.length()>.05:
+			var to_ball:Vector3=match_controller.ball.position-position;to_ball.y=0
+			if to_ball.length()>.30:
+				var approach_yaw:float=atan2(-to_ball.x,-to_ball.z)
+				body_target_yaw=approach_yaw+clampf(angle_difference(approach_yaw,body_target_yaw),-.40,.40)
 	var pressure:RefCounted=match_controller.input_bridge.pressure
 	if pressure.active:body_target_yaw=atan2(-pressure.direction.x,-pressure.direction.z)
 	if foot.kind=="TACKLE" and not foot.idle() and foot.phase!=foot.Phase.RECOVER and not bool(foot.touch_plan.get("automatic",false)):
@@ -160,6 +166,8 @@ func _physics_process(delta: float) -> void:
 	sprinting = input_enabled and movement_tier=="run" and can_sprint_for_match() and not backwards
 	sprint_release_carry_remaining=maxf(0,sprint_release_carry_remaining-delta)
 	if was_sprinting and not sprinting and owned:sprint_release_carry_remaining=.40
+	if was_sprinting and movement_tier!="run" and owned:gather_after_sprint=true
+	if not owned or sprinting or not input_enabled or shielding or stop_requested>0:gather_after_sprint=false
 	body_facing = facing
 	if shielding and absf(intended.dot(global_basis.x))>.1: shield_side = signf(intended.dot(global_basis.x))
 	if not uses_shared_movement() or is_instance_valid(interaction) and not interaction.accepts_mobility_input():_apply_base_movement(intended,owned,backwards,delta)

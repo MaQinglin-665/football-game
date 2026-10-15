@@ -314,6 +314,9 @@ func human_dribble_motion(owner: Node3D, intended: Vector3, maximum_speed: float
 	# The existing motor still supplies acceleration, braking and collision.
 	if intended.length()<.05 or maximum_speed<=0: return Vector3.ZERO
 	var aim := intended.normalized()
+	if owner.is_human:
+		var follow:Dictionary=owner.foot.ordinary_scheduler.follow_step.follow_motion(owner,self,aim,maximum_speed)
+		if not follow.is_empty():return follow.motion
 	if DribbleRhythm.retreating(owner,aim):
 		# Move the body backwards while the sole pulls a ball kept in FRONT.
 		# The outgoing ball is never positioned or accelerated from this motor path.

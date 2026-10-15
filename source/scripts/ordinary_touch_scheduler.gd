@@ -550,6 +550,8 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	if Engine.get_physics_frames()<actor.foot.cut_roll_until and ball.carrier==actor and offset.length()<.95:
 		return {"ready":false,"reason":"cut_free_roll"}
 	var ready:bool=changed or DribbleRhythm.needs_touch(actor,ball,aim)
+	var collecting:bool=actor.is_human and actor.gather_after_sprint and not actor.sprinting
+	if collecting:ready=offset.length()<.55
 	var wait:float=maxf(0.0,actor.foot.recovery_start()+actor.foot.recovery-actor.foot.elapsed) if actor.foot.planned_dribble() and actor.foot.hit else 0.0
 	var right:Vector3=Vector3(-actor.body_facing.z,0,actor.body_facing.x)
 	var lateral:float=offset.dot(right)
@@ -561,14 +563,17 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	for shoe_side in [-1,1]:
 		var surface:String="INSIDE"
 		if aim.dot(right)*shoe_side>.25:surface="OUTSIDE"
+		if collecting:surface="SOLE"
 		var socket:Dictionary=actor.avatar.get_foot_contact(shoe_side,surface)
 		var eta:float=.045
 		for sample in range(3):
 			var center:Vector3=predict_ball_center(ball,wait+eta)
-			var travel:float=((socket.point as Vector3)+playable_root_delta(actor,run,wait+eta)).distance_to(center-aim*ball.radius)
+			var point:Vector3=center+Vector3.UP*ball.radius if collecting else center-aim*ball.radius
+			var travel:float=((socket.point as Vector3)+playable_root_delta(actor,run,wait+eta)).distance_to(point)
 			eta=clampf(travel/6.5+.018,.045,.125)
 		var center:Vector3=predict_ball_center(ball,wait+eta)
-		var cost:float=((socket.point as Vector3)+playable_root_delta(actor,run,wait+eta)).distance_to(center-aim*ball.radius)
+		var point:Vector3=center+Vector3.UP*ball.radius if collecting else center-aim*ball.radius
+		var cost:float=((socket.point as Vector3)+playable_root_delta(actor,run,wait+eta)).distance_to(point)
 		# Do not sweep a far shoe across the stance when the near one can act.
 		if lateral*shoe_side<-.06:
 			# Opposed lateral cuts use the shoe on the ball side, not a far
@@ -581,6 +586,11 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 		if best.is_empty() or cost<float(best.cost):
 			best={"ready":ready,"cadence_managed":true,"side":shoe_side,"surface":surface,"foot_direction":actor.body_facing,"contact_eta_s":eta,"reserved_center":center,"cost":cost,"window_source":"input_reachable","reason":"ready" if ready else "roll_sufficient","lookahead_s":wait+eta,"intent":"DIRECTIONAL_CONTROL"}
 	if not follow.is_empty():best["follow_step"]=follow
+	if actor.is_human and actor.gather_after_sprint and not actor.sprinting:
+		best["surface"]="SOLE"
+		best["follow_collect"]=true
+	elif actor.is_human and actor.sprinting and changed:
+		best["follow_cut"]=true
 	last_decision=best
 	return best
 

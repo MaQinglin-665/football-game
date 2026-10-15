@@ -49,6 +49,10 @@ static func target_velocity(actor:Node3D,ball:Node3D,aim:Vector3)->Vector3:
 	var exit_speed:float=clampf((travel+lead-offset.dot(aim))/horizon+.5*coast_loss*horizon,.65,7.1 if actor.sprinting else 3.0 if close else 4.5)
 	var exit:Vector3=aim*exit_speed
 	exit=TurnControl.result(actor,ball,aim,exit,horizon,lead)
+	if actor.is_human and actor.foot.touch_plan.get("follow_collect",false):
+		# A single sole cushion follows the braking body's reachable next pocket.
+		# Never alter velocity between contacts or pull toward a world anchor.
+		exit=run.limit_length(2.1)-offset.normalized()*clampf(offset.length()-.30,0,.35)
 	if not actor.is_human:
 		# AI must budget the next touch against its actual motor, including
 		# inertia during a turn, rather than launching along a requested heading.

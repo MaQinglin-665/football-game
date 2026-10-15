@@ -1,0 +1,46 @@
+{
+  "candidate": "candidate/r014",
+  "date": "2026-10-15",
+  "source": "7a7b2d1ad9e417af766c4be6ea96f5784d95eb97",
+  "main": "d6106b52443a53739f78e566578c2a4a0a250420",
+  "graphical": false,
+  "merged": false,
+  "checks": [
+    {
+      "name": "import-final",
+      "passed_lines": 0,
+      "failure_lines": 0,
+      "warnings": []
+    },
+    {
+      "name": "follow-final",
+      "passed_lines": 8,
+      "failure_lines": 0,
+      "warnings": []
+    },
+    {
+      "name": "direction-final",
+      "passed_lines": 0,
+      "failure_lines": 0,
+      "warnings": []
+    },
+    {
+      "name": "pass-final",
+      "passed_lines": 24,
+      "failure_lines": 0,
+      "warnings": []
+    },
+    {
+      "name": "start11",
+      "passed_lines": 0,
+      "failure_lines": 0,
+      "warnings": []
+    }
+  ],
+  "scope": "Isolated short human input tests; no full match or GPU performance acceptance",
+  "known_unresolved": [
+    "AI and high-ball losses",
+    "70ms frame spikes",
+    "Exit resource warnings"
+  ]
+}

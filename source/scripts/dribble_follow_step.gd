@@ -14,8 +14,7 @@ func contacted(actor:Node3D,ball:Node3D,incoming:Vector3,side:int)->void:
 	var run:=Vector3(actor.velocity.x,0,actor.velocity.z)
 	var outgoing:=Vector3(ball.velocity.x,0,ball.velocity.z)
 	incoming.y=0
-	var changed:bool=incoming.length()>1.5 and outgoing.length()>.5 and incoming.normalized().dot(outgoing.normalized())<.82
-	if not changed or run.length()<1.0:return
+	if outgoing.length()<.5 or run.length()<1.0:return
 	pending={"root":actor.position,"ball":ball.position,"axis":outgoing.normalized(),"side":side,"advance":clampf(run.length()*.06,MIN_BODY_ADVANCE,MAX_BODY_ADVANCE),"aim":actor.get_ball_direction()}
 
 static func evaluate(offset:Vector3,relative:Vector3,body_advance:float,ball_travel:float,required:float,released:bool,aligned:bool,supported:bool)->Dictionary:
@@ -27,7 +26,7 @@ static func evaluate(offset:Vector3,relative:Vector3,body_advance:float,ball_tra
 
 func consider(actor:Node3D,ball:Node3D,aim:Vector3)->Dictionary:
 	if pending.is_empty():return {}
-	if ball.carrier!=actor or not actor.move_requested or actor.stop_requested>0 or (pending.aim as Vector3).dot(aim)<.75:
+	if ball.carrier!=actor or not actor.move_requested or actor.stop_requested>0:
 		clear();return {}
 	var axis:Vector3=pending.axis
 	var offset:Vector3=ball.position-actor.position;offset.y=0
@@ -43,3 +42,19 @@ func consider(actor:Node3D,ball:Node3D,aim:Vector3)->Dictionary:
 	last=evaluate(offset,relative,(actor.position-(pending.root as Vector3)).dot(axis),ball.position.distance_to(pending.ball),float(pending.advance),released,run.length()<.6 or run.normalized().dot(axis)>.35,grounded)
 	if last.ready:clear()
 	return last
+
+func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictionary:
+	if not actor.is_human or ball.carrier!=actor:return {}
+	if pending.is_empty() and not actor.gather_after_sprint:return {}
+	if actor.foot.has_buffer() or not actor.foot.idle() and not actor.foot.planned_dribble():return {}
+	var offset:Vector3=ball.position-actor.position;offset.y=0
+	var roll:Vector3=ball.velocity;roll.y=0
+	if offset.length()>1.15 or roll.length()<.35:return {}
+	var axis:Vector3=roll.normalized()
+	# The ball's current path owns the approach; input prepares the next touch.
+	# Small lateral weight shifts are immediate, opposition brakes immediately.
+	var follow:Vector3=roll+(offset-axis*.38)*4.0
+	var along:float=maxf(0.0,follow.dot(axis))
+	if aim.dot(axis)<-.3 and not actor.gather_after_sprint:along=minf(along,maxf(0.0,actor.velocity.dot(axis)-1.2))
+	var lateral:Vector3=(offset.slide(axis)*3.0+aim.slide(axis)*.65).limit_length(.85)
+	return {"motion":(axis*along+lateral).limit_length(maximum)}

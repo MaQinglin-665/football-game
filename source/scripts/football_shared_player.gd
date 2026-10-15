@@ -22,6 +22,7 @@ func _physics_process_body(delta: float) -> void:
 		locomotion="run" if velocity.length()>3.5 else "jockey"
 	if input_enabled: intended = match_controller.constrained_human_intent(intended)
 	var command := {"enabled":input_enabled,"move":intended,"tier":movement_tier,"style":semantic_move_style,"close_control":semantic_policies.get("close_control",false),"shield":semantic_policies.get("shield",false)}
+	if match_controller.ball.carrier==self and movement_tier!="run":command.close_control=true
 	if pressure.active:
 		command.tier="run"
 		command.style="run"

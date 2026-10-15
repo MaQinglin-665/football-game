@@ -266,6 +266,8 @@ func begin(action: String, aim: Vector3, motion_bias := Vector3.ZERO, force := 3
 		touch_plan = {"sequence":sequence,"state":"PREPARE","foot":side,"surface":surface,"contact_point":contact_target,"normal":Vector3.ZERO,"contact_elapsed":-1.0,"exit_velocity":Vector3.ZERO,"support":control_support_snapshot(),"response_seconds":.035,"mode":action,"legacy_sole_receive":false}
 		touch_plan["locked_prepare_target"]=contact_target
 		touch_plan["turn_stage"]=preparation.get("turn_stage","")
+		touch_plan["follow_collect"]=preparation.get("follow_collect",false)
+		touch_plan["follow_cut"]=preparation.get("follow_cut",false)
 		touch_plan["contact_eta_s"]=windup
 		touch_plan["future_support_phase"]=preparation.get("future_support_phase",-1.0)
 		touch_plan["future_swing_phase"]=preparation.get("future_swing_phase",-1.0)
@@ -423,7 +425,7 @@ func pose_request() -> Dictionary:
 	elif phase==Phase.RECOVER: target = target.lerp(actor.position+start_local,smoothstep(0,1,(elapsed-windup-window)/maxf(recovery,.001)))
 	var body_weight:float=float(touch_plan.get("withdraw_body_weight",-1.0))
 	if body_weight>=0:body_weight*=1.0-smoothstep(0,1,clampf((elapsed-float(touch_plan.get("withdraw_elapsed",elapsed)))/maxf(recovery,.001),0,1))
-	return {"tackle_body_weight":body_weight,"cut_style":touch_plan.get("cut_style",""),"receive_speed":touch_plan.get("receive_speed",0),"kind":kind,"phase":Phase.keys()[phase],"normalized_time":clampf(normalized,0,1),"side":side,"world_target":target,"strike_target":contact_target,"direction":foot_direction,"surface":surface,"power":float(kick_intent.get("power",.9 if kind=="SPRINT" else .3)),"progress":progress,"sequence":sequence,"contact_confirmed":hit,"contact_tick":contact_tick,"shot_style":shot_style,"support_origin":touch_plan.get("support_origin",Vector3.ZERO),"root_origin":touch_plan.get("root_origin",actor.position)}
+	return {"tackle_body_weight":body_weight,"cut_style":("INSIDE_CUT" if surface=="INSIDE" else "OUTSIDE_PUSH") if touch_plan.get("follow_cut",false) else touch_plan.get("cut_style",""),"receive_speed":touch_plan.get("receive_speed",0),"kind":"PULL" if touch_plan.get("follow_collect",false) else kind,"phase":Phase.keys()[phase],"normalized_time":clampf(normalized,0,1),"side":side,"world_target":target,"strike_target":contact_target,"direction":foot_direction,"surface":surface,"power":float(kick_intent.get("power",.9 if kind=="SPRINT" else .3)),"progress":progress,"sequence":sequence,"contact_confirmed":hit,"contact_tick":contact_tick,"shot_style":shot_style,"support_origin":touch_plan.get("support_origin",Vector3.ZERO),"root_origin":touch_plan.get("root_origin",actor.position)}
 
 func request_push(aim: Vector3) -> bool:
 	if match_controller.ball.carrier!=actor: return false
@@ -874,6 +876,7 @@ func _try_contact(delta: float) -> void:
 				if not actor.is_human:
 					ordinary_scheduler.note_commit(sequence,side,ball.velocity)
 				if actor.is_human:
+					if touch_plan.get("follow_collect",false):actor.gather_after_sprint=false
 					ordinary_scheduler.follow_step.contacted(actor,ball,before,side)
 					touch_plan["recovery_start_elapsed"]=elapsed
 					release_until[side]=Engine.get_physics_frames()+int(ceil((recovery+.045)*Engine.physics_ticks_per_second))
