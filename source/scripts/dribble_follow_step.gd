@@ -6,10 +6,32 @@ const RELEASE_CLEARANCE := .035
 var pending:Dictionary = {}
 var last:Dictionary = {}
 var edge_recovery:bool=false
+var inside_step:Dictionary={}
 
 func clear()->void:
 	pending.clear()
 	edge_recovery=false
+	inside_step.clear()
+
+func prepare_inside(actor:Node3D,ball:Node3D,aim:Vector3,side:int)->Dictionary:
+	var offset:Vector3=ball.position-actor.position;offset.y=0
+	if offset.length()>.65 or ball.position.y>ball.radius+.18:
+		inside_step.clear();return {}
+	if inside_step.is_empty():
+		inside_step={"root":actor.position,"axis":aim,"required":.06,"side":side}
+	if (inside_step.axis as Vector3).dot(aim)<.75 or int(inside_step.side)!=side:
+		inside_step.clear();return {}
+	var advance:float=(actor.position-(inside_step.root as Vector3)).dot(inside_step.axis)
+	var support:Dictionary=actor.avatar.get_control_support_snapshot().get("support_phase",{}).get(actor.avatar.side_suffix(-side),{})
+	var loaded:bool=support.get("state","")=="PLANTED" and bool(support.get("sole_near_ground",false))
+	# An unavailable plant must not become an endless body-shift lock. Let the
+	# ordinary reachable-foot planner recover once the finite step is spent.
+	if advance>.18 and not loaded:
+		inside_step.clear();return {}
+	inside_step["advance"]=advance
+	inside_step["loaded"]=loaded
+	inside_step["ready"]=advance>=float(inside_step.required)-.002 and loaded
+	return inside_step
 
 func contacted(actor:Node3D,ball:Node3D,incoming:Vector3,side:int)->void:
 	if not actor.is_human and not actor.foot.shared_ordinary_control():return
@@ -75,11 +97,19 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 		clear();return {}
 	var gathering:bool=actor.is_human and actor.gather_after_sprint
 	if actor.foot.has_buffer():
-		edge_recovery=false;return {}
+		edge_recovery=false;inside_step.clear();return {}
 	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL":
-		edge_recovery=false;return {}
+		edge_recovery=false;inside_step.clear();return {}
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var roll:Vector3=ball.velocity;roll.y=0
+	if not inside_step.is_empty():
+		if offset.length()>.65 or ball.position.y>ball.radius+.18:
+			inside_step.clear()
+		else:
+			var advance:float=(actor.position-(inside_step.root as Vector3)).dot(inside_step.axis)
+			var remaining:float=maxf(0.0,float(inside_step.required)-advance)
+			var step_speed:float=maxf(remaining*8.0,.45 if remaining>.001 else .25)
+			return {"motion":(roll+(inside_step.axis as Vector3)*step_speed).limit_length(maximum)}
 	# A slow ball at the side is not a completed directional touch. Reposition
 	# the body before asking the leg to pull across; never move the ball here.
 	var right:=Vector3(-actor.body_facing.z,0,actor.body_facing.x)
@@ -100,10 +130,10 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	# The ball's current path owns the approach; input prepares the next touch.
 	# Input/view select the NEXT touch. Neither steers this committed approach.
 	var pocket:Vector3=actor.body_facing*.20 if gathering else axis*.38
-	if actor.is_human and not gathering and absf(axis.dot(actor.body_facing))<.5:
+	if actor.is_human and not gathering and axis.dot(actor.body_facing)<.5:
 		# Sideways control keeps the ball ahead of the stance, with a short
 		# lateral lead. The actual roll, not next-input aim, owns this step.
-		pocket=actor.body_facing*.40+axis*.12
+		pocket=actor.body_facing*.40+axis.slide(actor.body_facing)*.12
 	var follow:Vector3=roll+(offset-pocket)*4.0
 	var along:float=maxf(0.0,follow.dot(axis))
 	var lateral:Vector3=((offset-pocket).slide(axis)*3.0).limit_length(.85)

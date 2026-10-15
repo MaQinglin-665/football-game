@@ -608,6 +608,16 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 			best["preferred_foot_applied"]=preferred
 			best["dominant_side"]=dominant
 			best["requested_pace"]=requested
+	# A distant-ball rescue already owns body positioning. A fast ball still
+	# travelling against the new direction needs its braking/cut contact first.
+	var inside_first:bool=actor.is_human and not collecting and not follow_step.edge_recovery and roll.dot(aim)>=-.25 and int(best.side)==dominant and best.surface=="INSIDE" and aim.dot(right)*dominant<-.5 and offset.length()<.60 and offset.dot(actor.body_facing)>.08 and (actor.foot.idle() or actor.foot.hit)
+	if inside_first and (bool(best.ready) or not follow_step.inside_step.is_empty()):
+		var step:Dictionary=follow_step.prepare_inside(actor,ball,aim,dominant)
+		if not step.is_empty():
+			best["inside_body_first"]=step.duplicate(true)
+			if not bool(step.ready):
+				best.ready=false;best.reason="inside_support_step"
+	elif not inside_first and actor.foot.idle():follow_step.inside_step.clear()
 	if not follow.is_empty():best["follow_step"]=follow
 	if actor.is_human and actor.gather_after_sprint and not actor.sprinting:
 		best["surface"]="SOLE"
