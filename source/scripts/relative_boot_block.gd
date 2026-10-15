@@ -17,8 +17,9 @@ static func snapshot(actors:Array,ball:Node3D,dt:float)->Array:
 			# A fast runner crossing a slow/stationary ball is also a moving
 			# collision. Ball world speed alone cannot admit relative sweeps.
 			# Keep this local to nearby active boots; stationary pairs need no CCD.
-			var relative:Vector3=ball.velocity-body.ball_contact_velocity(ball.position)
-			if body.collision_layer!=0 and relative.length_squared()>.0001:
+			var relative:Vector3=ball.velocity-body.measured_velocity
+			if body.collision_layer!=0 and (relative.length_squared()>.0001 or actor.velocity.length_squared()>.0001):
+				body.begin_ball_substep(dt)
 				rows.append({"body":body,"before":body.global_transform})
 	return rows
 
@@ -31,12 +32,15 @@ static func settle(ball:Node3D,rows:Array,from:Vector3,collisions:int,dt:float)-
 		if body.collision_layer==0:continue
 		var hit:Dictionary=Geometry.sweep_sphere_box(from,ball.position,ball.radius,row.before,body.global_transform,Vector3(.065,.105,.285))
 		if bool(hit.get("hit",false)) and float(hit.fraction)<earliest:
-			earliest=float(hit.fraction);chosen={"hit":hit,"body":body}
+			earliest=float(hit.fraction);chosen={"hit":hit,"body":body,"before":row.before}
 	if chosen.is_empty():return
 	var body:Node3D=chosen.body
 	var hit:Dictionary=chosen.hit
 	var normal:Vector3=hit.normal
-	var speed:Vector3=body.ball_contact_velocity(hit.point)
+	# This sweep spans one World translation substep, after the skeletal pose
+	# has already been updated. The cached animation-frame velocity describes
+	# a different interval and can turn a running contact into an 18m/s kick.
+	var speed:Vector3=(body.global_position-(chosen.before as Transform3D).origin)/maxf(dt,.000001)
 	if (ball.velocity-speed).dot(normal)>=-.05:return
 	# Rewind only to the proven time of impact, never to a foot/ownership socket.
 	ball.global_position=from.lerp(ball.global_position,earliest)+normal*.001

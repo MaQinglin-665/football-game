@@ -38,6 +38,7 @@ static func target_velocity(actor:Node3D,ball:Node3D,aim:Vector3)->Vector3:
 	var close:bool=actor.close_control or actor.shielding
 	var horizon:float=.28 if close else cfg.running_touch_horizon if actor.sprinting else .34
 	var requested:float=cfg.sprint_ball_speed if actor.sprinting else cfg.shield_speed if actor.shielding else cfg.close_speed if close else cfg.normal_ball_speed
+	if close and not actor.shielding:requested=preload("res://scripts/steady_walk_pace.gd").control_speed(actor,requested)
 	if not actor.is_human and actor.get("ai_touch_pace")!=null:requested=minf(requested,maxf(1.0,float(actor.ai_touch_pace)))
 	var along:float=maxf(0.0,run.dot(aim))
 	var acceleration:float=actor.profile.sprint_acceleration_mps2 if actor.sprinting else actor.profile.start_acceleration_mps2

@@ -559,6 +559,7 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	# never accelerate the ball between contacts or skip the completed step.
 	var requested:float=ball.tuning.sprint_ball_speed if actor.sprinting else ball.tuning.normal_ball_speed
 	if actor.close_control or actor.shielding:requested=ball.tuning.close_speed
+	if actor.close_control and not actor.shielding:requested=preload("res://scripts/steady_walk_pace.gd").control_speed(actor,requested)
 	if not actor.is_human:requested=minf(requested,maxf(0.0,float(actor.ai_touch_pace)))
 	var roll:=Vector3(ball.velocity.x,0,ball.velocity.z)
 	var advancing:bool=aim.dot(actor.body_facing)>(-.2 if actor.is_human else .65) and roll.length()>.35 and roll.normalized().dot(aim)>.85
@@ -606,7 +607,7 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 		if support.get("state","")=="PLANTED" and bool(support.get("sole_near_ground",false)):cost-=.10
 		# A preference inside the reachable stance pocket, never a forced cross-
 		# leg reach. Far-side balls and fast opposed cuts keep their near shoe.
-		var preferred:bool=actor.is_human and not collecting and shoe_side==dominant and lateral*dominant>=-.20 and absf(lateral)<.32 and offset.dot(actor.body_facing)>.08 and offset.dot(actor.body_facing)<.60 and shoe_travel<.60 and run.length()<2.6
+		var preferred:bool=actor.is_human and not collecting and shoe_side==dominant and lateral*dominant>=-.20 and absf(lateral)<.32 and offset.dot(actor.body_facing)>.08 and offset.dot(actor.body_facing)<.60 and shoe_travel<.60 and run.length()<ball.tuning.normal_ball_speed+.20
 		if preferred:cost-=.30 if absf(aim.dot(right))>.5 else .08
 		if best.is_empty() or cost<float(best.cost):
 			best={"ready":ready,"cadence_managed":true,"side":shoe_side,"surface":surface,"foot_direction":actor.body_facing,"contact_eta_s":eta,"reserved_center":center,"cost":cost,"window_source":"input_reachable","reason":"ready" if ready else "roll_sufficient","lookahead_s":wait+eta,"intent":"DIRECTIONAL_CONTROL"}

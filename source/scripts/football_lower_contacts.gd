@@ -8,6 +8,13 @@ class ContactBody extends AnimatableBody3D:
 	var measured_velocity := Vector3.ZERO
 	var previous_point := Vector3.ZERO
 	var initialized := false
+	var substep_origin:=Vector3.ZERO
+	var substep_dt:=0.0
+	var substep_frame:=-1
+	func begin_ball_substep(dt:float)->void:
+		substep_origin=global_position
+		substep_dt=dt
+		substep_frame=Engine.get_physics_frames()
 	func resolve_foot_ball_contact(ball:Node3D,point:Vector3,normal:Vector3,dt:float)->bool:
 		ball.last_lower_contact_frame=Engine.get_physics_frames()
 		if not part.begins_with("boot.") or actor.foot==null:return false
@@ -17,7 +24,12 @@ class ContactBody extends AnimatableBody3D:
 		get_parent().update_from_skeleton(0.0)
 		return true
 	func get_ball_contact_owner() -> CharacterBody3D: return actor
-	func ball_contact_velocity(_point: Vector3) -> Vector3: return measured_velocity
+	func ball_contact_velocity(_point: Vector3) -> Vector3:
+		# World sweeps after skeletal posing: use the translation being resolved
+		# now, not last animation frame's (possibly much faster) ankle movement.
+		if substep_frame==Engine.get_physics_frames() and substep_dt>0:
+			return (global_position-substep_origin)/substep_dt
+		return measured_velocity
 	func physics_mass_kg() -> float: return actor.physics_mass_kg()
 	func receive_body_impulse_ns(impulse: Vector3) -> void: actor.receive_body_impulse_ns(impulse)
 

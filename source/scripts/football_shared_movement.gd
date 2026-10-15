@@ -18,6 +18,7 @@ static func resolve(command: Dictionary, state: Dictionary, cfg: Variant, delta:
 	var speed: float = cfg.sprint_ball_speed if owned and sprint else cfg.normal_ball_speed if owned else (cfg.big_chase_speed if state.get("big_chase_remaining",0.0)>0 else cfg.running_move_speed) if sprint else cfg.normal_move_speed
 	if shield: speed = cfg.shield_speed
 	elif close or command.get("style","run")=="walk": speed = cfg.close_speed
+	if close and not shield:speed=maxf(speed,float(command.get("steady_control_speed",0.0)))
 	# A finite controlled setup tracks the ball; ordinary CLOSE is still slow.
 	var setup_tracking: bool = enabled and owned and not shield and command.has("prepared_motion") and bool(command.get("control_setup_tracking",false))
 	if setup_tracking: speed = maxf(speed,(command.prepared_motion as Vector3).length())
