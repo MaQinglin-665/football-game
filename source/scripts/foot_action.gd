@@ -447,8 +447,9 @@ func request_stop() -> bool:
 
 func request_cut(aim:Vector3)->bool:
 	if match_controller.ball.carrier!=actor or not can_schedule_kick():return false
-	if not idle():
-		if kind in ["PASS","SHOT","TACKLE"]:return false
+	var follow:Dictionary=ordinary_scheduler.follow_step.consider(actor,match_controller.ball,aim)
+	if not idle() or not follow.is_empty() and not bool(follow.ready):
+		if not idle() and kind in ["PASS","SHOT","TACKLE"]:return false
 		if buffer.get("kind","")=="CUT":return false
 		buffer={"kind":"CUT","direction":aim,"owner":match_controller.ball.carrier,"restart_id":match_controller.formation_serial}
 		buffer_time=.34
@@ -604,6 +605,9 @@ func advance(delta: float) -> void:
 			clear_buffer("buffer_expired" if buffer_time<=0 else "buffer_context_changed")
 	if idle() or (kind=="RECEIVE" and not hit and bool(buffer.get("one_touch_pass",false))):
 		if not buffer.is_empty():
+			if ordinary_scheduler.follow_step.queued_follow(actor):
+				var follow:Dictionary=ordinary_scheduler.follow_step.consider(actor,match_controller.ball,direction)
+				if not follow.is_empty() and not bool(follow.ready):return
 			if buffer.kind=="KICK" and not bool(buffer.get("one_touch_pass",false)) and (actor.action_cooldown>0 or not (match_controller.ball.can_pass(actor) if String(buffer.intent.action).begins_with("pass_") else match_controller.ball.can_kick(actor))):return
 			if bool(buffer.get("one_touch_pass",false)):
 				var receive_window := receive_pass_window()
@@ -897,7 +901,12 @@ func _try_contact(delta: float) -> void:
 	else:
 		var desired := Vector3(actor.velocity.x,0,actor.velocity.z)+bias
 		if touch_plan.has("cut_style"):
-			desired=Vector3(actor.velocity.x,0,actor.velocity.z)+direction*2.4 if actor.is_human else preload("res://scripts/dribble_turn_control.gd").ai_cut_result(actor,ball,direction)
+			desired=preload("res://scripts/dribble_turn_control.gd").ai_cut_result(actor,ball,direction)
+			if actor.is_human:
+				var run:=Vector3(actor.velocity.x,0,actor.velocity.z)
+				# Keep the established compact low-speed cut; budget inertia as
+				# running momentum rises, instead of stacking an extra lateral kick.
+				desired=(run+direction*2.4).lerp(desired,smoothstep(1.0,2.5,run.length()))
 		if kind=="SPRINT": desired = direction*clampf(maxf(Vector2(actor.velocity.x,actor.velocity.z).length()+3.0,match_controller.tuning.big_touch_speed),6.0,9.2)
 		success = ball.apply_foot_contact(actor,desired,impulse,interval,kind,toe_world)
 	if not success:
@@ -912,6 +921,7 @@ func _try_contact(delta: float) -> void:
 		contact_elapsed = elapsed
 	hit = true
 	if touch_plan.has("cut_style"):
+		ordinary_scheduler.follow_step.contacted(actor,ball,before,side)
 		cut_roll_until=Engine.get_physics_frames()+int(ceil(.34*Engine.physics_ticks_per_second))
 		release_until[side]=cut_roll_until
 	if kind in ["STOP","SETTLE","PULL"] or touch_plan.has("cut_style"):touch_plan["release_point"]=toe_world

@@ -141,7 +141,9 @@ func _update_dribble() -> void:
 		detach("球已离脚，追上后接球")
 		return
 	# Let the single cut impulse cross the body before an automatic settle/retap.
-	if Engine.get_physics_frames()<owner.foot.cut_roll_until and gap<.95 and last_contact_actor==owner:return
+	if Engine.get_physics_frames()<owner.foot.cut_roll_until and gap<.95 and last_contact_actor==owner:
+		var follow:Dictionary=owner.foot.ordinary_scheduler.follow_step.consider(owner,self,owner.get_ball_direction())
+		if not bool(follow.get("ready",false)):return
 	if owner.foot.shared_ordinary_control() and (owner.is_human or owner.pending_kick.is_empty()):
 		_update_human_dribble(owner,offset,gap)
 		return

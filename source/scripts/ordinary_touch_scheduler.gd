@@ -551,7 +551,7 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	if not follow.is_empty() and not bool(follow.ready):
 		last_decision=follow
 		return follow
-	if Engine.get_physics_frames()<actor.foot.cut_roll_until and ball.carrier==actor and offset.length()<.95:
+	if Engine.get_physics_frames()<actor.foot.cut_roll_until and ball.carrier==actor and offset.length()<.95 and not bool(follow.get("ready",false)):
 		return {"ready":false,"reason":"cut_free_roll"}
 	var ready:bool=changed or DribbleRhythm.needs_touch(actor,ball,aim)
 	# A completed follow can preserve the gap while both ball and body coast
@@ -634,9 +634,8 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	return best
 
 static func playable_root_delta(actor:Node3D,run:Vector3,seconds:float)->Vector3:
-	if actor.is_human:return run*seconds
-	# AI reservation used constant velocity while its actual motor was braking
-	# or turning. Use the same integrator already used to budget its exit ball.
+	# Reserve against actual motor acceleration, braking and current follow
+	# command for both players and AI; this remains a collision-free estimate.
 	var maximum:float=actor.motor_speed_limit(actor.sprint_intent)
 	var desired:Vector3=actor.move_intent*maximum;desired.y=0
-	return DribbleRhythm.TurnControl.predict_motor(run,desired,actor.profile,actor.sprint_intent,seconds).displacement
+	return DribbleRhythm.TurnControl.predict_motor(run,desired,actor.profile,actor.sprint_intent,seconds,actor if actor.is_human and actor.get("controller_v07_enabled")==true else null).displacement

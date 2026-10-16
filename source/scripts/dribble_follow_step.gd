@@ -81,7 +81,7 @@ func retreat_approach(actor:Node3D,ball:Node3D,aim:Vector3)->Dictionary:
 	# Reverse input selects the next sole touch, not an immediate retreat away
 	# from an outgoing ball. This budget moves only the body through its motor.
 	if not actor.is_human or ball.carrier!=actor or actor.stop_requested>0:return {}
-	if actor.foot.has_buffer():return {}
+	if actor.foot.has_buffer() and not queued_follow(actor):return {}
 	if not actor.foot.idle() and actor.foot.kind not in ["CLOSE","TURN","SHIELD","PULL"]:return {}
 	var roll:=Vector3(ball.velocity.x,0,ball.velocity.z)
 	var offset:Vector3=ball.position-actor.position;offset.y=0
@@ -102,9 +102,9 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	if ball.carrier!=actor or actor.stop_requested>0:
 		clear();return {}
 	var gathering:bool=actor.is_human and actor.gather_after_sprint
-	if actor.foot.has_buffer():
+	if actor.foot.has_buffer() and not queued_follow(actor):
 		edge_recovery=false;inside_step.clear();return {}
-	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL":
+	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL" and not (actor.foot.hit and actor.foot.touch_plan.has("cut_style")):
 		edge_recovery=false;inside_step.clear();return {}
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var roll:Vector3=ball.velocity;roll.y=0
@@ -144,3 +144,8 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	var along:float=maxf(0.0,follow.dot(axis))
 	var lateral:Vector3=((offset-pocket).slide(axis)*3.0).limit_length(.85)
 	return {"motion":(axis*along+lateral).limit_length(maximum)}
+
+# A queued next touch does not own movement yet. Keep the current real follow
+# until it is geometrically complete; receiver reservations remain separate.
+func queued_follow(actor:Node3D)->bool:
+	return not pending.is_empty() and actor.foot.buffer.get("kind","") in ["CUT","NUDGE","KICK","STOP"] and not bool(actor.foot.buffer.get("one_touch_pass",false))
