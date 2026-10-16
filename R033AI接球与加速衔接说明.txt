@@ -1,0 +1,142 @@
+R033 AI接球与加速衔接
+日期：2026-10-16
+基线：candidate/r032 9bc511d86b3e54249d65cf4494743f6afb4d8786
+主干：ec9721bc3831c7e35f5d819b56e95c7dfa80b397
+独立candidate/r033，旧R032保留，未合并、未推送。
+
+本轮改动
+1. AI实际接球取得控制后，建立与带球相同的滚动跟进记录；接球恢复期允许继续跟真实球路，下一脚仍由支撑、位移、释放与可达性决定。
+2. 已确认接球不再因传球请求重新创建而清零；同一持球阶段避免反复缓冲接球。失球仍清除确认，不放宽出脚可达性。
+3. 无预先接球计划的真实接球，也从旧接球目标交接到实际出球方向；同步清除旧护球/近控标记，避免下一次战术刷新前继续限速。
+4. 已触球但尚未取得球权：仅在该接球动作恢复期、球无主且附近时，追真实滚动后的球，避免追旧拦截点。仍须真实下一次触球才能接稳，不提前授予球权。
+5. 加速使用进入/保持不同转向门槛（余弦0.88进入、0.78保持），防止小幅修正方向反复退出加速。路线安全、实际下一脚可达、边线、体力和速度约束不变。主动变向扣球复用原战术出口选择，未训练新模型或增加自动过人必中。
+
+验证范围
+Godot4.6.3，仅无窗口。18项实际接球/连续控球/扣球/反向/单次触球检查；6项战术条件检查；真人快速左右回归10项。最终结果见R033_LOCAL_CHECKS.json。
+自然开局保留真实战术，真人静止，3v3模拟10秒、11v11模拟20秒；没有强放球权或规定跑位。具体真实触球链见下方最终摘要。
+初版沿用的旧策略测试对正面堵死场景强制要求一定有侧路，且带了不属于本轮改动的旧支援点断言；最终测试针对实际受压路径、档位保持、体力与接球衔接，允许无安全路线时拒绝推进。旧失败输出保留verification/policy.log；不据此宣称旧支援点问题已修复。
+
+限制和未完成
+没有图形观察、玩家自然对抗验收或完整比赛性能数据。5v5/6v6/9v9共用代码，但未逐一启动。
+已碰球不等于接稳：近身几何不合适、反向来球等仍可能多次RECEIVE。本轮不降低抢断强度、不扩大磁吸或直接归属球权。
+未证明连续过人成功率提升。接球反复调整、高球接后失控、底线丢球、约70ms帧尖峰、退出资源释放问题继续记录为未完全解决。
+试玩入口：本目录PLAY_3v3.cmd、PLAY_11v11.cmd，以及原有5/6/9v9入口。请观察接球后是否更快跟进、遇人变向后是否继续加速或及时传球。
+
+最终自然样本摘要（记录到的触球事件，不能等同于过人成功）：
+{
+  "3v3": {
+    "contacts": {
+      "CLOSE": 16,
+      "PASS": 3,
+      "RECEIVE": 13,
+      "TACKLE": 7,
+      "TURN": 5
+    },
+    "cut_contacts": 2,
+    "run_samples": 21,
+    "owned_receive_contacts": 4,
+    "chains": [
+      {
+        "actor": 3,
+        "from_tick": 663,
+        "to_tick": 1145,
+        "actions": [
+          "RECEIVE",
+          "RECEIVE",
+          "CLOSE",
+          "TURN",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "TURN",
+          "TURN",
+          "CLOSE",
+          "TURN",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "PASS"
+        ]
+      },
+      {
+        "actor": 5,
+        "from_tick": 135,
+        "to_tick": 385,
+        "actions": [
+          "RECEIVE",
+          "RECEIVE",
+          "RECEIVE",
+          "RECEIVE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "PASS"
+        ]
+      }
+    ]
+  },
+  "11v11": {
+    "contacts": {
+      "PASS": 3,
+      "RECEIVE": 6,
+      "CLOSE": 19,
+      "TURN": 10
+    },
+    "cut_contacts": 1,
+    "run_samples": 49,
+    "owned_receive_contacts": 3,
+    "chains": [
+      {
+        "actor": 21,
+        "from_tick": 1301,
+        "to_tick": 2370,
+        "actions": [
+          "RECEIVE",
+          "RECEIVE",
+          "RECEIVE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "TURN",
+          "CLOSE",
+          "TURN",
+          "TURN",
+          "TURN",
+          "TURN",
+          "TURN",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "TURN",
+          "TURN",
+          "TURN",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "CLOSE",
+          "TURN"
+        ]
+      },
+      {
+        "actor": 20,
+        "from_tick": 844,
+        "to_tick": 931,
+        "actions": [
+          "RECEIVE",
+          "CLOSE",
+          "PASS"
+        ]
+      }
+    ]
+  }
+}

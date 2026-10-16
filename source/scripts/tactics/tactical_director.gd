@@ -1478,8 +1478,14 @@ func _apply_carry_gear(p:Dictionary,intent:Dictionary,carry:Dictionary,opponents
 	intent.carry_cut=wants_cut and needs_evasion and not memory.get("cut_attempted",false) and float(route.clearance)>(1.5 if conservative else 1.0) and float(route.immediate)>1.0 and edge>1.3
 	# This is only a proposal. The dispatcher reduces pace after the real foot
 	# scheduler accepts it; cooldown / failed reach never become a slow-walk state.
+	var was_running:bool=bool(memory.get("run_active",false))
+	memory["run_active"]=false
 	if intent.close_control or intent.shield:return
-	if safe and edge>1.8 and turn>.88 and touch_ready and float(carry.progress)>-.5 and float(p.get("stamina",100))>28 and not p.get("sprint_locked",false):
+	# A small steering correction must not alternate sprint/jog each decision.
+	# Danger, reach, fatigue and pitch limits still interrupt immediately.
+	var aligned_for_run:bool=turn>(.78 if was_running else .88)
+	if safe and edge>1.8 and aligned_for_run and touch_ready and float(carry.progress)>-.5 and float(p.get("stamina",100))>28 and not p.get("sprint_locked",false):
+		memory["run_active"]=true
 		intent.carry_run=true
 		intent.pace=4.5 if conservative else 5.0
 		intent.reason="escape_accelerate" if _openness(p.position,opponents)<3.5 else "carry_run_space"

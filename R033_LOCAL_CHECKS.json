@@ -1,0 +1,282 @@
+{
+  "date": "2026-10-16",
+  "headless_only": true,
+  "ai": [
+    {
+      "check": "free ball does not qualify as owned normal carry",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "actual reception request starts",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "real RECEIVE contact establishes AI control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "unplanned reception releases old receive intent",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "confirmed reception persists for next decision",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI uses actual body-led near control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal owned carry rhythm matches A/B flag",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal carry makes actual finite shoe contacts",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "shared motor advances during owned carry",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI can request next cut",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "queued cut retains follow eligibility",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "queued cut actually contacts ball",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal run carry crosses2.1mps with real ownership",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "cut and subsequent turns retain control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "all resulting motor and ball velocities remain finite",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "actual action contacts do not duplicate sequence",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI actual contacts create committed body follow",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI turn keeps motor following actual roll",
+      "details": null,
+      "passed": true
+    }
+  ],
+  "human": [
+    {
+      "check": "rapid_jog remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_jog final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_jog actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "rapid_run remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_run final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_run actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "single impulse",
+      "passed": true
+    }
+  ],
+  "policy": [
+    {
+      "label": "trailing opponent within old2.7m threshold does not persistently cap run",
+      "passed": true
+    },
+    {
+      "label": "established acceleration survives modest steering",
+      "passed": true
+    },
+    {
+      "label": "new acceleration waits for alignment",
+      "passed": true
+    },
+    {
+      "label": "blocked frontal route is rejected or selects lateral exit",
+      "passed": true
+    },
+    {
+      "label": "equal distance approaching and departing opponents produce different risk",
+      "passed": true
+    },
+    {
+      "label": "low stamina keeps run unavailable",
+      "passed": true
+    }
+  ],
+  "natural": {
+    "3v3": {
+      "contacts": {
+        "CLOSE": 16,
+        "PASS": 3,
+        "RECEIVE": 13,
+        "TACKLE": 7,
+        "TURN": 5
+      },
+      "cut_contacts": 2,
+      "run_samples": 21,
+      "owned_receive_contacts": 4,
+      "chains": [
+        {
+          "actor": 3,
+          "from_tick": 663,
+          "to_tick": 1145,
+          "actions": [
+            "RECEIVE",
+            "RECEIVE",
+            "CLOSE",
+            "TURN",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "TURN",
+            "TURN",
+            "CLOSE",
+            "TURN",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "PASS"
+          ]
+        },
+        {
+          "actor": 5,
+          "from_tick": 135,
+          "to_tick": 385,
+          "actions": [
+            "RECEIVE",
+            "RECEIVE",
+            "RECEIVE",
+            "RECEIVE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "PASS"
+          ]
+        }
+      ]
+    },
+    "11v11": {
+      "contacts": {
+        "PASS": 3,
+        "RECEIVE": 6,
+        "CLOSE": 19,
+        "TURN": 10
+      },
+      "cut_contacts": 1,
+      "run_samples": 49,
+      "owned_receive_contacts": 3,
+      "chains": [
+        {
+          "actor": 21,
+          "from_tick": 1301,
+          "to_tick": 2370,
+          "actions": [
+            "RECEIVE",
+            "RECEIVE",
+            "RECEIVE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "TURN",
+            "CLOSE",
+            "TURN",
+            "TURN",
+            "TURN",
+            "TURN",
+            "TURN",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "TURN",
+            "TURN",
+            "TURN",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "CLOSE",
+            "TURN"
+          ]
+        },
+        {
+          "actor": 20,
+          "from_tick": 844,
+          "to_tick": 931,
+          "actions": [
+            "RECEIVE",
+            "CLOSE",
+            "PASS"
+          ]
+        }
+      ]
+    }
+  },
+  "successful_beating_defenders_verified": false
+}

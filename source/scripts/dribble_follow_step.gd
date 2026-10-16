@@ -110,7 +110,7 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 	var gathering:bool=actor.is_human and actor.gather_after_sprint
 	if actor.foot.has_buffer() and not queued_follow(actor):
 		edge_recovery=false;inside_step.clear();return {}
-	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL" and not (actor.foot.hit and actor.foot.touch_plan.has("cut_style")):
+	if not actor.foot.idle() and not actor.foot.planned_dribble() and actor.foot.kind!="PULL" and not (actor.foot.hit and (actor.foot.touch_plan.has("cut_style") or not actor.is_human and actor.foot.kind=="RECEIVE")):
 		edge_recovery=false;inside_step.clear();return {}
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var roll:Vector3=ball.velocity;roll.y=0

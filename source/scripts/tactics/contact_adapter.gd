@@ -54,7 +54,8 @@ func on_contact_resolved(event: Dictionary) -> bool:
 	sanitized.cut_style=actor.foot.touch_plan.get("cut_style","")
 	var handled: bool = director.consume_contact(sanitized)
 	var completed:Dictionary=director.receive_plan.last_plan
-	if handled and is_instance_valid(host) and not actor.is_human and sanitized.get("carrier_id",-1)==id and completed.get("state","")=="COMPLETED" and int(completed.get("receiver_id",-1))==id and completed.get("completion_contact",{}).get("serial",-2)==sanitized.get("serial",-1):
+	var completed_receive:bool=completed.get("state","")=="COMPLETED" and int(completed.get("receiver_id",-1))==id and completed.get("completion_contact",{}).get("serial",-2)==sanitized.get("serial",-1)
+	if handled and is_instance_valid(host) and not actor.is_human and sanitized.get("carrier_id",-1)==id and (sanitized.action=="RECEIVE" or completed_receive):
 		host.tactics_bridge.apply_receive_handover(actor,sanitized)
 	# Let the next physics frame select the newly confirmed primary action,
 	# before any actor motor runs. Do not re-enter motors or tick from a foot.

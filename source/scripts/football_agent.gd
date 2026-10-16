@@ -122,8 +122,8 @@ func _physics_process(delta: float) -> void:
 	if not owned or not pending_kick.is_empty() or tactical_intent.get("reason","")=="keep_ball_inside_before_line":
 		foot.ordinary_scheduler.follow_step.clear()
 	# Each new reservation may cushion once; only an actual shoe hit confirms it.
-	if pending_kick.is_empty() or pending_age==0.0: pending_receive_confirmed = false
-	if not pending_kick.is_empty() and foot.kind=="RECEIVE" and foot.hit:
+	if not owned: pending_receive_confirmed = false
+	if owned and foot.kind=="RECEIVE" and foot.hit:
 		pending_receive_confirmed = true
 	# Normal carry was released by the planner's real control contact gate.
 	# Only that single owner reads reach; no extra pose/support snapshots.
@@ -260,7 +260,17 @@ func _physics_process(delta: float) -> void:
 				if match_controller.request_actor_kick(self,pending_kick): pending_kick.clear()
 			elif not pending_receive_confirmed and foot.idle() and gap<.73 and match_controller.can_reach_ball(self) and not match_controller.ball.reception_ready(self):
 				foot.begin("RECEIVE",facing,Vector3.ZERO,0,.18)
-	if not committed_follow.is_empty() and not preparing_kick:
+	# A first shoe contact may deflect a pass without yet earning possession.
+	# During that receive recovery follow the observed roll, not the stale
+	# pre-contact interception point. No claim, impulse or root teleport.
+	var live_ball:Node3D=match_controller.ball
+	var receive_follow:bool=not owned and not is_instance_valid(live_ball.carrier) and not live_ball.held and live_ball.last_contact_actor==self and foot.kind=="RECEIVE" and foot.hit and pocket_offset.length()<1.25 and live_ball.position.y<.42 and not preparing_kick
+	if receive_follow:
+		var roll:Vector3=Vector3(live_ball.velocity.x,0,live_ball.velocity.z)
+		var approach_axis:Vector3=roll.normalized() if roll.length()>.4 else pocket_offset.normalized()
+		toward=(roll+(pocket_offset-approach_axis*.40)*4.0).limit_length(4.8)
+		pace=toward.length();move_requested=pace>.08
+	elif not committed_follow.is_empty() and not preparing_kick:
 		toward=committed_follow.motion
 		pace=toward.length()
 		move_requested=pace>.08
@@ -275,7 +285,7 @@ func _physics_process(delta: float) -> void:
 		pace = toward.length()
 		move_requested = pace>.08
 	# Endpoint hysteresis belongs to the motor, not a second tactical target filter.
-	if not owned and not preparing_kick and not tactical_intent.has("receive_plan"):
+	if not owned and not preparing_kick and not receive_follow and not tactical_intent.has("receive_plan"):
 		var urgent:bool=defensive_job=="PRESS" and ball_gap<1.45
 		var distance:float=toward.length()
 		if urgent or distance>(.34 if holding_position else .16):holding_position=false
@@ -285,7 +295,7 @@ func _physics_process(delta: float) -> void:
 	else:holding_position=false
 	if guarding_lane:pace=minf(pace,3.4) # Side-on control gives way to recovery running at range.
 	pace = minf(pace,foot.movement_cap())
-	if not preparing_kick and not owned and toward.length()<.8 and not tactical_intent.has("receive_plan"): pace *= clampf(toward.length()/.8,0,1)
+	if not preparing_kick and not owned and not receive_follow and toward.length()<.8 and not tactical_intent.has("receive_plan"): pace *= clampf(toward.length()/.8,0,1)
 	sprinting = run_carry or pace>profile.jog_speed_mps
 	var sprint_value := clampf((pace-profile.jog_speed_mps)/(profile.sprint_speed_mps-profile.jog_speed_mps),0,1)
 	var axis := toward.normalized() if move_requested else Vector3.ZERO

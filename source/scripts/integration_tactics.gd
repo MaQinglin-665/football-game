@@ -678,6 +678,8 @@ func apply_receive_handover(actor:Node3D,event:Dictionary)->void:
 	actor.tactical_intent.receive=false
 	actor.tactical_intent.press=false
 	actor.tactical_intent.close_control=false
+	actor.shielding=false;actor.close_control=false
+	actor.pending_receive_confirmed=true
 	actor.tactical_intent.primary_action="CARRY"
 	actor.tactical_intent.reason="receive_follow_through"
 	if not resume_pass.is_empty():actor.tactical_intent["receive_outlet_alignment"]=resume_pass

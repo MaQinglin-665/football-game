@@ -920,6 +920,9 @@ func _try_contact(delta: float) -> void:
 		contact_tick = Engine.get_physics_frames()
 		contact_elapsed = elapsed
 	hit = true
+	# The AI follows its actual first touch before choosing another direction.
+	if kind=="RECEIVE" and not actor.is_human and ball.carrier==actor:
+		ordinary_scheduler.follow_step.contacted(actor,ball,before,side)
 	if touch_plan.has("cut_style"):
 		ordinary_scheduler.follow_step.contacted(actor,ball,before,side)
 		cut_roll_until=Engine.get_physics_frames()+int(ceil(.34*Engine.physics_ticks_per_second))
