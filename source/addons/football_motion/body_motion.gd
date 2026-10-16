@@ -396,20 +396,26 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 	var clip:String=String(avatar._base_clip)
 	_control_info={"revision":"ordinary_support_body_06","eligible":false,"held_support":_held_control_support,"bone_writes":false}
 	var running_transfer:bool=bool(avatar._carry039.direction_eligible) and (speed>1.1 or not _running_support.is_empty()) and bool(avatar._grounded) and state.get("interaction",{}).is_empty() and String(avatar._action.get("kind","")) in ["","CARRY","CLOSE","TURN","SHIELD","SPRINT"] and not avatar._action.has("cut_style")
-	if not _ordinary_low_control(avatar,clip) and not running_transfer:
+	var actor:Node=avatar.get_parent()
+	var near_transfer:bool=false
+	if actor!=null and actor.get("foot")!=null and actor.has_method("get_ball_direction"):
+		var follow=actor.foot.ordinary_scheduler.follow_step
+		near_transfer=not follow.near_step.is_empty() and follow.near_control(actor,actor.match_controller.ball,actor.get_ball_direction()) and bool(avatar._grounded)
+	_control_info["body_led_near"]=near_transfer
+	if not _ordinary_low_control(avatar,clip) and not running_transfer and not near_transfer:
 		_control_offset=Vector3.ZERO
 		_running_support=""
 		return
 	var sk:Skeleton3D=avatar.skeleton
 	var active:String=avatar.side_suffix(int(avatar._action.get("side",1)))
 	var support:String="R" if active=="L" else "L"
-	if running_transfer and avatar._action.is_empty():
+	if (running_transfer or near_transfer) and avatar._action.is_empty():
 		# Keep the current real plant until release; do not swap support because
 		# a tactical target or rendered frame changed.
 		if _planted_ankle(avatar,_running_support).is_empty():
 			_running_support="L" if not _planted_ankle(avatar,"L").is_empty() else "R"
 		support=_running_support
-	elif running_transfer:_running_support=support
+	elif running_transfer or near_transfer:_running_support=support
 	var anchor:Dictionary=_planted_ankle(avatar,support)
 	var ready:bool=not anchor.is_empty()
 	if ready:
@@ -417,14 +423,14 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 		var support_rotation:Quaternion=sk.global_basis.get_rotation_quaternion()*support_pose.basis.get_rotation_quaternion()
 		var sole_y:float=sk.to_global(support_pose.origin).y+avatar._minimum_offset(support,support_rotation)
 		ready=sole_y-float(avatar._ground_y)<=.012
-	var load_weight:float=_control_load(avatar) if ready else 0.0
+	var load_weight:float=(.55 if near_transfer else _control_load(avatar)) if ready else 0.0
 	var compression:float=0.0
-	if running_transfer:
+	if running_transfer or near_transfer:
 		var plant:Dictionary=avatar._plants.get(support,{})
 		var support_seconds:float=float(avatar._carry039.fraction)/maxf(float(avatar._carry039.rate),.8)
 		var phase:float=clampf(float(plant.get("age",0))/maxf(support_seconds,.05),0,1)
 		compression=sin(PI*phase) if ready else 0.0
-		load_weight=(.4+.6*compression)*smoothstep(.5,2.0,speed) if ready else 0.0
+		load_weight=(.4+.6*compression)*(smoothstep(.05,.8,speed) if near_transfer else smoothstep(.5,2.0,speed)) if ready else 0.0
 	var wanted:=Vector3.ZERO
 	if ready:
 		var pelvis:Vector3=sk.get_bone_global_pose(int(ids.hips)).origin
@@ -435,7 +441,7 @@ func apply_control_phase(avatar,delta:float,state:Dictionary)->void:
 		var allowed:float=sqrt(maxf(0,maximum*maximum-horizontal*horizontal))
 		wanted.y=clampf((anchor.point as Vector3).y+allowed-hip.y,-.020,0)
 		wanted*=load_weight
-		if running_transfer:
+		if running_transfer or near_transfer:
 			# Compression/rebound belongs to the planted step, not an independent
 			# bob clock. Existing post-IK reach checks below may reduce this offset.
 			wanted.y=maxf(-.040,wanted.y-.026*compression*smoothstep(.8,3.0,speed)-.010*braking)

@@ -13,6 +13,11 @@ static func retreating(actor:Node3D,aim:Vector3)->bool:
 static func pace(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Vector3:
 	var offset:Vector3=ball.position-actor.position;offset.y=0
 	var rolling:Vector3=ball.velocity;rolling.y=0
+	if actor.foot.ordinary_scheduler.follow_step.near_control(actor,ball,aim):
+		# Spend a finite reachable body step before the foot reaches out. Keep
+		# input pace, constrained by the ball's predicted position behind us.
+		var near_limit:float=maxf(.6,rolling.dot(aim)+(offset.dot(aim)+.26)/.12)
+		return aim*minf(maximum,near_limit)
 	var lateral:bool=absf(aim.dot(actor.body_facing))<.5
 	# Full requested speed is independent of ball deceleration. Ease only when
 	# actually about to overrun the reachable ball, using a short closing horizon.

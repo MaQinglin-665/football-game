@@ -543,6 +543,7 @@ static func predict_ball_center(ball:Node3D,seconds:float)->Vector3:
 func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool)->Dictionary:
 	var run:Vector3=actor.velocity;run.y=0
 	var offset:Vector3=ball.position-actor.position;offset.y=0
+	var near:Dictionary=follow_step.prepare_near(actor,ball,aim)
 	var follow:Dictionary=follow_step.consider(actor,ball,aim)
 	var stance_right:=Vector3(-actor.body_facing.z,0,actor.body_facing.x)
 	if follow_step.edge_recovery and (offset.length()>.46 or absf(offset.dot(stance_right))>.32):
@@ -617,13 +618,16 @@ func playable_plan(actor:Node3D,ball:Node3D,aim:Vector3,mode:String,changed:bool
 	# A distant-ball rescue already owns body positioning. A fast ball still
 	# travelling against the new direction needs its braking/cut contact first.
 	var inside_first:bool=actor.is_human and not collecting and not follow_step.edge_recovery and roll.dot(aim)>=-.25 and int(best.side)==dominant and best.surface=="INSIDE" and aim.dot(right)*dominant<-.5 and offset.length()<.60 and offset.dot(actor.body_facing)>.08 and (actor.foot.idle() or actor.foot.hit)
-	if inside_first and (bool(best.ready) or not follow_step.inside_step.is_empty()):
+	if near.is_empty() and inside_first and (bool(best.ready) or not follow_step.inside_step.is_empty()):
 		var step:Dictionary=follow_step.prepare_inside(actor,ball,aim,dominant)
 		if not step.is_empty():
 			best["inside_body_first"]=step.duplicate(true)
 			if not bool(step.ready):
 				best.ready=false;best.reason="inside_support_step"
 	elif not inside_first and actor.foot.idle():follow_step.inside_step.clear()
+	if not near.is_empty():
+		best["body_lead"]=near.duplicate(true)
+		if not bool(near.ready):best.ready=false;best.reason="near_body_step"
 	if not follow.is_empty():best["follow_step"]=follow
 	if actor.is_human and actor.gather_after_sprint and not actor.sprinting:
 		best["surface"]="SOLE"

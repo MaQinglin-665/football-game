@@ -7,11 +7,13 @@ var pending:Dictionary = {}
 var last:Dictionary = {}
 var edge_recovery:bool=false
 var inside_step:Dictionary={}
+var near_step:Dictionary={}
 
 func clear()->void:
 	pending.clear()
 	edge_recovery=false
 	inside_step.clear()
+	near_step.clear()
 
 func prepare_inside(actor:Node3D,ball:Node3D,aim:Vector3,side:int)->Dictionary:
 	var offset:Vector3=ball.position-actor.position;offset.y=0
@@ -56,6 +58,8 @@ static func evaluate(offset:Vector3,relative:Vector3,body_advance:float,ball_tra
 	return {"ready":rescue or followed,"reason":"follow_rescue" if rescue else "body_followed_roll" if followed else "follow_free_roll","body_advance_m":body_advance,"required_advance_m":required,"ball_travel_m":ball_travel,"shoe_released":released,"support_grounded":supported,"body_aligned":aligned}
 
 func consider(actor:Node3D,ball:Node3D,aim:Vector3)->Dictionary:
+	if near_control(actor,ball,aim):
+		pending.clear();inside_step.clear();return {}
 	if pending.is_empty():return {}
 	if ball.carrier!=actor or actor.stop_requested>0:
 		clear();return {}
@@ -99,6 +103,8 @@ func retreat_approach(actor:Node3D,ball:Node3D,aim:Vector3)->Dictionary:
 	return {"motion":axis*along+lateral}
 
 func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictionary:
+	if near_control(actor,ball,aim):
+		pending.clear();inside_step.clear();return {}
 	if ball.carrier!=actor or actor.stop_requested>0:
 		clear();return {}
 	var gathering:bool=actor.is_human and actor.gather_after_sprint
@@ -149,3 +155,30 @@ func follow_motion(actor:Node3D,ball:Node3D,aim:Vector3,maximum:float)->Dictiona
 # until it is geometrically complete; receiver reservations remain separate.
 func queued_follow(actor:Node3D)->bool:
 	return not pending.is_empty() and actor.foot.buffer.get("kind","") in ["CUT","NUDGE","KICK","STOP"] and not bool(actor.foot.buffer.get("one_touch_pass",false))
+
+# Close control is body-led; fast reversals and long rolling touches retain
+# their committed follow. This changes only root intent, never ball position.
+func near_control(actor:Node3D,ball:Node3D,aim:Vector3)->bool:
+	if not actor.is_human or ball.carrier!=actor or actor.sprinting or actor.gather_after_sprint or actor.stop_requested>0 or actor.shielding or not actor.move_requested:return false
+	if actor.foot.has_buffer() or actor.foot.touch_plan.has("cut_style") and not actor.foot.idle():return false
+	if not actor.foot.idle() and not actor.foot.planned_dribble():return false
+	var offset:Vector3=ball.position-actor.position;offset.y=0
+	var run:=Vector3(actor.velocity.x,0,actor.velocity.z)
+	var roll:=Vector3(ball.velocity.x,0,ball.velocity.z)
+	return offset.length()<.70 and ball.position.y<ball.radius+.12 and roll.length()<3.2 and run.length()<3.0 and aim.dot(actor.body_facing)>-.25 and (run.length()<1.2 or run.normalized().dot(aim)>.0)
+
+func prepare_near(actor:Node3D,ball:Node3D,aim:Vector3)->Dictionary:
+	if not near_control(actor,ball,aim):near_step.clear();return {}
+	if near_step.is_empty() or (near_step.axis as Vector3).dot(aim)<.85:
+		near_step={"root":actor.position,"axis":aim}
+	var advance:float=(actor.position-(near_step.root as Vector3)).dot(aim)
+	var support:Dictionary=actor.avatar.get_control_support_snapshot().get("support_phase",{})
+	var loaded:bool=false
+	for phase in support.values():
+		if phase.get("state","")=="PLANTED" and bool(phase.get("sole_near_ground",false)):loaded=true
+	# A real step, not a fixed animation wait. If the ball approaches the
+	# reach boundary, let the existing reachable-foot rescue act immediately.
+	var offset:Vector3=ball.position-actor.position;offset.y=0
+	var rescue:bool=offset.length()>.60 or offset.length()<.20
+	near_step.merge({"ready":rescue or advance>=.025 and (loaded or advance>=.075),"advance":advance,"loaded":loaded,"reason":"near_body_step"},true)
+	return near_step
