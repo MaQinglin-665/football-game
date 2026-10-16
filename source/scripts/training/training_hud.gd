@@ -26,7 +26,7 @@ func build_menu() -> void:
 	preload("res://scripts/roster_selection.gd").menu(self)
 	button("开始训练  →", Vector2(32, 252), Vector2(427, 58), func(): match_controller.start_match(false), menu, true).name = "StartMatch"
 	button("操作说明  /  F1", Vector2(32, 325), Vector2(427, 43), func(): toggle_help(), menu)
-	label("WASD 移动 · Shift 切换加速 / 双击大趟\nQ 扣球 · 右键传球 · 左键射门 · E 要球\nSpace 停球 / 抢球 · C 护球 / 逼抢\nR 重置本轮 · F5 压力 · F6 切换攻防起点", Vector2(34, 390), 422, 14, menu).size.y = 111
+	label("WASD 移动 · Shift 切换加速 / 双击大趟\n左蓄力+右扣球 · 右键传球 · 左键射门 · E 要球\nSpace 停球 / 抢球 · C 护球 / 逼抢\nR 重置本轮 · F5 压力 · F6 切换攻防起点", Vector2(34, 390), 422, 14, menu).size.y = 111
 	button("开源与素材许可", Vector2(315, 498), Vector2(144, 30), func(): show_credits(), menu)
 	button("退出", Vector2(1130, 27), Vector2(105, 40), func(): match_controller.quit_game())
 

@@ -13,7 +13,7 @@ func run()->void:
 	var map=preload("res://addons/football_input/input_map.gd")
 	var q:=InputEventKey.new();q.physical_keycode=KEY_Q;q.pressed=true
 	var pass_mouse:=InputEventMouseButton.new();pass_mouse.button_index=MOUSE_BUTTON_RIGHT;pass_mouse.pressed=true
-	check("Q maps only to cut",map.token_for_event(q)=="cut")
+	check("Q no longer cuts",map.token_for_event(q)=="")
 	check("right mouse maps to pass",map.token_for_event(pass_mouse)=="pass")
 	check("no duplicate bindings",map.conflicts().is_empty())
 	for item in [[.20,Vector3.LEFT,"INSIDE",1],[.20,Vector3.RIGHT,"OUTSIDE",1],[-.20,Vector3.RIGHT,"INSIDE",-1],[-.20,Vector3.LEFT,"OUTSIDE",-1],[.20,Vector3.LEFT,"INSIDE",1,true],[-.20,Vector3.LEFT,"OUTSIDE",-1,true]]:
@@ -50,11 +50,11 @@ func run()->void:
 	fixture();game.player.foot.cancel();game.ball.take(game.player);game.ball.position=game.player.position+Vector3(3,.11,0)
 	check("distant ball cannot cut",not game.player.foot.request_cut(Vector3.LEFT))
 	fixture();game.player.foot.cancel();game.ball.take(game.player);game.sync_input_context()
-	key(KEY_Q,true);await ticks(1);key(KEY_Q,false);await ticks(1)
-	check("Q emits cut intent and never starts pass charge",game.input_bridge.adapter.snapshot().charge.is_empty() and (game.player.foot.touch_plan.has("cut_style") or game.player.foot.buffer.get("kind","")=="CUT"))
+	mouse(MOUSE_BUTTON_LEFT,true);await ticks(1);mouse(MOUSE_BUTTON_RIGHT,true);mouse(MOUSE_BUTTON_LEFT,false);mouse(MOUSE_BUTTON_RIGHT,false);await ticks(1)
+	check("fake shot emits cut intent and never starts pass charge",game.input_bridge.adapter.snapshot().charge.is_empty() and (game.player.foot.touch_plan.has("cut_style") or game.player.foot.buffer.get("kind","")=="CUT"))
 	fixture();game.player.foot.cancel();game.ball.take(game.player);game.sync_input_context()
 	mouse(MOUSE_BUTTON_RIGHT,true);await ticks(1)
-	key(KEY_Q,true);await ticks(1);key(KEY_Q,false)
+	mouse(MOUSE_BUTTON_LEFT,true);await ticks(1);mouse(MOUSE_BUTTON_LEFT,false)
 	check("cut cannot interrupt pass charge",not game.input_bridge.adapter.snapshot().charge.is_empty() and not game.player.foot.touch_plan.has("cut_style") and game.player.foot.buffer.get("kind","")!="CUT")
 	mouse(MOUSE_BUTTON_MIDDLE,true);mouse(MOUSE_BUTTON_MIDDLE,false);mouse(MOUSE_BUTTON_RIGHT,false)
 	for direction in [Vector3.BACK,Vector3.LEFT]:
@@ -71,12 +71,12 @@ func run()->void:
 		var cb=func(e:Dictionary):
 			if e.get("actor")==actor and e.get("success",false) and actor.foot.touch_plan.has("cut_style"):events.append({"side":actor.foot.side,"style":actor.foot.touch_plan.cut_style})
 		game.contact_hub.contact_resolved.connect(cb)
-		key(KEY_Q,true);await ticks(1);key(KEY_Q,false)
+		mouse(MOUSE_BUTTON_LEFT,true);await ticks(1);mouse(MOUSE_BUTTON_RIGHT,true);mouse(MOUSE_BUTTON_LEFT,false);mouse(MOUSE_BUTTON_RIGHT,false)
 		var cross:float=0.0
 		for i in 75:
 			await ticks(1)
 			cross=minf(cross,(game.ball.position-actor.position).x*side)
 		game.contact_hub.contact_resolved.disconnect(cb)
-		check("actual single Q crosses opposite side "+str(side),events.size()==1 and int(events[0].side)==side and cross<-.12,{"contacts":events,"opposite_lateral":cross,"queued_case":side==1})
+		check("actual fake shot crosses opposite side "+str(side),events.size()==1 and int(events[0].side)==side and cross<-.12,{"contacts":events,"opposite_lateral":cross,"queued_case":side==1})
 	FileAccess.open(evidence.path_join("cut_pull.json"),FileAccess.WRITE).store_string(JSON.stringify({"checks":checks,"cuts":evidence_rows},"  "))
 	game.shutdown_audio();quit(0 if checks.all(func(c):return c.passed) else 1)

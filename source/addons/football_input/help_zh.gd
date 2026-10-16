@@ -14,10 +14,10 @@ static func text(context: Dictionary, catalog: RefCounted = null) -> String:
 		catalog = _default_catalog()
 	var rows: Array[String] = [
 		"足球操作 / 键鼠",
-		"Q：内扣；Q + A/D：向左/右外拨或内扣（自动选脚）",
+		"左键蓄力中点右键：假射扣球；方向键选方向，不传球；Q 已取消",
 		"WASD / 方向键：跑动；Ctrl 慢走 / 近控；单击 Shift 切换加速 / 双击大趟",
 		"有球：行走稳定近控；冲刺中换向准备扣球；关闭冲刺后跟上球踩拉收回",
-		"触球后先跟球：方向键按镜头方向准备下一脚，可小幅调整重心；Q 主动扣球保留",
+		"触球后先跟球：方向键按镜头方向准备下一脚，可小幅调整重心；左键蓄力中点右键主动扣球",
 		"C：有球护球，无球压迫；C + A/D 移动护球方向",
 		"Space：有球停球／无球准备接球；按住 Z：自动跟压、贴身干扰、可达时捅球；松开恢复手动",
 		"Ctrl + 方向 + Space：短距离拨球；Shift + Space：显式大趟",
@@ -30,7 +30,7 @@ static func text(context: Dictionary, catalog: RefCounted = null) -> String:
 		"E：无球向队友要球；V：无球飞铲",
 		"门将无球：Space + 方向扑救，左键按住接球准备",
 		"门将手持球：右键出球，F 改为高抛；仍由规则层审核手球合法性",
-		"右键在射门蓄力期间：取消；须松开再按才会传球",
+		"右键在射门蓄力期间：假射扣球；松开后再次右键才传球",
 		"中键：取消传射蓄力 / 75毫秒微缓冲，移动继续且不打开菜单",
 		"Esc：取消并暂停；F1：操作帮助；F11：全屏",
 		"Ctrl / C 优先于 Shift；同一时刻只有一组传射蓄力",
@@ -98,7 +98,7 @@ static func cards(context: Dictionary, snapshot: Dictionary = {}) -> Array[Dicti
 			var direction_held: bool = held.has("left") != held.has("right") or held.has("forward") != held.has("back")
 			var space_action := "stop_ball" if held.has("stance") else "nudge" if held.has("close") and direction_held else "push_ball" if held.has("sprint") and not held.has("close") else "stop_ball"
 			result.append(_card("Space", space_action, catalog, context))
-			result.append(_card("Q + A/D", "cut_ball", catalog, context))
+			result.append(_card("左键蓄力 + 右键 + 方向", "cut_ball", catalog, context))
 		var pass_action := "keeper_distribute" if possession == "hands" else "pass_spin" if spinning else "pass_high" if high else "pass_ground"
 		var pass_card := _card("松开右键", pass_action, catalog, context)
 		if pass_action == "pass_spin" and high:

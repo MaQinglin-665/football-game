@@ -184,9 +184,12 @@ func _on_press(token: String, source: String) -> void:
 	if not _charge.is_empty() and token in ["shot", "pass", "context", "slide", "stand_intercept", "cut"]:
 		_blocked[source] = true
 		if token == "pass" and _charge.token == "shot":
-			_cancel_charge("right_click_cancel")
+			_cancel_charge("fake_shot_cut")
 			_block_token_sources(["shot"])
-			_notify("cancelled", "射门蓄力已取消；再次按传球键才会传球")
+			if context.phase=="live" and context.possession=="foot":
+				_commit("cut_ball",_move_or_aim(),.4,0.0,Vector3.ZERO,"directional_cut",{"cut_direction_selected":_move_vector().length_squared()>.01,"fake_shot":true})
+			else:
+				_notify("cancelled", "射门已取消，当前不能扣球")
 		else:
 			_notify("exclusive", "正在蓄力，请先松开或用右键取消")
 		return

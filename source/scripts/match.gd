@@ -950,6 +950,13 @@ func observe_tackle_leg_contact(action: FootballFootAction, delta: float) -> boo
 
 func on_ball_body_contact(collider: Object, point: Vector3, impulse: Vector3) -> void:
 	if not collider is FootballPlayerMotor or not can_touch_ball(collider): return
+	# Only a real opposing ball collision can break the old dribble commitment.
+	# The physical solver already applied the impulse: do not kick or grant
+	# possession again. Both human and AI recover via the normal foot contact.
+	if not ball.held and is_instance_valid(ball.carrier) and ball.carrier.team!=collider.team and impulse.length()>ball.mass_kg*.15:
+		var displaced:Node3D=ball.carrier
+		ball.detach()
+		displaced.foot.cancel("opponent_physical_ball_contact")
 	ball.last_touch_team = collider.team
 	contact_hub.publish({"kind":"BODY_CONTACT","actor":collider,"other":ball,"point":point,"normal":impulse.normalized(),"impulse":impulse,"ball_contact":true,"action":"BALL_BODY","sequence":ball.body_collision_count})
 

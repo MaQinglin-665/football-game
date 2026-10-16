@@ -6,7 +6,7 @@ const KEY_BINDINGS := {
 	"forward": [KEY_W, KEY_UP], "back": [KEY_S, KEY_DOWN],
 	"left": [KEY_A, KEY_LEFT], "right": [KEY_D, KEY_RIGHT],
 	"sprint": [KEY_SHIFT], "close": [KEY_CTRL], "stance": [KEY_C],
-	"context": [KEY_SPACE], "cut": [KEY_Q], "call": [KEY_E],
+	"context": [KEY_SPACE], "cut": [], "call": [KEY_E],
 	"high": [KEY_F], "stand_intercept": [KEY_Z], "spin_left": [KEY_G], "spin_right": [KEY_X],
 	"placed_shot": [KEY_T],
 	"slide": [KEY_V], "pause": [KEY_ESCAPE], "help": [KEY_F1],

@@ -86,7 +86,7 @@ func build_menu() -> void:
 	preload("res://scripts/roster_selection.gd").menu(self)
 	button("开始比赛  →",Vector2(32,252),Vector2(427,58),func(): match_controller.start_match(false),menu,true).name = "StartMatch"
 	button("操作说明  /  F1",Vector2(32,325),Vector2(427,43),func(): toggle_help(),menu)
-	label("WASD 移动 · Shift 切换加速 · Ctrl 慢走 / 短带\n按住 右键传球，左键射门，松开出脚\nSpace 停球 / 接球 / 抢球 · C 护球 / 逼抢\nQ 扣球 · F 高球 · G / X 弧线 · 滚轮调整高度 · E 要球",Vector2(34,393),422,14,menu).size.y = 118
+	label("WASD 移动 · Shift 切换加速 · Ctrl 慢走 / 短带\n按住 右键传球，左键射门，松开出脚\nSpace 停球 / 接球 / 抢球 · C 护球 / 逼抢\n左蓄力+右扣球 · F 高球 · G / X 弧线 · 滚轮调整高度 · E 要球",Vector2(34,393),422,14,menu).size.y = 118
 	button("开源与素材许可",Vector2(315,498),Vector2(144,30),func(): show_credits(),menu)
 	button("退出",Vector2(1130,27),Vector2(105,40),func(): match_controller.quit_game())
 
