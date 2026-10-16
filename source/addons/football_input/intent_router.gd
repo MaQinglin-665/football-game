@@ -305,6 +305,9 @@ func _kick_params(token: String) -> Dictionary:
 	else:
 		action = "shoot_curve" if bend != 0.0 else "shoot_straight"
 		style = "curve" if bend != 0.0 else "straight"
+		if is_held("placed_shot") and bend==0.0:
+			style="placed"
+			elevation=minf(elevation,8.0)
 	return {"action": action, "direction": aim_forward, "power": 0.2,
 		"elevation_deg": elevation, "spin": Vector3.UP * bend, "style": style}
 

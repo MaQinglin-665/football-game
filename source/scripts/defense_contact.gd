@@ -14,18 +14,20 @@ static func plan(actor:Node3D,ball:Node3D,known:Dictionary)->Dictionary:
 	# A nearby departing pass is not a reason to reach behind or chase it.
 	if automatic and offset.dot(relative)>.02:return {}
 	var closest:float=clampf(-offset.dot(relative)/maxf(relative.length_squared(),.01),.025,.22)
-	# Keep the established closest-approach window first. Only if unavailable,
-	# try bounded alternatives; actual sweep/collision still decide the outcome.
-	var windows:Array=[closest,.085,.13,.22]
+	# Active pokes choose the first reachable window instead of waiting for
+	# closest body approach. Passive interceptions retain their crossing window.
+	var windows:Array=[.025,.045,.065,.085,.11,.15,closest,.22]
+	windows.sort()
+	if automatic:windows=[closest,.085,.13,.22]
 	for time in windows:
 		var eta:float=float(time)
 		var center:Vector3=current+roll*eta
 		var root:Vector3=actor.position+Vector3(actor.velocity.x,0,actor.velocity.z)*eta
 		if Vector2(center.x-root.x,center.z-root.z).length()>ball.tuning.foot_reach+ball.radius+.06:continue
 		if center.y>.46 or center.y<0:continue
-		var choice:Dictionary=clear_foot(actor,ball,center)
+		var choice:Dictionary=clear_foot(actor,ball,center,eta)
 		if choice.is_empty():continue
-		if automatic and float(choice.tackle_travel_s)>eta+.025:continue
+		if float(choice.tackle_travel_s)>eta+(.025 if automatic else .012):continue
 		choice.merge({"tackle_center":center,"contact_eta_s":eta,"automatic":automatic,"intercept":not is_instance_valid(ball.carrier) and (automatic or Vector2(roll.x,roll.z).length()>.35),"observation_age_s":age})
 		return choice
 	return {}
@@ -51,7 +53,7 @@ static func sample(action:RefCounted,ball:Node3D)->Dictionary:
 	if normal.length_squared()<.0001:normal=action.direction
 	return {"center":center,"point":shoe,"normal":normal.normalized(),"fraction":fraction,"gap":gap}
 
-static func clear_foot(actor:Node3D,ball:Node3D,center:Vector3)->Dictionary:
+static func clear_foot(actor:Node3D,ball:Node3D,center:Vector3,eta:float=0.0)->Dictionary:
 	var best:Dictionary={}
 	var distance:float=INF
 	var game:Node=actor.foot.match_controller
@@ -65,10 +67,11 @@ static func clear_foot(actor:Node3D,ball:Node3D,center:Vector3)->Dictionary:
 		var surface:String="OUTSIDE" if lateral*side>.24 else "INSIDE" if not is_instance_valid(ball.carrier) else "TOE"
 		var start:Vector3=actor.avatar.get_foot_contact(side,surface).point
 		var toward:Vector3=center-start
+		var local_travel:Vector3=toward-Vector3(actor.velocity.x,0,actor.velocity.z)*eta
 		var radial:Vector3=Vector3(toward.x,0,toward.z).normalized()
 		var point:Vector3=center-radial*ball.radius
 		var finish:Vector3=point-radial*.025
-		if toward.length()>1.12:continue
+		if local_travel.length()>1.12:continue
 		var query:=PhysicsRayQueryParameters3D.create(start,finish,3,[actor.get_rid()])
 		query.hit_from_inside=true
 		if not actor.get_world_3d().direct_space_state.intersect_ray(query).is_empty():continue
@@ -84,10 +87,10 @@ static func clear_foot(actor:Node3D,ball:Node3D,center:Vector3)->Dictionary:
 				var b:Vector3=skeleton.to_global(skeleton.get_bone_global_pose(shin).origin)
 				var pair:PackedVector3Array=Geometry3D.get_closest_points_between_segments(start,finish,a,b)
 				if pair[0].distance_to(pair[1])<.10:blocked=true
-		if not blocked and toward.length()<distance:
+		if not blocked and local_travel.length()<distance:
 			var yaw:float=clampf(facing.signed_angle_to(radial,Vector3.UP),-.55,.55)
-			best={"tackle_side":side,"tackle_surface":surface,"tackle_point":point,"tackle_foot_direction":facing.rotated(Vector3.UP,yaw),"tackle_travel_s":clampf(start.distance_to(point)/7.5,.025,.12)}
-			distance=toward.length()
+			best={"tackle_side":side,"tackle_surface":surface,"tackle_point":point,"tackle_foot_direction":facing.rotated(Vector3.UP,yaw),"tackle_travel_s":maxf(.025,maxf(0.0,local_travel.length()-ball.radius)/7.5)}
+			distance=local_travel.length()
 	return best
 
 static func poke_velocity(incoming:Vector3,running:Vector3,normal:Vector3,poke:float)->Vector3:

@@ -105,8 +105,12 @@ func apply(avatar: Node3D, delta: float, state: Dictionary, action: Dictionary, 
 	forward.y = 0
 	forward = forward.normalized()
 	var rotation := Quaternion(Vector3.UP,atan2(-forward.x,-forward.z))*Quaternion(Vector3.RIGHT,-.03)
+	var surface:String=String(action.get("surface","INSTEP"))
+	if surface in ["INSIDE","OUTSIDE"]:
+		rotation=rotation*Quaternion(Vector3.UP,float(side)*(-1.05 if surface=="INSIDE" else .55))
 	var foot_id := sk.find_bone("foot."+suffix)
-	var socket_id := sk.find_bone("contact_instep."+suffix)
+	var socket_name:String="contact_"+String(avatar.SURFACES.get(surface,"instep"))+"."+suffix
+	var socket_id := sk.find_bone(socket_name)
 	var offset := sk.get_bone_global_rest(socket_id).origin-sk.get_bone_global_rest(foot_id).origin
 	var maximum := sk.get_bone_rest(sk.find_bone("shin."+suffix)).origin.length()+sk.get_bone_rest(foot_id).origin.length()-.012
 	var contact_goal: Vector3 = action.get("strike_target",action.world_target)
@@ -177,9 +181,9 @@ func apply(avatar: Node3D, delta: float, state: Dictionary, action: Dictionary, 
 	var error := point.distance_to(target)
 	avatar._unreachable = not leg_ok or error>.035
 	avatar._reach_error = error
-	var source_normal: Vector3 = avatar._socket_normals.get("contact_instep."+suffix,Vector3.FORWARD)
+	var source_normal: Vector3 = avatar._socket_normals.get(socket_name,Vector3.FORWARD)
 	var foot_pose := sk.get_bone_global_pose(foot_id)
-	active_contact = {"valid":not avatar._unreachable,"point":point,"normal":(sk.global_basis*socket_pose.basis*source_normal).normalized(),"boot_center":sk.to_global(foot_pose.origin+foot_pose.basis*Vector3(0,-.050,-.080)),"surface":"INSTEP","reach_error":error}
+	active_contact = {"valid":not avatar._unreachable,"point":point,"normal":(sk.global_basis*socket_pose.basis*source_normal).normalized(),"boot_center":sk.to_global(foot_pose.origin+foot_pose.basis*Vector3(0,-.050,-.080)),"surface":surface,"reach_error":error}
 	# Record the actual ankle after projection/floor correction, not the request.
 	last_ankle = avatar.to_local(sk.to_global(foot_pose.origin))
 	last_rotation = (sk.global_basis*foot_pose.basis).get_rotation_quaternion()

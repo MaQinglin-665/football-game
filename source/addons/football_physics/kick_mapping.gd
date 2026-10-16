@@ -16,6 +16,9 @@ static func from_input_intent(intent: Dictionary, p: FootballPhysicsProfile) -> 
 		return {"accepted": false, "reason": "unsupported_topspin_request"}
 	var kind := "shot" if action.begins_with("shoot") else "pass"
 	var power_clamped := clampf(power, 0.0, 1.0)
+	if kind=="shot":
+		if intent.get("style","")=="placed":power_clamped*=.62;elevation=minf(elevation,8.0)
+		elif action=="shoot_curve":power_clamped*=.84
 	var spin_limit := p.shot_spin_max_rads if kind == "shot" else p.pass_spin_max_rads
 	var spin := Vector3.ZERO
 	if action in ["pass_spin", "shoot_curve"]:

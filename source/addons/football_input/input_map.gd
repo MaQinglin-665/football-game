@@ -8,6 +8,7 @@ const KEY_BINDINGS := {
 	"sprint": [KEY_SHIFT], "close": [KEY_CTRL], "stance": [KEY_C],
 	"context": [KEY_SPACE], "cut": [KEY_Q], "call": [KEY_E],
 	"high": [KEY_F], "stand_intercept": [KEY_Z], "spin_left": [KEY_G], "spin_right": [KEY_X],
+	"placed_shot": [KEY_T],
 	"slide": [KEY_V], "pause": [KEY_ESCAPE], "help": [KEY_F1],
 	"fullscreen": [KEY_F11]
 }

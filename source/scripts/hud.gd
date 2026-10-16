@@ -161,7 +161,8 @@ func _process(_delta: float) -> void:
 	charge_caption.visible = charge.visible
 	if charge.visible:
 		charge.value = float(preview.power)*100
-		_set_text(charge_caption,"%s %d%%  ·  高度 %d°" % ["传球" if String(preview.action).begins_with("pass_") else "射门",int(round(float(preview.power)*100)),int(preview.elevation_deg)])
+		var kick_label:String="传球" if String(preview.action).begins_with("pass_") else "推射" if preview.get("style","")=="placed" else "弯射" if preview.action=="shoot_curve" else "射门"
+		_set_text(charge_caption,"%s %d%%  ·  高度 %d°" % [kick_label,int(round(float(preview.power)*100)),int(preview.elevation_deg)])
 	if help.visible and is_instance_valid(m.input_bridge): help_body.text = m.input_bridge.help_text()
 	banner.visible = on_field and m.phase in [m.Phase.COUNTDOWN,m.Phase.RESTART,m.Phase.GOAL]
 	_set_text(banner,m.restart_message if m.phase==m.Phase.GOAL else m.restart_hint())

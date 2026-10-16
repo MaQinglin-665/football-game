@@ -24,6 +24,8 @@ static func text(context: Dictionary, catalog: RefCounted = null) -> String:
 		"右键：按住蓄力，松开传球；短按快速地滚球",
 		"F + 右键：高球；F + 滚轮调高球仰角（镜头不用抬高）",
 		"左键：按住蓄力，松开射门；滚轮调射门仰角",
+		"T + 左键：脚内侧推射（低平、力量较小）；G/X + 左键：向左/右弯射（按脚位用内侧或外脚背）",
+		"弯射保留滚轮仰角；G/X 优先于 T；单独按 T 不出脚",
 		"G / X + 传球或射门：左 / 右旋转；G + X 同按为零旋转",
 		"E：无球向队友要球；V：无球飞铲",
 		"门将无球：Space + 方向扑救，左键按住接球准备",
@@ -62,6 +64,7 @@ static func contextual_hint(context: Dictionary, snapshot: Dictionary = {}) -> S
 	var charge: Dictionary = snapshot.get("charge", {})
 	if not charge.is_empty():
 		var title: String = _default_catalog().label(charge.action)
+		if charge.get("style","")=="placed":title="脚内侧推射"
 		if charge.action == "pass_spin" and charge.style == "high":
 			title = "旋转高球"
 		var release := "左键" if charge.token == "shot" else "右键"

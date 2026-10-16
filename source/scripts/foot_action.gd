@@ -526,6 +526,7 @@ func request_semantic_kick(intent: Dictionary, _speed := 0.0, _lift := 0.0, targ
 	if not begin(action,intent.direction): return false
 	actor.action_cooldown = .32 if action=="PASS" else .65
 	kick_intent = intent.duplicate(true)
+	if String(kick_intent.get("action",""))=="shoot_curve":kick_intent["style"]="curve"
 	if action=="PASS":_configure_pass(selected)
 	receiver = target
 	if actor.is_human and HUMAN_KICK_ERROR_ENABLED:_assign_human_kick_error(action)
@@ -536,11 +537,18 @@ func request_semantic_kick(intent: Dictionary, _speed := 0.0, _lift := 0.0, targ
 		kick_intent["ground_pass_reference"] = target.position
 		kick_intent["ground_pass_aim_offset"] = 0.0
 	if action=="SHOT":
+		if kick_intent.get("style","") in ["placed","curve"]:
+			var spin:Vector3=kick_intent.get("spin",Vector3.ZERO)
+			surface="INSIDE" if kick_intent.style=="placed" or spin.y*side<0 else "OUTSIDE"
+			kick_intent["contact_surface"]=surface;kick_intent["contact_side"]=side
+			start_local=(actor.avatar.get_foot_contact(side,surface).point as Vector3)-actor.position
+			contact_target=ball_surface(match_controller.ball.position+match_controller.ball.velocity*windup)
 		var relative: Vector3 = match_controller.ball.position-actor.position
 		var relative_speed: Vector3 = match_controller.ball.velocity-actor.velocity
 		shot_style = "compact" if Vector2(relative.x,relative.z).length()<=.66 and Vector2(relative_speed.x,relative_speed.z).length()<1.8 else "full"
 		# Forceful strikes use the full-body path for both human and AI; timing is unchanged.
 		if float(intent.get("power",0))>=.55:shot_style="full"
+		if kick_intent.get("style","")=="placed":shot_style="compact"
 		trace_stage("inputaccepted")
 	return true
 
