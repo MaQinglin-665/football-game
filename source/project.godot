@@ -12,7 +12,7 @@ config_version=5
 
 config/version="integration-r008-assets"
 
-config/name="Football R030 Body Led Close Control"
+config/name="Football R031 Preserve Follow on Rapid Reversal"
 run/main_scene="res://scenes/match.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
