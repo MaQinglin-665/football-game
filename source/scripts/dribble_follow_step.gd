@@ -162,7 +162,7 @@ func near_control(actor:Node3D,ball:Node3D,aim:Vector3)->bool:
 	# Keep the last actual roll across near-mode decisions. Opposed input
 	# cannot discard its unfinished/awaiting-contact body commitment.
 	if not pending.is_empty() and (pending.axis as Vector3).dot(aim)<.5:return false
-	if not actor.is_human or ball.carrier!=actor or actor.sprinting or actor.gather_after_sprint or actor.stop_requested>0 or actor.shielding or not actor.move_requested:return false
+	if not actor.foot.shared_ordinary_control() or ball.carrier!=actor or actor.sprinting or (actor.is_human and actor.gather_after_sprint) or actor.stop_requested>0 or actor.shielding or not actor.move_requested:return false
 	if actor.foot.has_buffer() or actor.foot.touch_plan.has("cut_style") and not actor.foot.idle():return false
 	if not actor.foot.idle() and not actor.foot.planned_dribble():return false
 	var offset:Vector3=ball.position-actor.position;offset.y=0

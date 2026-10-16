@@ -62,6 +62,13 @@ func ai_ordinary_rhythm() -> bool:
 	# Cached geometry only; cheap live ownership/action recheck at each caller.
 	return _ai_rhythm_feature and _ai_ordinary_rhythm and active and match_controller.phase==match_controller.Phase.PLAY and not match_controller.ball.held and match_controller.ball.carrier==self and pending_kick.is_empty() and not foot.has_buffer() and (foot.idle() or foot.continuous_control() or foot.kind=="RECEIVE" and foot.hit)
 
+# Following an already contacted ball is independent of permission to start
+# another ordinary touch. A queued cut cannot take over the body prematurely.
+func ai_follow_eligible() -> bool:
+	if not _ai_rhythm_feature or not active or match_controller.ball.carrier!=self or not pending_kick.is_empty():return false
+	if match_controller.phase!=match_controller.Phase.PLAY or match_controller.ball.held:return false
+	return ai_ordinary_rhythm() or foot.ordinary_scheduler.follow_step.queued_follow(self) or (not foot.idle() and foot.hit and foot.touch_plan.has("cut_style"))
+
 func ai_ordinary_turn() -> bool:
 	return _ai_turn_feature and ai_ordinary_rhythm()
 
@@ -139,7 +146,7 @@ func _physics_process(delta: float) -> void:
 	var pocket_front:float=pocket_offset.dot(face_target.normalized())
 	ai_pocket_recover=owned and pending_kick.is_empty() and match_controller.ball.velocity.length()<.65 and (ai_pocket_recover or velocity.length()<1.5) and (ball_gap>(.60 if ai_pocket_recover else .78) or pocket_front<(.25 if ai_pocket_recover else -.10))
 	if ai_pocket_recover:_ai_ordinary_rhythm=false
-	if _ai_ordinary_rhythm and toward.length()>.1:
+	if ai_follow_eligible() and toward.length()>.1:
 		if ai_carry_aim.length_squared()<.1:ai_carry_aim=facing
 		var turn_rate:float=lerpf(4.0,1.6,clampf(velocity.length()/5.0,0,1))
 		var angle:float=ai_carry_aim.signed_angle_to(toward.normalized(),Vector3.UP)
@@ -171,7 +178,7 @@ func _physics_process(delta: float) -> void:
 		var offset := Vector3(match_controller.ball.position.x-position.x,0,match_controller.ball.position.z-position.z)
 		var requested_face := face_target.normalized() if face_target.length()>.1 else facing
 		var receiving:bool = foot.kind=="RECEIVE" and not foot.idle() and not foot.hit
-		if not cut_active and not reachable_pass and (third_setup or receiving or (not ai_ordinary_rhythm() and (offset.dot(requested_face)<.25 or not match_controller.ball.reception_ready(self)))):
+		if not cut_active and not reachable_pass and (third_setup or receiving or (not ai_follow_eligible() and (offset.dot(requested_face)<.25 or not match_controller.ball.reception_ready(self)))):
 			controlled_setup = true
 			# Finish the finite receive action while facing the actual ball. Then
 			# walk around it to the requested heading; never run through/past it.
@@ -193,7 +200,8 @@ func _physics_process(delta: float) -> void:
 		desired_facing=preload("res://scripts/tactics/receive_motion.gd").travel_facing(position,target,face_target,remaining)
 	var committed_follow:Dictionary={}
 	if controlled_setup:foot.ordinary_scheduler.follow_step.clear()
-	if owned and not controlled_setup and pending_kick.is_empty() and ai_ordinary_rhythm():
+	if owned:sprinting=tactical_intent.get("carry_run",false) and not shielding and not close_control and pending_kick.is_empty() and not controlled_setup
+	if owned and not controlled_setup and ai_follow_eligible():
 		var follow_budget:float=minf(foot.movement_cap(),minf(match_controller.tuning.sprint_ball_speed,maxf(tactical_pace,float(foot.ordinary_scheduler.follow_step.pending.get("speed",0.0)))))
 		committed_follow=foot.ordinary_scheduler.follow_step.follow_motion(self,match_controller.ball,ai_carry_aim,follow_budget)
 		if not committed_follow.is_empty() and pocket_offset.length()>.24:desired_facing=pocket_offset.normalized()

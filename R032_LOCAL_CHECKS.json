@@ -1,0 +1,134 @@
+{
+  "date": "2026-10-16",
+  "base": "a7e66be9b52e2b002286260e734f07e8f1ca2ea4",
+  "headless_only": true,
+  "ai_checks": [
+    {
+      "check": "free ball does not qualify as owned normal carry",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "actual reception request starts",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "real RECEIVE contact establishes AI control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI uses actual body-led near control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal owned carry rhythm matches A/B flag",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal carry makes actual finite shoe contacts",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "shared motor advances during owned carry",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI can request next cut",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "queued cut retains follow eligibility",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "queued cut actually contacts ball",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal run carry crosses2.1mps with real ownership",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "cut and subsequent turns retain control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "all resulting motor and ball velocities remain finite",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "actual action contacts do not duplicate sequence",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI actual contacts create committed body follow",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI turn keeps motor following actual roll",
+      "details": null,
+      "passed": true
+    }
+  ],
+  "human_checks": [
+    {
+      "check": "rapid_jog remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_jog final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_jog actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "rapid_run remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_run final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_run actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "single impulse",
+      "passed": true
+    }
+  ],
+  "near_frames": 149,
+  "queued_frames": 14,
+  "natural_scope": "3v3 10 simulation seconds; 11v11 20 simulation seconds; human idle; no assigned ball/targets",
+  "graphical_test": false,
+  "successful_beating_defender_verified": false
+}
