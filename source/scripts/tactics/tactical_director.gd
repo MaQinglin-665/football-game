@@ -1013,10 +1013,25 @@ func _carrier(p: Dictionary, intent: Dictionary, snapshot: Dictionary, members: 
 	if style==SHORT_PASS and forward:pass_value+=.45
 	var danger:bool=carry.is_empty() or (pressure<.80 and float(carry.get("clearance",0.0))<1.05)
 	var valuable:bool=pass_value>float(carry.get("score",-100.0))+(0.65 if carry.get("committed",false) else .25)
-	var release:bool=called or danger or valuable or stalled
+	var exit_stalled:bool=_carry_exit_stalled(p,carry,pressure_state)
+	var release:bool=called or danger or valuable or stalled or exit_stalled
 	if release:
 		_set_kick(intent,"PASS",best.point,int(best.id),float(best.distance),snapshot,0.0)
-		intent.reason="called_pass" if called else "advance_to_free_teammate" if forward else "pressure_safe_outlet"
+		intent.reason="called_pass" if called else "blocked_exit_safe_pass" if exit_stalled else "advance_to_free_teammate" if forward else "pressure_safe_outlet"
+
+# Progress is measured along this committed route, not by a generic pass timer.
+# The caller has already found a reachable, lane-safe recipient.
+func _carry_exit_stalled(p:Dictionary,carry:Dictionary,pressure_state:Dictionary)->bool:
+	var memory:Dictionary=carry_routes.get(int(p.id),{})
+	if carry.is_empty() or not memory.has("origin"):return false
+	var origin:Vector3=memory.get("progress_origin",memory.origin)
+	var axis:Vector3=_flat(memory.target-origin).normalized()
+	var progress:float=_flat(p.position-origin).dot(axis)
+	if progress>=.55:
+		memory["progress_origin"]=p.position;memory["progress_at"]=clock
+		return false
+	var blocked:bool=float(pressure_state.get("immediate",20.0))<1.35 or bool(pressure_state.get("frontal",false)) and float(pressure_state.get("contact_time",10.0))<.75
+	return blocked and clock-float(memory.get("progress_at",memory.started))>1.0 and progress<.55
 
 func _best_pass(p: Dictionary, members: Array[Dictionary], opponents: Array[Dictionary], snapshot: Dictionary, style: String) -> Dictionary:
 	var cache_key:String=str(p.id)+":"+str(snapshot.ball_position)
@@ -1873,7 +1888,7 @@ func _open_carry_option(p:Dictionary,opponents:Array[Dictionary],snapshot:Dictio
 			if not retained.is_empty() and float(retained.score)>float(best.score)-1.0 and float(retained.clearance)>1.0:
 				previous.until=clock+.35;carry_routes[id]=previous;retained.committed=true;return retained
 		best.committed=false
-		carry_routes[id]={"target":best.point,"until":clock+.65,"started":clock,"needs_touch":_flat(p.facing).normalized().dot(_flat(best.point-p.position).normalized())<.88,"choice":best.duplicate()}
+		carry_routes[id]={"origin":p.position,"target":best.point,"until":clock+.65,"started":clock,"needs_touch":_flat(p.facing).normalized().dot(_flat(best.point-p.position).normalized())<.88,"choice":best.duplicate()}
 	else:carry_routes.erase(id)
 	return best
 

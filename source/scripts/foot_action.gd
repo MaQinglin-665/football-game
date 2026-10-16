@@ -816,6 +816,12 @@ func _try_contact(delta: float) -> void:
 			if actor.move_requested or planned_outlet.length_squared()>.01:
 				var receive_direction: Vector3 = planned_outlet if planned_outlet.length_squared()>.01 else actor.get_ball_direction()
 				receive_direction.y = 0
+				# AI receives into its real approach momentum before attempting a
+				# large tactical turn. The subsequent owned touch selects that exit.
+				if not actor.is_human:
+					var approach:Vector3=Vector3(actor.velocity.x,0,actor.velocity.z)
+					if approach.length()>1.2 and approach.normalized().dot(receive_direction.normalized())<.5:
+						receive_direction=approach.normalized()
 				if receive_direction.length()>.05:
 					var lead_scale:=1.0
 					if actor.is_human and actor.get("first_touch_timing")!=null:

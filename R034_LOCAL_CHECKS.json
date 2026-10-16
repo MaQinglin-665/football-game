@@ -1,0 +1,211 @@
+{
+  "date": "2026-10-16",
+  "headless_only": true,
+  "ai_checks": [
+    {
+      "check": "free ball does not qualify as owned normal carry",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "actual reception request starts",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "real RECEIVE contact establishes AI control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "unplanned reception releases old receive intent",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "confirmed reception persists for next decision",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI uses actual body-led near control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal owned carry rhythm matches A/B flag",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal carry makes actual finite shoe contacts",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "shared motor advances during owned carry",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI can request next cut",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "queued cut retains follow eligibility",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "queued cut actually contacts ball",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "normal run carry crosses2.1mps with real ownership",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "cut and subsequent turns retain control",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "all resulting motor and ball velocities remain finite",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "actual action contacts do not duplicate sequence",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI actual contacts create committed body follow",
+      "details": null,
+      "passed": true
+    },
+    {
+      "check": "AI turn keeps motor following actual roll",
+      "details": null,
+      "passed": true
+    }
+  ],
+  "human_checks": [
+    {
+      "check": "rapid_jog remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_jog final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_jog actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "rapid_run remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_run final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_run actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first remains controlled",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first final left input executed",
+      "passed": true
+    },
+    {
+      "check": "rapid_right_first actual contacts after switching",
+      "passed": true
+    },
+    {
+      "check": "single impulse",
+      "passed": true
+    }
+  ],
+  "policy_checks": [
+    {
+      "label": "trailing opponent within old2.7m threshold does not persistently cap run",
+      "passed": true
+    },
+    {
+      "label": "established acceleration survives modest steering",
+      "passed": true
+    },
+    {
+      "label": "new acceleration waits for alignment",
+      "passed": true
+    },
+    {
+      "label": "blocked frontal route is rejected or selects lateral exit",
+      "passed": true
+    },
+    {
+      "label": "equal distance approaching and departing opponents produce different risk",
+      "passed": true
+    },
+    {
+      "label": "low stamina keeps run unavailable",
+      "passed": true
+    },
+    {
+      "label": "stalled pressured exit yields to safe pass comparison",
+      "passed": true
+    },
+    {
+      "label": "open lane is not forced into timed passing",
+      "passed": true
+    },
+    {
+      "label": "real progress renews escape opportunity",
+      "passed": true
+    },
+    {
+      "label": "progress does not immediately become a stalled exit",
+      "passed": true
+    },
+    {
+      "label": "new blockage after progress is detected",
+      "passed": true
+    }
+  ],
+  "natural": {
+    "3v3": {
+      "contacts": {
+        "CLOSE": 11,
+        "PASS": 4,
+        "RECEIVE": 8,
+        "TURN": 10,
+        "PULL": 1
+      },
+      "actual_cut_contacts": 0,
+      "blocked_exit_safe_pass_samples": 0,
+      "run_samples": 27
+    },
+    "11v11": {
+      "contacts": {
+        "PASS": 3,
+        "RECEIVE": 6,
+        "CLOSE": 19,
+        "TURN": 10
+      },
+      "actual_cut_contacts": 1,
+      "blocked_exit_safe_pass_samples": 0,
+      "run_samples": 50
+    }
+  },
+  "safe_release_natural_verified": false,
+  "successful_beating_defenders_verified": false
+}
